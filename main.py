@@ -1,6 +1,9 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTabWidget
 import sys
 from PyQt5.QtGui import QIcon
+from ui.tabs.Code import create_code_tab
+from ui.tabs.Textures import create_textures_tab
+from ui.tabs.Sounds import create_sounds_tab
 # temporary ones
 from PyQt5.QtWidgets import QLabel
 
@@ -33,40 +36,13 @@ class MainWindow(QMainWindow):
         tabs_main.addTab(sounds_tab, "Sounds")
 
         # Code tab
-        code_tab_layout = QGridLayout()
-        label0 = QLabel("Block to pick")
-        label1 = QLabel("Code here")
-        label0.setStyleSheet('background-color: pink;')
-        label1.setStyleSheet('background-color: grey;')
-        code_tab_layout.setColumnStretch(0, 1)
-        code_tab_layout.setColumnStretch(1, 4)
-        code_tab_layout.addWidget(label0, 0, 0)
-        code_tab_layout.addWidget(label1, 0, 1)
-        code_tab.setLayout(code_tab_layout)
+        code_tab.setLayout(create_code_tab())
 
         # Textures tab
-        textures_tab_layout = QGridLayout()
-        label2 = QLabel("Skins or models list")
-        label3 = QLabel("edit here")
-        label2.setStyleSheet('background-color: yellow;')
-        label3.setStyleSheet('background-color: lightgreen;')
-        textures_tab_layout.setColumnStretch(0, 1)
-        textures_tab_layout.setColumnStretch(1, 4)
-        textures_tab_layout.addWidget(label2, 0, 0)
-        textures_tab_layout.addWidget(label3, 0, 1)
-        textures_tab.setLayout(textures_tab_layout)
+        textures_tab.setLayout(create_textures_tab())
 
         # Sounds tab
-        sounds_tab_layout = QGridLayout()
-        label4 = QLabel("Sounds list")
-        label5 = QLabel("edit here")
-        label4.setStyleSheet('background-color: lightblue;')
-        label5.setStyleSheet('background-color: purple;')
-        sounds_tab_layout.setColumnStretch(0, 1)
-        sounds_tab_layout.setColumnStretch(1, 4)
-        sounds_tab_layout.addWidget(label4, 0, 0)
-        sounds_tab_layout.addWidget(label5, 0, 1)
-        sounds_tab.setLayout(sounds_tab_layout)
+        sounds_tab.setLayout(create_sounds_tab())
 
 
         label_logs = QLabel("logs, ai and more here")

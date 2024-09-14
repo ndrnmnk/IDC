@@ -5,7 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fdca4a5f-a38c-4872-b179-a02840f7ec84" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/tabs/Code.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/tabs/Code.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/tabs/Sounds.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/tabs/Sounds.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/tabs/Textures.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/tabs/Textures.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,7 +54,7 @@
       <recent name="$PROJECT_DIR$/ui/widgets" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.polygon">
+  <component name="RunManager" selected="Python.main">
     <configuration name="BlockBase (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="IDC" />
       <option name="ENV_FILES" value="" />
@@ -163,8 +167,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.polygon" />
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.polygon" />
         <item itemvalue="Python.CodingGraphicsScene" />
         <item itemvalue="Python.ResizableLineEdit" />
         <item itemvalue="Python.BlockBase (1)" />
