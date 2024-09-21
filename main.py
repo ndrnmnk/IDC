@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTabWidget, QAction
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTabWidget, QAction, QPushButton, QHBoxLayout
 import sys
 from PyQt5.QtGui import QIcon
 
@@ -39,8 +39,9 @@ class MainWindow(QMainWindow):
         self.grid = QGridLayout(self.central_widget)
         self.grid.setColumnStretch(0, 1)
         self.grid.setColumnStretch(1, 2)
-        self.grid.setRowStretch(0, 3)
-        self.grid.setRowStretch(1, 4)
+        self.grid.setRowStretch(0, 1)
+        self.grid.setRowStretch(1, 15)
+        self.grid.setRowStretch(2, 20)
 
         # Create main tabs
         tabs_main = QTabWidget()
@@ -54,6 +55,7 @@ class MainWindow(QMainWindow):
         textures_tab.setLayout(create_textures_tab())
         sounds_tab.setLayout(create_sounds_tab())
 
+        # Create misc tabs
         tabs_misc = QTabWidget()
         problems_tab = QWidget()
         logs_tab = QWidget()
@@ -61,15 +63,31 @@ class MainWindow(QMainWindow):
         tabs_misc.addTab(problems_tab, "Problems")
         tabs_misc.addTab(logs_tab, "Build logs")
         tabs_misc.addTab(ai_tab, "AI")
-
         problems_tab.setLayout(create_problems_tab())
         logs_tab.setLayout(create_build_logs_tab())
         ai_tab.setLayout(create_ai_tab())
 
+        # Create spritelist
         spritelist = create_spritelist()
-        self.grid.addWidget(tabs_misc, 0, 0)
-        self.grid.addWidget(spritelist, 1, 0)
-        self.grid.addWidget(tabs_main, 0, 1, 2, 1)
+
+        # Create buttons
+        buttons_layout = QHBoxLayout()
+        build_btn = QPushButton(text="build")
+        run_btn = QPushButton(text="run")
+        kill_btn = QPushButton(text="kill")
+        buttons_layout.addWidget(build_btn)
+        buttons_layout.addWidget(run_btn)
+        buttons_layout.addWidget(kill_btn)
+        buttons_widget = QWidget()
+        buttons_widget.setLayout(buttons_layout)
+
+        # Place everything
+        self.grid.addWidget(buttons_widget, 0, 0)
+        self.grid.addWidget(tabs_misc, 1, 0)
+        self.grid.addWidget(spritelist, 2, 0)
+        self.grid.addWidget(tabs_main, 1, 1, 2, 1)
+
+        tabs_misc.setCurrentIndex(1)  # Build logs tab
 
         self.show()
 
