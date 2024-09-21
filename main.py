@@ -5,12 +5,11 @@ from PyQt5.QtGui import QIcon
 from ui.tabs.Code import create_code_tab
 from ui.tabs.Textures import create_textures_tab
 from ui.tabs.Sounds import create_sounds_tab
-
-from ui.tabs.Spritelist import create_spritelist
 from ui.tabs.BuildLogs import create_build_logs_tab
 from ui.tabs.Problems import create_problems_tab
 from ui.tabs.AI import create_ai_tab
 
+from ui.elements.Spritelist import create_spritelist
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -72,9 +71,16 @@ class MainWindow(QMainWindow):
 
         # Create buttons
         buttons_layout = QHBoxLayout()
+        buttons_layout.setContentsMargins(0, 0, 0, 0)
+        # create buttons
         build_btn = QPushButton(text="build")
         run_btn = QPushButton(text="run")
         kill_btn = QPushButton(text="kill")
+        # fix width
+        build_btn.setMinimumWidth(20)
+        run_btn.setMinimumWidth(20)
+        kill_btn.setMinimumWidth(20)
+        # pack inside a widget
         buttons_layout.addWidget(build_btn)
         buttons_layout.addWidget(run_btn)
         buttons_layout.addWidget(kill_btn)

@@ -17,7 +17,7 @@ def create_code_tab():
                 {"int_entry": "number typing?"},
                 {"text": "test!"},
                 {"text_entry": "text entry"}
-            ], "color": "#ffff00", "shape": "block", "pos": (100, 100)},
+            ], "color": "#888888", "shape": "block", "pos": (100, 100)},
             {"input_json": [
                 {"text": "Say"},
                 {"text_entry": "hello"}
