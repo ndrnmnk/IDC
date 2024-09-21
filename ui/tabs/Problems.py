@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QLabel, QListWidget, QListWidgetItem, QVBoxLayout
+from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QVBoxLayout
 from PyQt5.QtGui import QIcon
 
 
@@ -6,10 +6,11 @@ def create_problems_tab():
     layout = QVBoxLayout()
 
     list_widget = QListWidget()
-    icon = QIcon('textures/logo.png')
-    item1 = QListWidgetItem(icon, 'Item 1')
-    item2 = QListWidgetItem(icon, 'Item 2')
-    item3 = QListWidgetItem(icon, 'Item 3')
+    icon_warning = QIcon('textures/warning.png')
+    icon_error = QIcon(QIcon('textures/error.png'))
+    item1 = QListWidgetItem(icon_warning, 'warning')
+    item2 = QListWidgetItem(icon_warning, 'warning')
+    item3 = QListWidgetItem(icon_error, 'error')
 
     # Add items to the QListWidget
     list_widget.addItem(item1)

@@ -4,9 +4,10 @@ from PyQt5.QtGui import QIcon
 from ui.tabs.Code import create_code_tab
 from ui.tabs.Textures import create_textures_tab
 from ui.tabs.Sounds import create_sounds_tab
+
+from ui.tabs.Spritelist import create_spritelist
+from ui.tabs.BuildLogs import create_build_logs_tab
 from ui.tabs.Problems import create_problems_tab
-# temporary ones
-from PyQt5.QtWidgets import QLabel
 
 
 class MainWindow(QMainWindow):
@@ -60,11 +61,13 @@ class MainWindow(QMainWindow):
         tabs_misc.addTab(ai_tab, "AI")
 
         problems_tab.setLayout(create_problems_tab())
+        logs_tab.setLayout(create_build_logs_tab())
 
-        label_spritelist = QLabel("sprite list here")
-        label_spritelist.setStyleSheet('background-color: blue;')
+        spritelist = create_spritelist()
+        # spritelist = QLabel("sprite list here")
+        # spritelist.setStyleSheet('background-color: blue;')
         self.grid.addWidget(tabs_misc, 0, 0)
-        self.grid.addWidget(label_spritelist, 1, 0)
+        self.grid.addWidget(spritelist, 1, 0)
         self.grid.addWidget(tabs_main, 0, 1, 2, 1)
 
         self.show()
