@@ -2,14 +2,16 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTa
 import sys
 from PyQt5.QtGui import QIcon
 
-from ui.tabs.Code import create_code_tab
-from ui.tabs.Textures import create_textures_tab
-from ui.tabs.Sounds import create_sounds_tab
-from ui.tabs.BuildLogs import create_build_logs_tab
-from ui.tabs.Problems import create_problems_tab
-from ui.tabs.AI import create_ai_tab
+from ui.tabs.Code import CodeTabLayout
 
-from ui.elements.Spritelist import create_spritelist
+from ui.tabs.Sounds import SoundsTabLayout
+from ui.tabs.Problems import ProblemsTabWidget
+from ui.tabs.Textures import TexturesTabLayout
+from ui.tabs.BuildLogs import BuildLogsTabLayout
+from ui.tabs.AI import AiTabLayout
+
+from ui.elements.Spritelist import SpriteList
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -30,11 +32,11 @@ class MainWindow(QMainWindow):
         file_menu.addAction(exit_action)
         exit_action.triggered.connect(self.close)
 
-        # Create a central widget for the main window
+        # create a central widget for the main window
         self.central_widget = QWidget(self)
         self.setCentralWidget(self.central_widget)
 
-        # Create a layout
+        # create a layout
         self.grid = QGridLayout(self.central_widget)
         self.grid.setColumnStretch(0, 1)
         self.grid.setColumnStretch(1, 2)
@@ -42,7 +44,8 @@ class MainWindow(QMainWindow):
         self.grid.setRowStretch(1, 15)
         self.grid.setRowStretch(2, 20)
 
-        # Create main tabs
+        # CREATE MAIN TABS
+        # create tab selector widget
         tabs_main = QTabWidget()
         code_tab = QWidget()
         textures_tab = QWidget()
@@ -50,26 +53,37 @@ class MainWindow(QMainWindow):
         tabs_main.addTab(code_tab, 'Code')
         tabs_main.addTab(textures_tab, 'Textures')
         tabs_main.addTab(sounds_tab, "Sounds")
-        code_tab.setLayout(create_code_tab())
-        textures_tab.setLayout(create_textures_tab())
-        sounds_tab.setLayout(create_sounds_tab())
+        # create tab layouts
+        textures_tab_layout = TexturesTabLayout()
+        # use tabs layouts
+        textures_tab.setLayout(textures_tab_layout)
 
-        # Create misc tabs
+        code_tab_layout = CodeTabLayout()
+        code_tab.setLayout(code_tab_layout)
+
+        sounds_tab_layout = SoundsTabLayout()
+        sounds_tab.setLayout(sounds_tab_layout)
+
+        # CREATE MISC TABS
+        # create tab selector widget
         tabs_misc = QTabWidget()
-        problems_tab = QWidget()
+        problems_tab = ProblemsTabWidget()
         logs_tab = QWidget()
         ai_tab = QWidget()
         tabs_misc.addTab(problems_tab, "Problems")
         tabs_misc.addTab(logs_tab, "Build logs")
         tabs_misc.addTab(ai_tab, "AI")
-        problems_tab.setLayout(create_problems_tab())
-        logs_tab.setLayout(create_build_logs_tab())
-        ai_tab.setLayout(create_ai_tab())
+        # create tab layouts
+        build_logs_tab_layout = BuildLogsTabLayout()
+        ai_tab_layout = AiTabLayout()
+        # use tab layouts
+        logs_tab.setLayout(build_logs_tab_layout)
+        ai_tab.setLayout(ai_tab_layout)
 
-        # Create spritelist
-        spritelist = create_spritelist()
+        # create spritelist
+        spritelist = SpriteList()
 
-        # Create buttons
+        # Create Layout for buttons
         buttons_layout = QHBoxLayout()
         buttons_layout.setContentsMargins(0, 0, 0, 0)
         # create buttons
@@ -87,13 +101,13 @@ class MainWindow(QMainWindow):
         buttons_widget = QWidget()
         buttons_widget.setLayout(buttons_layout)
 
-        # Place everything
+        # place everything
         self.grid.addWidget(buttons_widget, 0, 0)
         self.grid.addWidget(tabs_misc, 1, 0)
         self.grid.addWidget(spritelist, 2, 0)
         self.grid.addWidget(tabs_main, 1, 1, 2, 1)
 
-        tabs_misc.setCurrentIndex(1)  # Build logs tab
+        tabs_misc.setCurrentIndex(1)  # build logs tab
 
         self.show()
 

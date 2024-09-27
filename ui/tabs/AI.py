@@ -1,15 +1,14 @@
 from PyQt5.QtWidgets import QTextBrowser, QLineEdit, QVBoxLayout
 
 
-def create_ai_tab():
-    layout = QVBoxLayout()
+class AiTabLayout(QVBoxLayout):
+    def __init__(self):
+        super().__init__()
+        response_widget = QTextBrowser()
+        response_widget.setText("я найду тебя и разобью єбальнік")
 
-    response_widget = QTextBrowser()
-    response_widget.setText("я найду тебя и разобью єбальнік")
+        request_widget = QLineEdit()
+        request_widget.setPlaceholderText("Question to AI")
 
-    request_widget = QLineEdit()
-    request_widget.setPlaceholderText("Question to AI")
-
-    layout.addWidget(response_widget)
-    layout.addWidget(request_widget)
-    return layout
+        self.addWidget(response_widget)
+        self.addWidget(request_widget)

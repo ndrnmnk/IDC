@@ -2,15 +2,18 @@ from PyQt5.QtWidgets import QLabel, QGridLayout
 from ui.widgets.CodingGraphicsScene import CodingGraphicsView
 
 
-def create_code_tab():
-    code_tab_layout = QGridLayout()
-    label0 = QLabel("Block to pick")
-    label0.setStyleSheet('background-color: grey;')
-    code_tab_layout.setColumnStretch(0, 1)
-    code_tab_layout.setColumnStretch(1, 4)
-    code_tab_layout.addWidget(label0, 0, 0)
+class CodeTabLayout(QGridLayout):
+    def __init__(self):
+        super().__init__()
+        self.setColumnStretch(0, 1)
+        self.setColumnStretch(1, 4)
 
-    test_json = [
+        label_blocks_to_pick = QLabel("Block to pick")
+        label_blocks_to_pick.setStyleSheet('background-color: grey;')
+
+        self.addWidget(label_blocks_to_pick, 0, 0)
+
+        test_json = [
             {"input_json": [
                 {"text": "Hello, World"},
                 {"dropdown": ["hello", "bye", "this is a very long one"]},
@@ -23,7 +26,7 @@ def create_code_tab():
                 {"text_entry": "hello"}
             ], "color": "#0aef67", "shape": "int", "pos": (300, 300)}
         ]
-    view = CodingGraphicsView(block_configs=test_json)
 
-    code_tab_layout.addWidget(view, 0, 1)
-    return code_tab_layout
+        view = CodingGraphicsView(block_configs=test_json)
+
+        self.addWidget(view, 0, 1)

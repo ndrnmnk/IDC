@@ -1,14 +1,16 @@
 from PyQt5.QtWidgets import QLabel, QGridLayout
 
 
-def create_sounds_tab():
-    sounds_tab_layout = QGridLayout()
-    label4 = QLabel("Sounds list")
-    label5 = QLabel("edit here")
-    label4.setStyleSheet('background-color: lightblue;')
-    label5.setStyleSheet('background-color: purple;')
-    sounds_tab_layout.setColumnStretch(0, 1)
-    sounds_tab_layout.setColumnStretch(1, 4)
-    sounds_tab_layout.addWidget(label4, 0, 0)
-    sounds_tab_layout.addWidget(label5, 0, 1)
-    return sounds_tab_layout
+class SoundsTabLayout(QGridLayout):
+    def __init__(self):
+        super().__init__()
+
+        placeholde_label = QLabel("Sounds list")
+        placeholder_label = QLabel("edit here")
+
+        placeholder_label.setStyleSheet('background-color: purple;')
+
+        self.setColumnStretch(0, 1)
+        self.setColumnStretch(1, 4)
+        self.addWidget(placeholde_label, 0, 0)
+        self.addWidget(placeholder_label, 0, 1)
