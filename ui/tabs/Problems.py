@@ -5,13 +5,11 @@ from PyQt5.QtGui import QIcon
 class ProblemsTabWidget(QListWidget):
     def __init__(self):
         super().__init__()
-        icon_warning = QIcon("textures/warning.png")
-        icon_error = QIcon("textures/error.png")
+        self.icon_warning = QIcon("textures/warning.png")
+        self.icon_error = QIcon("textures/error.png")
 
-        item1 = QListWidgetItem(icon_warning, 'warning')
-        item2 = QListWidgetItem(icon_warning, 'warning')
-        item3 = QListWidgetItem(icon_error, 'error')
-
-        self.addItem(item1)
-        self.addItem(item2)
-        self.addItem(item3)
+    def add_item(self, icon_type, text):
+        if icon_type == 0:
+            self.addItem(QListWidgetItem(self.icon_warning, text))
+        else:
+            self.addItem(QListWidgetItem(self.icon_error, text))

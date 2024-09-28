@@ -3,14 +3,14 @@ import sys
 from PyQt5.QtGui import QIcon
 
 from ui.tabs.Code import CodeTabLayout
-
 from ui.tabs.Sounds import SoundsTabLayout
-from ui.tabs.Problems import ProblemsTabWidget
 from ui.tabs.Textures import TexturesTabLayout
 from ui.tabs.BuildLogs import BuildLogsTabLayout
 from ui.tabs.AI import AiTabLayout
-
+from ui.tabs.Problems import ProblemsTabWidget
 from ui.elements.Spritelist import SpriteList
+
+from backend.backend import Backend
 
 
 class MainWindow(QMainWindow):
@@ -47,67 +47,69 @@ class MainWindow(QMainWindow):
         # CREATE MAIN TABS
         # create tab selector widget
         tabs_main = QTabWidget()
-        code_tab = QWidget()
-        textures_tab = QWidget()
-        sounds_tab = QWidget()
-        tabs_main.addTab(code_tab, 'Code')
-        tabs_main.addTab(textures_tab, 'Textures')
-        tabs_main.addTab(sounds_tab, "Sounds")
+        self.code_tab = QWidget()
+        self.textures_tab = QWidget()
+        self.sounds_tab = QWidget()
+        tabs_main.addTab(self.code_tab, 'Code')
+        tabs_main.addTab(self.textures_tab, 'Textures')
+        tabs_main.addTab(self.sounds_tab, "Sounds")
         # create tab layouts
-        textures_tab_layout = TexturesTabLayout()
+        self.textures_tab_layout = TexturesTabLayout()
         # use tabs layouts
-        textures_tab.setLayout(textures_tab_layout)
+        self.textures_tab.setLayout(self.textures_tab_layout)
 
-        code_tab_layout = CodeTabLayout()
-        code_tab.setLayout(code_tab_layout)
+        self.code_tab_layout = CodeTabLayout()
+        self.code_tab.setLayout(self.code_tab_layout)
 
-        sounds_tab_layout = SoundsTabLayout()
-        sounds_tab.setLayout(sounds_tab_layout)
+        self.sounds_tab_layout = SoundsTabLayout()
+        self.sounds_tab.setLayout(self.sounds_tab_layout)
 
         # CREATE MISC TABS
         # create tab selector widget
         tabs_misc = QTabWidget()
-        problems_tab = ProblemsTabWidget()
-        logs_tab = QWidget()
-        ai_tab = QWidget()
-        tabs_misc.addTab(problems_tab, "Problems")
-        tabs_misc.addTab(logs_tab, "Build logs")
-        tabs_misc.addTab(ai_tab, "AI")
+        self.problems_tab = ProblemsTabWidget()
+        self.logs_tab = QWidget()
+        self.ai_tab = QWidget()
+        tabs_misc.addTab(self.problems_tab, "Problems")
+        tabs_misc.addTab(self.logs_tab, "Build logs")
+        tabs_misc.addTab(self.ai_tab, "AI")
         # create tab layouts
-        build_logs_tab_layout = BuildLogsTabLayout()
-        ai_tab_layout = AiTabLayout()
+        self.build_logs_widget = BuildLogsTabLayout()
+        self.ai_tab_layout = AiTabLayout()
         # use tab layouts
-        logs_tab.setLayout(build_logs_tab_layout)
-        ai_tab.setLayout(ai_tab_layout)
+        self.logs_tab.setLayout(self.build_logs_widget)
+        self.ai_tab.setLayout(self.ai_tab_layout)
 
         # create spritelist
-        spritelist = SpriteList()
+        self.spritelist = SpriteList()
 
         # Create Layout for buttons
         buttons_layout = QHBoxLayout()
         buttons_layout.setContentsMargins(0, 0, 0, 0)
         # create buttons
-        build_btn = QPushButton(text="build")
-        run_btn = QPushButton(text="run")
-        kill_btn = QPushButton(text="kill")
+        self.build_btn = QPushButton(text="build")
+        self.run_btn = QPushButton(text="run")
+        self.kill_btn = QPushButton(text="kill")
         # fix width
-        build_btn.setMinimumWidth(20)
-        run_btn.setMinimumWidth(20)
-        kill_btn.setMinimumWidth(20)
+        self.build_btn.setMinimumWidth(20)
+        self.run_btn.setMinimumWidth(20)
+        self.kill_btn.setMinimumWidth(20)
         # pack inside a widget
-        buttons_layout.addWidget(build_btn)
-        buttons_layout.addWidget(run_btn)
-        buttons_layout.addWidget(kill_btn)
+        buttons_layout.addWidget(self.build_btn)
+        buttons_layout.addWidget(self.run_btn)
+        buttons_layout.addWidget(self.kill_btn)
         buttons_widget = QWidget()
         buttons_widget.setLayout(buttons_layout)
 
         # place everything
         self.grid.addWidget(buttons_widget, 0, 0)
         self.grid.addWidget(tabs_misc, 1, 0)
-        self.grid.addWidget(spritelist, 2, 0)
+        self.grid.addWidget(self.spritelist, 2, 0)
         self.grid.addWidget(tabs_main, 1, 1, 2, 1)
 
         tabs_misc.setCurrentIndex(1)  # build logs tab
+
+        self.backend = Backend(self)
 
         self.show()
 
