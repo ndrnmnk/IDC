@@ -9,3 +9,6 @@ class BuildLogsTabLayout(QVBoxLayout):
 
     def set_text(self, text):
         self.logs_text_widget.setText(text)
+
+    def append(self, text):
+        self.logs_text_widget.append(text)

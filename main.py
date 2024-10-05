@@ -1,15 +1,17 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTabWidget, QAction, QPushButton, QHBoxLayout
-import sys
 from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt
+import sys
 
 from ui.tabs.Code import CodeTabLayout
 from ui.tabs.Sounds import SoundsTabLayout
 from ui.tabs.Textures import TexturesTabLayout
-from ui.tabs.BuildLogs import BuildLogsTabLayout
+from ui.tabs.Logs import BuildLogsTabLayout
 from ui.tabs.AI import AiTabLayout
 from ui.tabs.Problems import ProblemsTabWidget
 from ui.elements.Spritelist import SpriteList
 
+from ui.subwidgets.ResizableDropdown import ResizableDropdown
 from backend.backend import Backend
 
 
@@ -71,7 +73,7 @@ class MainWindow(QMainWindow):
         self.logs_tab = QWidget()
         self.ai_tab = QWidget()
         tabs_misc.addTab(self.problems_tab, "Problems")
-        tabs_misc.addTab(self.logs_tab, "Build logs")
+        tabs_misc.addTab(self.logs_tab, "Logs")
         tabs_misc.addTab(self.ai_tab, "AI")
         # create tab layouts
         self.build_logs_widget = BuildLogsTabLayout()
@@ -90,19 +92,22 @@ class MainWindow(QMainWindow):
         self.build_btn = QPushButton(text="build")
         self.run_btn = QPushButton(text="run")
         self.kill_btn = QPushButton(text="kill")
+        self.compiler_dropdown = ResizableDropdown(["C++ (default)", "Python (PyQt5)"])
         # fix width
-        self.build_btn.setMinimumWidth(20)
-        self.run_btn.setMinimumWidth(20)
-        self.kill_btn.setMinimumWidth(20)
+        self.build_btn.setFixedWidth(40)
+        self.run_btn.setFixedWidth(40)
+        self.kill_btn.setFixedWidth(40)
         # pack inside a widget
+        buttons_layout.setAlignment(Qt.AlignLeft)
         buttons_layout.addWidget(self.build_btn)
         buttons_layout.addWidget(self.run_btn)
         buttons_layout.addWidget(self.kill_btn)
+        buttons_layout.addWidget(self.compiler_dropdown)
         buttons_widget = QWidget()
         buttons_widget.setLayout(buttons_layout)
 
         # place everything
-        self.grid.addWidget(buttons_widget, 0, 0)
+        self.grid.addWidget(buttons_widget, 0, 0, 1, 2)
         self.grid.addWidget(tabs_misc, 1, 0)
         self.grid.addWidget(self.spritelist, 2, 0)
         self.grid.addWidget(tabs_main, 1, 1, 2, 1)
