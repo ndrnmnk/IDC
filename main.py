@@ -80,7 +80,7 @@ class MainWindow(QMainWindow):
         self.logs_tab.setLayout(self.build_logs_widget)
         self.ai_tab.setLayout(self.ai_tab_layout)
 
-        # create spritelist
+        # create sprite list
         self.spritelist = SpriteList()
 
         # Create Layout for buttons

@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QLabel, QGridLayout
-from ui.widgets.CodingGraphicsScene import CodingGraphicsView
+from ui.widgets.CodingGraphicsScene import DraggableBlockView
 
 
 class CodeTabLayout(QGridLayout):
@@ -27,6 +27,7 @@ class CodeTabLayout(QGridLayout):
             ], "color": "#0aef67", "shape": "int", "pos": (300, 300)}
         ]
 
-        view = CodingGraphicsView(block_configs=test_json)
+        # view = CodingGraphicsView(block_configs=test_json)
+        view = DraggableBlockView(test_json)
 
         self.addWidget(view, 0, 1)

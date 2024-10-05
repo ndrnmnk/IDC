@@ -1,94 +1,107 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsProxyWidget, QApplication
+from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsProxyWidget
+from PyQt5.QtCore import Qt, QPointF
+import sys
+
+# Import BlockBase from the previous code
 from ui.widgets.BlockBase import BlockBase
 
 
-class DraggableProxyWidget(QGraphicsProxyWidget):
-    def __init__(self, parent=None):
-        super(DraggableProxyWidget, self).__init__(parent)
-        self.setFlag(QGraphicsProxyWidget.ItemIsMovable, True)
-        self.setFlag(QGraphicsProxyWidget.ItemIsSelectable, True)
-        self.setFlag(QGraphicsProxyWidget.ItemSendsGeometryChanges, True)
+class DraggableBlockView(QGraphicsView):
+    def __init__(self, block_data):
+        super().__init__()
 
-        self.is_dragging = False
-        self.start_pos = None
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            if self.widget():
-                widget_under_mouse = self.widget().childAt(event.pos().toPoint())
-                if widget_under_mouse:
-                    widget_under_mouse.setFocus()
-
-            self.is_dragging = True
-            self.start_pos = event.pos()
-            self.setZValue(1)
-            event.accept()
-        else:
-            super(DraggableProxyWidget, self).mousePressEvent(event)
-
-    def mouseMoveEvent(self, event):
-        if self.is_dragging:
-            delta = event.pos() - self.start_pos
-            self.moveBy(delta.x(), delta.y())
-            event.accept()
-        else:
-            super(DraggableProxyWidget, self).mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.is_dragging = False
-            self.setZValue(0)
-            event.accept()
-        else:
-            super(DraggableProxyWidget, self).mouseReleaseEvent(event)
-
-
-class CodingGraphicsView(QGraphicsView):
-    def __init__(self, block_configs, parent=None):
-        super(CodingGraphicsView, self).__init__(parent)
+        # Create a scene to hold items
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
 
-        # Create and add blocks to the scene
-        for config in block_configs:
-            self.add_block(config)
+        # Variables for tracking drag state and offsets
+        self.dragging = False
+        self.drag_offset = QPointF()
+        self.dragged_item = None
 
-    def add_block(self, config):
-        # Create BlockBase instance with the provided configuration
-        block_widget = BlockBase(config["input_json"], color=config["color"], shape=config["shape"])
+        # Add multiple blocks to the scene based on block_data
+        self.add_blocks(block_data)
 
-        # Make the BlockBase widget's background transparent
-        block_widget.setAttribute(Qt.WA_TranslucentBackground)
+        # Enable smoother dragging visuals
+        self.setDragMode(QGraphicsView.ScrollHandDrag)
 
-        # Create and configure the DraggableProxyWidget
-        proxy_widget = DraggableProxyWidget()
-        proxy_widget.setWidget(block_widget)
+    def add_blocks(self, block_data):
+        """
+        Adds multiple BlockBase widgets to the scene, based on block_data.
+        Each block will have its own position, content, and color.
+        """
+        for block_info in block_data:
+            input_json = block_info.get("input_json", [])
+            color = block_info.get("color", "#000000")  # Default color if not specified
+            pos = block_info.get("pos", (0, 0))  # Default position if not specified
 
-        # Add the proxy widget to the scene
-        self.scene.addItem(proxy_widget)
-        proxy_widget.setPos(*config["pos"])  # Position the widget
+            # Create a BlockBase widget with input_json and color
+            block_widget = BlockBase(input_json, color=color)
+
+            # Add the BlockBase widget to the scene via QGraphicsProxyWidget
+            block_proxy = QGraphicsProxyWidget()
+            block_proxy.setWidget(block_widget)
+            block_proxy.setPos(*pos)  # Set the initial position of the block
+
+            # Add the block_proxy to the scene
+            self.scene.addItem(block_proxy)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            # Check if the click is inside any block proxy's area
+            clicked_item = self.itemAt(event.pos())
+            if isinstance(clicked_item, QGraphicsProxyWidget):
+                self.dragging = True
+                self.dragged_item = clicked_item
+                # Calculate offset to keep relative position while dragging
+                self.drag_offset = self.dragged_item.pos() - self.mapToScene(event.pos())
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self.dragging and self.dragged_item:
+            # Update block position based on mouse movement
+            new_pos = self.mapToScene(event.pos()) + self.drag_offset
+            self.dragged_item.setPos(new_pos)
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            # Stop dragging
+            self.dragging = False
+            self.dragged_item = None
+        super().mouseReleaseEvent(event)
 
 
 if __name__ == "__main__":
-    import sys
     app = QApplication(sys.argv)
 
-    test_json = [
-            {"input_json": [
+    # Example JSON for multiple blocks
+    block_data = [
+        {
+            "input_json": [
                 {"text": "Hello, World"},
                 {"dropdown": ["hello", "bye", "this is a very long one"]},
                 {"int_entry": "number typing?"},
                 {"text": "test!"},
                 {"text_entry": "text entry"}
-            ], "color": "#ffff00", "shape": "block", "pos": (100, 100)},
-            {"input_json": [
+            ],
+            "color": "#888888",
+            "pos": (100, 100)
+        },
+        {
+            "input_json": [
                 {"text": "Say"},
                 {"text_entry": "hello"}
-            ], "color": "#0aef67", "shape": "int", "pos": (300, 300)}
-        ]
+            ],
+            "color": "#0aef67",
+            "pos": (300, 300)
+        }
+    ]
 
-    view = CodingGraphicsView(block_configs=test_json)
-    view.setGeometry(100, 100, 800, 600)
+    # Create and display the DraggableBlockView window with block_data
+    view = DraggableBlockView(block_data)
+    view.setWindowTitle("Draggable Multiple BlockBase on QGraphicsView")
+    view.resize(800, 600)
     view.show()
+
     sys.exit(app.exec_())

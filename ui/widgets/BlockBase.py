@@ -1,86 +1,76 @@
 from ui.subwidgets.ResizableLineEdit import ResizableLineEdit
 from ui.subwidgets.ResizableDropdown import ResizableDropdown
-from PyQt5.QtWidgets import QWidget, QLabel
-from PyQt5.QtGui import QPainter, QPolygon, QBrush, QColor
-from PyQt5.QtCore import QPoint
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
+from PyQt5.QtGui import QPainter, QPolygon, QBrush, QColor, QFont, QFontMetrics
+from PyQt5.QtCore import QPoint, Qt
 import sys
 
 
 class BlockBase(QWidget):
-    def __init__(self, json_input, parent=None, color="#03fcf8", shape="basic"):
-        super().__init__(parent)
-        self.input = json_input
-        self.margin = 4
-
+    def __init__(self, input_json, color="#0000FF"):
+        super().__init__()
+        self.setAttribute(Qt.WA_TranslucentBackground)
         self.color = color
-        self.block_width = 200
-        self.block_height = 40
-        self.content_y = int(self.block_height/2) - 10
+        self.input_json = input_json
+        self.font = QFont("Arial", 12)
+        self.font_metrics = QFontMetrics(self.font)
 
-        self.content = []
         self.width_list = []
+        self.content_list = []
         self.height_list = []
+
+        self.hbox = QHBoxLayout()
+
+        self.hbox.setContentsMargins(5, 4, 5, 8)
+        self.hbox.setSpacing(5)
+        self.setLayout(self.hbox)
+
         self.populate_block()
 
     def populate_block(self):
-        current_x = self.margin
-        for idx, json_object in enumerate(self.input):
+        for idx, json_object in enumerate(self.input_json):
             if "text" in json_object:
-                self.content.append(QLabel(json_object["text"], self))
-                self.width_list.append(self.content[idx].sizeHint().width() + 4)
-                self.height_list.append(self.content[idx].sizeHint().height())
-                self.content[idx].move(current_x, self.content_y+2)
+                self.content_list.append(QLabel(json_object["text"], self))
+                self.content_list[idx].setFont(self.font)
+                self.width_list.append(self.font_metrics.horizontalAdvance(json_object["text"]))
+                self.height_list.append(self.font_metrics.height())
             elif "text_entry" in json_object:
-                self.content.append(ResizableLineEdit(parent=self, placeholder=json_object["text_entry"], int_entry=False))
-                self.content[idx].move(current_x, self.content_y)
-                self.content[idx].textChanged.connect(lambda _, idx=idx: self.repopulate_block(idx))
-                self.width_list.append(self.content[idx].width() + 4)
-                self.height_list.append(self.content[idx].height())
+                self.content_list.append(ResizableLineEdit(parent=self, placeholder=json_object["text_entry"], int_entry=False))
+                self.content_list[idx].textChanged.connect(lambda _, caller_idx=idx: self.repopulate_block(caller_idx))
+                self.width_list.append(self.content_list[idx].width())
+                self.height_list.append(22)
             elif "int_entry" in json_object:
-                self.content.append(ResizableLineEdit(parent=self, placeholder=json_object["int_entry"], int_entry=True))
-                self.content[idx].move(current_x, self.content_y)
-                self.content[idx].textChanged.connect(lambda _, idx=idx: self.repopulate_block(idx))
-                self.width_list.append(self.content[idx].width() + 4)
-                self.height_list.append(self.content[idx].height())
+                self.content_list.append(ResizableLineEdit(parent=self, placeholder=json_object["int_entry"], int_entry=True))
+                self.content_list[idx].textChanged.connect(lambda _, caller_idx=idx: self.repopulate_block(caller_idx))
+                self.width_list.append(self.content_list[idx].width())
+                self.height_list.append(22)
             elif "bool_entry" in json_object:
-                print("no bool entry for now")
+                # TODO: replace with actual bool entry
+                self.content_list.append(ResizableLineEdit(parent=self, placeholder=json_object["bool_entry"], int_entry=True))
+                self.content_list[idx].textChanged.connect(lambda _, caller_idx=idx: self.repopulate_block(caller_idx))
+                self.width_list.append(self.content_list[idx].width())
+                self.height_list.append(22)
             elif "dropdown" in json_object:
-                self.content.append(ResizableDropdown(parent=self, options=json_object["dropdown"]))
-                self.content[idx].move(current_x, self.content_y)
-                self.content[idx].currentIndexChanged.connect(lambda _, idx=idx: self.repopulate_block(idx))
-                self.width_list.append(self.content[idx].width() + 4)
-                self.height_list.append(self.content[idx].height())
-            current_x += self.width_list[idx]
-        self.block_width = self.margin*2 + current_x
-        self.resize(self.block_width + 1, self.block_height + 6)
+                self.content_list.append(ResizableDropdown(parent=self, options=json_object["dropdown"]))
+                self.content_list[idx].currentIndexChanged.connect(lambda _, caller_idx=idx: self.repopulate_block(caller_idx))
+                self.width_list.append(self.content_list[idx].width())
+                self.height_list.append(22)
+            self.hbox.addWidget(self.content_list[idx], alignment=Qt.AlignLeft)
 
-    def repopulate_block(self, idx_caller):
-        self.width_list[idx_caller] = self.content[idx_caller].width() + 4
-        self.height_list[idx_caller] = self.content[idx_caller].height()
-
-        if self.block_height != max(self.height_list):
-            self.block_height = max(self.height_list) + 10
-            self.content_y = int(self.block_height / 2) - 10
-            idx_caller = 0
-
-        current_x = sum(self.width_list[:idx_caller]) + self.margin
-        for idx, json_object in enumerate(self.input[idx_caller:], idx_caller):
-            if "text" not in json_object:
-                self.content[idx].move(current_x, self.content_y)
-            else:
-                self.content[idx].move(current_x, self.content_y+2)
-            current_x += self.width_list[idx]
-
-        self.block_width = current_x + self.margin*2
-        self.resize(self.block_width + 1, self.block_height + 6)
+    def repopulate_block(self, caller_idx):
+        print(self.width_list)
+        print(self.height_list)
+        self.width_list[caller_idx] = self.content_list[caller_idx].width()
+        self.height_list[caller_idx] = self.content_list[caller_idx].height()
         self.update()
+        self.adjustSize()
 
     def paintEvent(self, event):
         painter = QPainter(self)
         x = 0
-        height = self.block_height
+        width = sum(self.width_list) + 6*len(self.width_list)
         y = 0
-        width = self.block_width
+        height = max(self.height_list) + 6
 
         points = [
             QPoint(x, y),  # Top-left corner
