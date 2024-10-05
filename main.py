@@ -6,7 +6,7 @@ import sys
 from ui.tabs.Code import CodeTabLayout
 from ui.tabs.Sounds import SoundsTabLayout
 from ui.tabs.Textures import TexturesTabLayout
-from ui.tabs.Logs import BuildLogsTabLayout
+from ui.tabs.Logs import LogsTabLayout
 from ui.tabs.AI import AiTabLayout
 from ui.tabs.Problems import ProblemsTabWidget
 from ui.elements.Spritelist import SpriteList
@@ -76,10 +76,10 @@ class MainWindow(QMainWindow):
         tabs_misc.addTab(self.logs_tab, "Logs")
         tabs_misc.addTab(self.ai_tab, "AI")
         # create tab layouts
-        self.build_logs_widget = BuildLogsTabLayout()
+        self.logs_widget = LogsTabLayout()
         self.ai_tab_layout = AiTabLayout()
         # use tab layouts
-        self.logs_tab.setLayout(self.build_logs_widget)
+        self.logs_tab.setLayout(self.logs_widget)
         self.ai_tab.setLayout(self.ai_tab_layout)
 
         # create sprite list
@@ -112,7 +112,7 @@ class MainWindow(QMainWindow):
         self.grid.addWidget(self.spritelist, 2, 0)
         self.grid.addWidget(tabs_main, 1, 1, 2, 1)
 
-        tabs_misc.setCurrentIndex(1)  # build logs tab
+        tabs_misc.setCurrentIndex(1)  # logs tab
 
         self.backend = Backend(self)
 

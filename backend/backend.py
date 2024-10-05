@@ -33,21 +33,20 @@ class Backend:
         self.ui.textures_tab_layout.add_texture("test", "textures/test.png")
 
         # example build logs tab content
-        self.ui.build_logs_widget.set_text("икщ вшв тще срфтпу еру лунищфкв дфнщге *ілгдд*")
+        self.ui.logs_widget.set_text("икщ вшв тще срфтпу еру лунищфкв дфнщге *ілгдд*")
 
         self.ui.ai_tab_layout.set_response_text("я найду тебя и разобью єбальнік")
 
     def build_task(self):
         self.ui.build_btn.setEnabled(False)
-        self.ui.build_logs_widget.set_text("if there is no logs, it probably works")
         if self.ui.compiler_dropdown.currentText() == "C++ (default)":
-            compile_project(self.project_path, self.ui.build_logs_widget)
+            compile_project(self.project_path, self.ui.logs_widget)
         else:
-            self.ui.build_logs_widget.set_text("this won't even be implemented, what's the point")
+            self.ui.logs_widget.set_text("this won't even be implemented, what's the point")
         self.ui.build_btn.setEnabled(True)
 
     def run_task(self):
-        self.process = subprocess.Popen(["xterm", f"{self.project_path}/build/main"])
+        self.process = subprocess.Popen(["xterm", "-hold", "-e", f"{self.project_path}/build/main"])
 
     def kill_task(self):
         try:

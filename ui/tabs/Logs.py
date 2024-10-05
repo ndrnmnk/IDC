@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QTextBrowser, QVBoxLayout
 
 
-class BuildLogsTabLayout(QVBoxLayout):
+class LogsTabLayout(QVBoxLayout):
     def __init__(self):
         super().__init__()
         self.logs_text_widget = QTextBrowser()
