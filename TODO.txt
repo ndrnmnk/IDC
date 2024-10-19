@@ -1,0 +1,10 @@
+saving/opening project
+options window
+addons window
+"you need to download blablabla compiler" warning window
+
+block snapping
+block converting
+block selection menu
+
+update textures

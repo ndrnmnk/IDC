@@ -13,6 +13,7 @@ from ui.elements.Spritelist import SpriteList
 
 from ui.subwidgets.ResizableDropdown import ResizableDropdown
 from backend.backend import Backend
+from addons.addons_manager import addons_manager
 
 
 class MainWindow(QMainWindow):
@@ -25,6 +26,8 @@ class MainWindow(QMainWindow):
 
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu('File')
+        options_menu = menu_bar.addMenu('Options')
+        addons_menu = menu_bar.addMenu('Addons')
         # Create file tab of menu bar
         open_action = QAction('Open', self)
         save_action = QAction('Save', self)
@@ -92,7 +95,9 @@ class MainWindow(QMainWindow):
         self.build_btn = QPushButton(text="build")
         self.run_btn = QPushButton(text="run")
         self.kill_btn = QPushButton(text="kill")
-        self.compiler_dropdown = ResizableDropdown(["C++ (default)", "Python (PyQt5)"])
+        self.compiler_dropdown = ResizableDropdown([])
+        self.target_os_dropdown = ResizableDropdown([])
+        self.target_arch_dropdown = ResizableDropdown([])
         # fix width
         self.build_btn.setFixedWidth(40)
         self.run_btn.setFixedWidth(40)
@@ -103,6 +108,8 @@ class MainWindow(QMainWindow):
         buttons_layout.addWidget(self.run_btn)
         buttons_layout.addWidget(self.kill_btn)
         buttons_layout.addWidget(self.compiler_dropdown)
+        buttons_layout.addWidget(self.target_os_dropdown)
+        buttons_layout.addWidget(self.target_arch_dropdown)
         buttons_widget = QWidget()
         buttons_widget.setLayout(buttons_layout)
 
@@ -114,9 +121,35 @@ class MainWindow(QMainWindow):
 
         tabs_misc.setCurrentIndex(1)  # logs tab
 
+        # project path will be inserted into {}
+        self.compilers = {
+            "C++ (cmake)":
+                {"command": "cd {}/build; cmake ..; make", "run": "{}/build/main", "platforms": {
+                    'Windows': ['x86', 'x64', 'arm64'],
+                    'Linux': ['x86', 'x64', 'arm32', 'arm64'],
+                    'macOS': ['x64', 'arm64']
+                    }
+                }
+        }
+
+        self.target_os_dropdown.currentTextChanged.connect(self.update_arch_dropdown)
+
+        addons_manager(self)
+
+        for item in self.compilers:
+            print(item)
+            self.compiler_dropdown.addItem(item)
+            self.target_os_dropdown.addItems(self.compilers[item]["platforms"].keys())
+        del item
+
         self.backend = Backend(self)
 
         self.show()
+
+    def update_arch_dropdown(self):
+        self.target_arch_dropdown.clear()
+        archs = self.compilers[self.compiler_dropdown.currentText()]["platforms"][self.target_os_dropdown.currentText()]
+        self.target_arch_dropdown.addItems(archs)
 
 
 if __name__ == "__main__":

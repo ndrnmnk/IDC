@@ -1,0 +1,3 @@
+cmake
+mingw-w64  # for windows/linux cross-compiling
+clang  # for macOS cross-compiling
