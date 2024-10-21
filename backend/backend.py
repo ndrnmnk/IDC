@@ -92,10 +92,10 @@ class Backend:
 
     def get_build_command(self, run=0):
         for json_obj in self.ui.compilers:
-            if json_obj.get("name") == self.ui.compiler_dropdown.currentText():
+            if json_obj == self.ui.compiler_dropdown.currentText():
                 if run:
-                    return json_obj["run"]
-                return json_obj["command"]
+                    return self.ui.compilers[json_obj]["run"]
+                return self.ui.compilers[json_obj]["command"]
         return None  # return None if not found
 
     def run_command(self, command, logs_widget):

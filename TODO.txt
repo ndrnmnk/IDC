@@ -1,10 +1,17 @@
-saving/opening project
-options window
-addons window
-"you need to download blablabla compiler" warning window
+options window - partially done (10%)
+addons window - partially done (80%):
+    add downloading modules
+    add sorting
 
-block snapping
-block converting
-block selection menu
+add/remove sprites - required
+rework textures and sounds as files - required
+AI tab - partially done (frontend only)
+options.json - required
+block snapping - needed
+block converting - needed
+block selection menu - needed
+saving/opening project - needed
+update textures - needed
 
-update textures
+"you need to download blablabla compiler" warning window - recommended
+animations editor - idea

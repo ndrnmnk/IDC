@@ -2,7 +2,6 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTa
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 import sys
-
 from ui.tabs.Code import CodeTabLayout
 from ui.tabs.Sounds import SoundsTabLayout
 from ui.tabs.Textures import TexturesTabLayout
@@ -10,10 +9,11 @@ from ui.tabs.Logs import LogsTabLayout
 from ui.tabs.AI import AiTabLayout
 from ui.tabs.Problems import ProblemsTabWidget
 from ui.elements.Spritelist import SpriteList
-
+from ui.windows.OptionsWindow import OptionsWindow
+from ui.windows.AddonsWindow import AddonsWindow
 from ui.subwidgets.ResizableDropdown import ResizableDropdown
 from backend.backend import Backend
-from addons.addons_manager import addons_manager
+from backend.addons_manager import AddonsManager
 
 
 class MainWindow(QMainWindow):
@@ -26,8 +26,8 @@ class MainWindow(QMainWindow):
 
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu('File')
-        options_menu = menu_bar.addMenu('Options')
-        addons_menu = menu_bar.addMenu('Addons')
+        options_menu = menu_bar.addAction('Options')
+        addons_menu = menu_bar.addAction('Addons')
         # Create file tab of menu bar
         open_action = QAction('Open', self)
         save_action = QAction('Save', self)
@@ -37,6 +37,9 @@ class MainWindow(QMainWindow):
         file_menu.addAction(exit_action)
         exit_action.triggered.connect(self.close)
 
+        options_menu.triggered.connect(self.open_options_window)
+        addons_menu.triggered.connect(self.open_addons_window)
+
         # create a central widget for the main window
         self.central_widget = QWidget(self)
         self.setCentralWidget(self.central_widget)
@@ -45,7 +48,7 @@ class MainWindow(QMainWindow):
         self.grid = QGridLayout(self.central_widget)
         self.grid.setColumnStretch(0, 1)
         self.grid.setColumnStretch(1, 2)
-        self.grid.setRowStretch(0, 1)
+        self.grid.setRowStretch(0, 0)
         self.grid.setRowStretch(1, 15)
         self.grid.setRowStretch(2, 20)
 
@@ -134,10 +137,9 @@ class MainWindow(QMainWindow):
 
         self.target_os_dropdown.currentTextChanged.connect(self.update_arch_dropdown)
 
-        addons_manager(self)
+        self.addons_manager = AddonsManager(self)
 
         for item in self.compilers:
-            print(item)
             self.compiler_dropdown.addItem(item)
             self.target_os_dropdown.addItems(self.compilers[item]["platforms"].keys())
         del item
@@ -150,6 +152,12 @@ class MainWindow(QMainWindow):
         self.target_arch_dropdown.clear()
         archs = self.compilers[self.compiler_dropdown.currentText()]["platforms"][self.target_os_dropdown.currentText()]
         self.target_arch_dropdown.addItems(archs)
+
+    def open_options_window(self):
+        OptionsWindow(self)
+
+    def open_addons_window(self):
+        AddonsWindow(self)
 
 
 if __name__ == "__main__":
