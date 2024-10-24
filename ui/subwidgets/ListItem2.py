@@ -25,10 +25,10 @@ class ImageDownloader(QThread):
 
 
 class ListItem(QWidget):
-    def __init__(self, parent, name, description, img_url=None, git_link=None):
+    def __init__(self, manager, name, description, img_url=None, git_link=None):
         super().__init__()
 
-        self.parent = parent
+        self.manager = manager
         self.git_link = git_link
         self.name = name
 
@@ -46,9 +46,14 @@ class ListItem(QWidget):
 
         self.btn = QPushButton()
         self.btn.setFixedWidth(64)
-        if self.git_link is None or name in self.parent.parent.addons_manager.ia:
-            self.btn.setText("Uninstall")
-            self.btn.pressed.connect(self.uninstall_module)
+        if self.git_link is None or name in self.manager.ia:
+            if name in self.manager.to_update:
+                print(name + " could be updated")
+                self.btn.setText("Update")
+                self.btn.pressed.connect(lambda: self.manager.update_addon(self))
+            else:
+                self.btn.setText("Uninstall")
+                self.btn.pressed.connect(self.uninstall_module)
         else:
             self.btn.setText("Install")
             self.btn.pressed.connect(self.install_module)
@@ -73,7 +78,7 @@ class ListItem(QWidget):
         self.image_downloader.start()
 
     def install_module(self):
-        self.parent.parent.addons_manager.download_addon(self)
+        self.manager.download_addon(self)
 
     def update_image(self, pixmap):
         # resize image to 100x100, display it, clean trash
@@ -87,7 +92,7 @@ class ListItem(QWidget):
         self.btn.pressed.connect(self.uninstall_module)
 
     def uninstall_module(self):
-        self.parent.parent.addons_manager.delete_addon(self.name)
+        self.manager.delete_addon(self.name)
         if self.git_link is not None:
             self.btn.setText("Install")
             self.btn.pressed.disconnect()

@@ -1,6 +1,5 @@
 options window - partially done (10%)
-addons window - partially done (80%):
-    add updating (if version on git higher than current one, blablabla)
+addons window - partially done (90%):
     add sorting
 
 add/remove sprites - required

@@ -2,6 +2,21 @@ from PyQt5.QtCore import QThread, pyqtSignal
 import importlib, shutil, json, sys, git, os
 
 
+def find_matching_indices(list1, list2):
+    # Create a dictionary from the first list with name as key and index as value
+    dict1 = {item['name']: idx for idx, item in enumerate(list1)}
+
+    # Find matching "name" fields and collect their indices
+    matching_indices = []
+    for idx2, item in enumerate(list2):
+        name = item['name']
+        if name in dict1:
+            # Append a tuple of (index from list1, index from list2) where names match
+            matching_indices.append((dict1[name], idx2))
+
+    return matching_indices
+
+
 class GitClone(QThread):
     cloned_successfully = pyqtSignal()
 
@@ -23,6 +38,7 @@ class AddonsManager:
         self.get_available_addons()
         self.imported_addons = []  # list with full info about each addon
         self.ia = []  # list with only addon names
+        self.to_update = []  # list of addons with updates available
         sys.path.append('addons')
 
         for item in os.listdir('addons/'):
@@ -31,12 +47,12 @@ class AddonsManager:
             # Check if it's a package, and import it
             if os.path.isdir(item_path) and os.path.isfile(os.path.join(item_path, "__init__.py")):
                 self.import_addon(item)
+        self.check_addons_updates()
 
     def get_available_addons(self):
         self.available_addons = [
-            {"name": "useless_addon", "description": "I AM NOT A MORON", "img_url": "https://cdn2.hubspot.net/hubfs/53/image8-2.jpg", "git_link": "https://github.com/ndrnmnk/t", "version": 1.1}
+            {"name": "useless_addon", "description": "I AM NOT A MORON", "img_url": "https://cdn2.hubspot.net/hubfs/53/image8-2.jpg", "git_link": "https://github.com/ndrnmnk/t", "version": 1.0}
         ]
-
 
     def download_addon(self, caller_widget):
         self.git_clone_thread = GitClone(caller_widget.git_link, f"addons/{caller_widget.name}")
@@ -47,7 +63,6 @@ class AddonsManager:
         with open(f"addons/{addon_name}/info.json", "r") as file:
             data = json.loads(file.read())
             data.update({"installed": 1})
-            print(data)
         self.ia.append(addon_name)
         self.imported_addons.append(data)
         imported_module = importlib.import_module(addon_name)
@@ -63,3 +78,14 @@ class AddonsManager:
         self.import_addon(caller_widget.name)
         caller_widget.set_btn_uninstall()
         del self.git_clone_thread
+
+    def check_addons_updates(self):
+        possible_updates = find_matching_indices(self.imported_addons, self.available_addons)
+        for item in possible_updates:
+            if self.imported_addons[item[0]]["version"] < self.available_addons[item[1]]["version"]:
+                self.to_update.append(self.imported_addons[item[0]]["name"])
+
+    def update_addon(self, caller_widget):
+        self.delete_addon(caller_widget.name)
+        self.download_addon(caller_widget)
+

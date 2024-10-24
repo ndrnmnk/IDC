@@ -27,7 +27,8 @@ class AddonsWindow(QWidget):
         self.parent = parent
         self.init_ui()
 
-        self.populate_addons(self.parent.addons_manager.available_addons + self.parent.addons_manager.imported_addons)
+        # show all available and installed addons, removing the duplicates
+        self.populate_addons(remove_duplicates(self.parent.addons_manager.available_addons + self.parent.addons_manager.imported_addons))
 
         self.show()
 
@@ -62,13 +63,13 @@ class AddonsWindow(QWidget):
         self.grid.addWidget(self.search_bar, 0, 0)
         self.grid.addLayout(self.top_hbox, 1, 0)
         self.grid.addWidget(self.scroll_area, 2, 0)
-        self.grid.addWidget(QLabel("Warning: you have to restart IDC after deleting addons"), 3, 0)
+        self.grid.addWidget(QLabel("Warning: you have to restart IDC for changes to apply"), 3, 0)
         self.setLayout(self.grid)
 
     def populate_addons(self, addons_list):
         for item in addons_list:
             addon_widget = ListItem(
-                parent=self,
+                manager=self.parent.addons_manager,
                 name=item["name"],
                 description=item["description"],
                 img_url=item["img_url"],
