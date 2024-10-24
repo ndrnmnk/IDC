@@ -16,30 +16,21 @@ class ImageDownloader(QThread):
         try:
             response = requests.get(self.url)
             response.raise_for_status()
-
-            # Convert the image to QPixmap
             image_data = BytesIO(response.content)
             pixmap = QPixmap()
             pixmap.loadFromData(image_data.read())
-
-            # Emit the signal with the QPixmap
             self.image_downloaded.emit(pixmap)
-
         except Exception as e:
             print(f"Error downloading image: {e}")
 
 
 class ListItem(QWidget):
-    def __init__(self, parent, title, description, img_path=None, git_link=None):
+    def __init__(self, parent, name, description, img_url=None, git_link=None):
         super().__init__()
+
         self.parent = parent
         self.git_link = git_link
-        if self.git_link is None:
-            self.title = title
-            self.installed = True
-        else:
-            self.title = f"<a href='{git_link}'>{title}</a>"
-            self.installed = self.title in parent.addons_manager.imported_addons
+        self.name = name
 
         hbox = QHBoxLayout()
         vbox = QVBoxLayout()
@@ -47,24 +38,25 @@ class ListItem(QWidget):
         vbox.setAlignment(Qt.AlignTop)
 
         self.image_label = QLabel()
-
         # Set a placeholder image initially from disk
         placeholder_pixmap = QPixmap("textures/logo.png")
         self.image_label.setPixmap(placeholder_pixmap.scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        if img_url:
+            self.download_image_from_url(img_url)
 
-        if img_path:
-            self.download_image_from_url(img_path)
-
-        if not self.installed:
-            self.btn = QPushButton("Install")
-            self.btn.pressed.connect(self.install_module)
-            self.btn.setFixedWidth(50)
-        else:
-            self.btn = QPushButton("Uninstall")
+        self.btn = QPushButton()
+        self.btn.setFixedWidth(64)
+        if self.git_link is None or name in self.parent.parent.addons_manager.ia:
+            self.btn.setText("Uninstall")
             self.btn.pressed.connect(self.uninstall_module)
-            self.btn.setFixedWidth(64)
+        else:
+            self.btn.setText("Install")
+            self.btn.pressed.connect(self.install_module)
 
-        title_label = QLabel(self.title)
+        if self.git_link is None:
+            title_label = QLabel(self.name)
+        else:
+            title_label = QLabel(f"<a href='{git_link}'>{name}</a>")
         title_label.setOpenExternalLinks(True)
         title_label.setStyleSheet("font-size: 14pt;")
 
@@ -76,26 +68,29 @@ class ListItem(QWidget):
         self.setLayout(hbox)
 
     def download_image_from_url(self, url):
-        # Create a QThread to download the image without blocking the UI
         self.image_downloader = ImageDownloader(url)
         self.image_downloader.image_downloaded.connect(self.update_image)
         self.image_downloader.start()
 
+    def install_module(self):
+        self.parent.parent.addons_manager.download_addon(self)
+
     def update_image(self, pixmap):
-        # Resize the image to 100x100 pixels
+        # resize image to 100x100, display it, clean trash
         resized_pixmap = pixmap.scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.image_label.setPixmap(resized_pixmap)
+        del self.image_downloader
 
-    def install_module(self):
-        print("not implemented yet")
+    def set_btn_uninstall(self):
         self.btn.setText("Uninstall")
-        self.btn.setFixedWidth(64)
         self.btn.pressed.disconnect()
         self.btn.pressed.connect(self.uninstall_module)
 
     def uninstall_module(self):
-        self.parent.addons_manager.delete_addon(self.title)
-        self.btn.setText("Install")
-        self.btn.setFixedWidth(50)
-        self.btn.pressed.disconnect()
-        self.btn.pressed.connect(self.install_module)
+        self.parent.parent.addons_manager.delete_addon(self.name)
+        if self.git_link is not None:
+            self.btn.setText("Install")
+            self.btn.pressed.disconnect()
+            self.btn.pressed.connect(self.install_module)
+        else:
+            self.deleteLater()

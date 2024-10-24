@@ -157,7 +157,7 @@ class MainWindow(QMainWindow):
         OptionsWindow(self)
 
     def open_addons_window(self):
-        AddonsWindow(self)
+        self.addons_window = AddonsWindow(self)
 
 
 if __name__ == "__main__":

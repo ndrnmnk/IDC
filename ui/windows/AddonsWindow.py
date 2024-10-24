@@ -1,17 +1,43 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QHBoxLayout, QScrollArea, QCheckBox, QLabel
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QHBoxLayout, QScrollArea, QCheckBox, QLabel, QLineEdit
 from ui.subwidgets.ListItem2 import ListItem
 from PyQt5.QtCore import Qt
+
+
+def remove_duplicates(json_list):
+    result = {}
+
+    for item in json_list:
+        name = item.get('name')
+
+        # Check if name already exists in the result dictionary
+        if name in result:
+            # If the existing item does not have 'installed', replace it with the one that does
+            if 'installed' in item:
+                result[name] = item
+        else:
+            result[name] = item
+
+    # Return the list of filtered JSON objects
+    return list(result.values())
 
 
 class AddonsWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.parent = parent
+        self.init_ui()
+
+        self.populate_addons(self.parent.addons_manager.available_addons + self.parent.addons_manager.imported_addons)
+
+        self.show()
+
+    def init_ui(self):
         self.setWindowFlags(Qt.Window)
         self.setWindowTitle("IDC: Addons")
         self.grid = QGridLayout()
         self.grid.setRowStretch(0, 0)
-        self.grid.setRowStretch(1, 1)
-        self.grid.setRowStretch(2, 0)
+        self.grid.setRowStretch(2, 1)
+        self.grid.setRowStretch(3, 0)
 
         self.top_hbox = QHBoxLayout()
         self.top_hbox.addWidget(QCheckBox("Installed"))
@@ -19,26 +45,33 @@ class AddonsWindow(QWidget):
         self.top_hbox.addWidget(QCheckBox("Compilers"))
         self.top_hbox.addWidget(QCheckBox("Custom"))
 
+        self.search_bar = QLineEdit()
+        self.search_bar.setPlaceholderText("Search")
+
         self.vbox = QVBoxLayout()
-
-        test_addons_list = [
-            {"name": "rude_addon", "description": "|1 0uy cn@ d3r@ т3h|, u u3тp|b", "image_url": "https://static.vecteezy.com/system/resources/previews/021/608/790/non_2x/chatgpt-logo-chat-gpt-icon-on-black-background-free-vector.jpg", "git_link": None},
-            {"name": "useless_addon", "description": "I AM NOT A MORON", "image_url": "https://cdn2.hubspot.net/hubfs/53/image8-2.jpg", "git_link": "https://github.com/ndrnmnk/mh_infrared"}
-        ]
-
-        for item in test_addons_list:
-            self.vbox.addWidget(ListItem(parent, item["name"], item["description"], item["image_url"], item["git_link"]))
-
-        self.vbox_widget = QWidget()
-        self.vbox_widget.setLayout(self.vbox)
+        self.vbox.setAlignment(Qt.AlignTop)
 
         self.scroll_area = QScrollArea()
-        self.scroll_area.setWidget(self.vbox_widget)
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 
-        self.grid.addLayout(self.top_hbox, 0, 0)
-        self.grid.addWidget(self.scroll_area, 1, 0)
-        self.grid.addWidget(QLabel("Warning: you have to restart IDC after deleting addons"), 2, 0)
+        self.scroll_area_widget = QWidget()
+        self.scroll_area.setWidget(self.scroll_area_widget)
+        self.scroll_area_widget.setLayout(self.vbox)
+
+        self.grid.addWidget(self.search_bar, 0, 0)
+        self.grid.addLayout(self.top_hbox, 1, 0)
+        self.grid.addWidget(self.scroll_area, 2, 0)
+        self.grid.addWidget(QLabel("Warning: you have to restart IDC after deleting addons"), 3, 0)
         self.setLayout(self.grid)
-        self.show()
+
+    def populate_addons(self, addons_list):
+        for item in addons_list:
+            addon_widget = ListItem(
+                parent=self,
+                name=item["name"],
+                description=item["description"],
+                img_url=item["img_url"],
+                git_link=item["git_link"]
+            )
+            self.vbox.addWidget(addon_widget)

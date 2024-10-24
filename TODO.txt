@@ -1,6 +1,6 @@
 options window - partially done (10%)
 addons window - partially done (80%):
-    add downloading modules
+    add updating (if version on git higher than current one, blablabla)
     add sorting
 
 add/remove sprites - required
