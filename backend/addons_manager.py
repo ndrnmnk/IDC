@@ -36,6 +36,7 @@ class GitClone(QThread):
 class AddonsManager:
     def __init__(self, ui):
         self.get_available_addons()
+        self.ui = ui
         self.imported_addons = []  # list with full info about each addon
         self.ia = []  # list with only addon names
         self.to_update = []  # list of addons with updates available
@@ -51,7 +52,7 @@ class AddonsManager:
 
     def get_available_addons(self):
         self.available_addons = [
-            {"name": "useless_addon", "description": "I AM NOT A MORON", "img_url": "https://cdn2.hubspot.net/hubfs/53/image8-2.jpg", "git_link": "https://github.com/ndrnmnk/t", "version": 1.0}
+            {"name": "useless_addon", "description": "I AM NOT A MORON", "img_url": "https://cdn2.hubspot.net/hubfs/53/image8-2.jpg", "git_link": "https://github.com/ndrnmnk/t", "version": 1.1}
         ]
 
     def download_addon(self, caller_widget):
@@ -66,6 +67,7 @@ class AddonsManager:
         self.ia.append(addon_name)
         self.imported_addons.append(data)
         imported_module = importlib.import_module(addon_name)
+        imported_module.run(self.ui)
         globals()[addon_name] = imported_module
 
     def delete_addon(self, addon_name):
@@ -76,7 +78,7 @@ class AddonsManager:
 
     def after_downloading_addon(self, caller_widget):
         self.import_addon(caller_widget.name)
-        caller_widget.set_btn_uninstall()
+        caller_widget.post_process()
         del self.git_clone_thread
 
     def check_addons_updates(self):

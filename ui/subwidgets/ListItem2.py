@@ -34,8 +34,10 @@ class ListItem(QWidget):
 
         hbox = QHBoxLayout()
         vbox = QVBoxLayout()
+        buttons_hbox = QHBoxLayout()
         hbox.setAlignment(Qt.AlignLeft)
         vbox.setAlignment(Qt.AlignTop)
+        buttons_hbox.setAlignment(Qt.AlignLeft)
 
         self.image_label = QLabel()
         # Set a placeholder image initially from disk
@@ -47,13 +49,14 @@ class ListItem(QWidget):
         self.btn = QPushButton()
         self.btn.setFixedWidth(64)
         if self.git_link is None or name in self.manager.ia:
+            self.btn.setText("Uninstall")
+            self.btn.pressed.connect(self.uninstall_module)
             if name in self.manager.to_update:
                 print(name + " could be updated")
-                self.btn.setText("Update")
-                self.btn.pressed.connect(lambda: self.manager.update_addon(self))
-            else:
-                self.btn.setText("Uninstall")
-                self.btn.pressed.connect(self.uninstall_module)
+                self.btn2 = QPushButton()
+                self.btn2.setText("Update")
+                self.btn2.pressed.connect(lambda: self.manager.update_addon(self))
+                buttons_hbox.addWidget(self.btn2)
         else:
             self.btn.setText("Install")
             self.btn.pressed.connect(self.install_module)
@@ -69,7 +72,8 @@ class ListItem(QWidget):
         hbox.addLayout(vbox)
         vbox.addWidget(title_label)
         vbox.addWidget(QLabel(description))
-        vbox.addWidget(self.btn)
+        buttons_hbox.addWidget(self.btn)
+        vbox.addLayout(buttons_hbox)
         self.setLayout(hbox)
 
     def download_image_from_url(self, url):
@@ -86,10 +90,14 @@ class ListItem(QWidget):
         self.image_label.setPixmap(resized_pixmap)
         del self.image_downloader
 
-    def set_btn_uninstall(self):
-        self.btn.setText("Uninstall")
-        self.btn.pressed.disconnect()
-        self.btn.pressed.connect(self.uninstall_module)
+    def post_process(self):
+        try:
+            self.btn2.deleteLater()
+            del self.btn2
+        except AttributeError:
+            self.btn.setText("Uninstall")
+            self.btn.pressed.disconnect()
+            self.btn.pressed.connect(self.uninstall_module)
 
     def uninstall_module(self):
         self.manager.delete_addon(self.name)
