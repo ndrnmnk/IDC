@@ -6,7 +6,7 @@
 
 You can download repository as zip and extract it, or use this command:
 
-```bash
+```shell
 git clone https://github.com/ndrnmnk/IDC
 ```
 
@@ -14,7 +14,9 @@ git clone https://github.com/ndrnmnk/IDC
 
 Main dependency of IDC is [Python](https://www.python.org/), after installing it use this command in directory where you cloned IDC:
 
-```pip3 install -r requirements.txt```
+```shell
+pip3 install -r requirements.txt
+```
 
 ### Step 3: Code
 
@@ -45,7 +47,7 @@ info.json must contain something like this:
 }
 ```
 
-And ```__init__.py``` must contain ```run(ui)``` function, which will start the module. Here is an example:
+And `__init__.py` must contain `run(ui)` function, which will start the module. Here is an example:
 
 ```python
 def run(ui):

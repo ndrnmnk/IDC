@@ -1,3 +1,5 @@
+from PyQt5.QtWidgets import QVBoxLayout, QLabel
+from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread, pyqtSignal
 import importlib, shutil, json, sys, git, os
 
@@ -37,9 +39,12 @@ class AddonsManager:
     def __init__(self, ui):
         self.get_available_addons()
         self.ui = ui
+
         self.imported_addons = []  # list with full info about each addon
         self.ia = []  # list with only addon names
         self.to_update = []  # list of addons with updates available
+        self.with_options = []
+
         sys.path.append('addons')
 
         for item in os.listdir('addons/'):
@@ -52,7 +57,7 @@ class AddonsManager:
 
     def get_available_addons(self):
         self.available_addons = [
-            {"name": "useless_addon", "description": "I AM NOT A MORON", "img_url": "https://cdn2.hubspot.net/hubfs/53/image8-2.jpg", "git_link": "https://github.com/ndrnmnk/t", "version": 1.1}
+            {"name": "useless_addon", "description": "I AM NOT A MORON", "img_url": "https://cdn2.hubspot.net/hubfs/53/image8-2.jpg", "git_link": "https://github.com/ndrnmnk/t", "version": 1.0}
         ]
 
     def download_addon(self, caller_widget):
@@ -63,11 +68,15 @@ class AddonsManager:
     def import_addon(self, addon_name):
         with open(f"addons/{addon_name}/info.json", "r") as file:
             data = json.loads(file.read())
-            data.update({"installed": 1})
+        data.update({"installed": 1})
         self.ia.append(addon_name)
         self.imported_addons.append(data)
         imported_module = importlib.import_module(addon_name)
         imported_module.run(self.ui)
+
+        if data["has_options"]:
+            self.with_options.append(imported_module)
+
         globals()[addon_name] = imported_module
 
     def delete_addon(self, addon_name):
@@ -86,8 +95,19 @@ class AddonsManager:
         for item in possible_updates:
             if self.imported_addons[item[0]]["version"] < self.available_addons[item[1]]["version"]:
                 self.to_update.append(self.imported_addons[item[0]]["name"])
+        if self.to_update:
+            print(f"found addon updates: {self.to_update}")
 
     def update_addon(self, caller_widget):
         self.delete_addon(caller_widget.name)
         self.download_addon(caller_widget)
 
+    def get_options(self):
+        vbox = QVBoxLayout()
+        vbox.setAlignment(Qt.AlignTop)
+        for item in self.with_options:
+            label = QLabel(f"{item.__name__}:")
+            label.setStyleSheet("font-size: 14pt;")
+            vbox.addWidget(label)
+            vbox.addWidget(item.options_widget())
+        return vbox

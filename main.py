@@ -26,8 +26,8 @@ class MainWindow(QMainWindow):
 
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu('File')
-        options_menu = menu_bar.addAction('Options')
-        addons_menu = menu_bar.addAction('Addons')
+        self.options_menu = menu_bar.addAction('Options')
+        self.addons_menu = menu_bar.addAction('Addons')
         # Create file tab of menu bar
         open_action = QAction('Open', self)
         save_action = QAction('Save', self)
@@ -37,8 +37,8 @@ class MainWindow(QMainWindow):
         file_menu.addAction(exit_action)
         exit_action.triggered.connect(self.close)
 
-        options_menu.triggered.connect(self.open_options_window)
-        addons_menu.triggered.connect(self.open_addons_window)
+        self.options_menu.triggered.connect(self.open_options_window)
+        self.addons_menu.triggered.connect(self.open_addons_window)
 
         # create a central widget for the main window
         self.central_widget = QWidget(self)
@@ -157,7 +157,7 @@ class MainWindow(QMainWindow):
         OptionsWindow(self)
 
     def open_addons_window(self):
-        self.addons_window = AddonsWindow(self)
+        AddonsWindow(self)
 
 
 if __name__ == "__main__":
