@@ -43,7 +43,8 @@ info.json must contain something like this:
   "description": "Description of addon (required)",
   "img_url": "link.to/logo-of-addon, or None",
   "git_link": "link.to/git-repo-of-addon, or None",
-  "version": 1.0
+  "version": 1.0,
+  "has_options": true
 }
 ```
 
@@ -52,6 +53,10 @@ And `__init__.py` must contain `run(ui)` function, which will start the module. 
 ```python
 def run(ui):
     ui.setStyleSheet("background-color: lightgray;")
+
+def options_widget():
+    # this function is required only if "has_options" is true in info.json
+    return QLabel("this is created using rude addon")
 ```
 
 And that's it! Go create your own addons!
