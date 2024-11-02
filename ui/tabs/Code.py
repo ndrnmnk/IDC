@@ -14,14 +14,14 @@ class CodeTabLayout(QGridLayout):
         self.addWidget(label_blocks_to_pick, 0, 0)
 
         test_json = [
-            {"input_json": [
+            {"data": [
                 {"text": "Hello, World"},
                 {"dropdown": ["hello", "bye", "this is a very long one"]},
                 {"int_entry": "number typing?"},
                 {"text": "test!"},
                 {"text_entry": "text entry"}
-            ], "color": "#888888", "shape": "block", "pos": (100, 100)},
-            {"input_json": [
+            ], "color": "#00ffff", "shape": "block", "pos": (100, 100)},
+            {"data": [
                 {"text": "Say"},
                 {"text_entry": "hello"}
             ], "color": "#0aef67", "shape": "int", "pos": (300, 300)}

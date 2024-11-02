@@ -132,25 +132,40 @@ class MainWindow(QMainWindow):
                     'Linux': ['x86', 'x64', 'arm32', 'arm64'],
                     'macOS': ['x64', 'arm64']
                     }
+                },
+            "Python":
+                {"command": "cd {}/build; cmake ..; make", "run": "{}/build/main", "platforms": {
+                    'All': ['All']
                 }
+                 }
         }
 
+        self.compiler_dropdown.currentTextChanged.connect(self.update_os_dropdown)
         self.target_os_dropdown.currentTextChanged.connect(self.update_arch_dropdown)
 
         self.addons_manager = AddonsManager(self)
 
         for item in self.compilers:
             self.compiler_dropdown.addItem(item)
-            self.target_os_dropdown.addItems(self.compilers[item]["platforms"].keys())
         del item
 
         self.backend = Backend(self)
 
         self.show()
 
+    def update_os_dropdown(self):
+        self.target_os_dropdown.clear()
+        oss = self.compilers[self.compiler_dropdown.currentText()]["platforms"].keys()
+        self.target_os_dropdown.addItems(oss)
+
     def update_arch_dropdown(self):
         self.target_arch_dropdown.clear()
-        archs = self.compilers[self.compiler_dropdown.currentText()]["platforms"][self.target_os_dropdown.currentText()]
+        try:
+            archs = self.compilers[self.compiler_dropdown.currentText()]["platforms"][self.target_os_dropdown.currentText()]
+        except KeyError:
+            # because of weird KeyError appearing after running update_os_dropdown, it uses the first available os
+            a = list(self.compilers[self.compiler_dropdown.currentText()]["platforms"].keys())
+            archs = self.compilers[self.compiler_dropdown.currentText()]["platforms"][a[0]]
         self.target_arch_dropdown.addItems(archs)
 
     def open_options_window(self):

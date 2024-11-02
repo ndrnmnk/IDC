@@ -2,7 +2,6 @@ from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphi
 from PyQt5.QtCore import Qt, QPointF
 import sys
 
-# Import BlockBase from the previous code
 from ui.widgets.BlockBase import BlockBase
 
 
@@ -10,66 +9,84 @@ class DraggableBlockView(QGraphicsView):
     def __init__(self, block_data):
         super().__init__()
 
-        # Create a scene to hold items
+        # Create a scene
         self.scene = QGraphicsScene(self)
+        self.setSceneRect(0, 0, 10000, 10000)
         self.setScene(self.scene)
 
-        # Variables for tracking drag state and offsets
-        self.dragging = False
-        self.drag_offset = QPointF()
-        self.dragged_item = None
-
-        # Add multiple blocks to the scene based on block_data
+        # Add blocks
         self.add_blocks(block_data)
 
-        # Enable smoother dragging visuals
-        self.setDragMode(QGraphicsView.ScrollHandDrag)
-
     def add_blocks(self, block_data):
-        """
-        Adds multiple BlockBase widgets to the scene, based on block_data.
-        Each block will have its own position, content, and color.
-        """
         for block_info in block_data:
-            input_json = block_info.get("input_json", [])
-            color = block_info.get("color", "#000000")  # Default color if not specified
-            pos = block_info.get("pos", (0, 0))  # Default position if not specified
-
-            # Create a BlockBase widget with input_json and color
-            block_widget = BlockBase(input_json, color=color)
-
-            # Add the BlockBase widget to the scene via QGraphicsProxyWidget
-            block_proxy = QGraphicsProxyWidget()
-            block_proxy.setWidget(block_widget)
-            block_proxy.setPos(*pos)  # Set the initial position of the block
-
-            # Add the block_proxy to the scene
+            block_proxy = DraggableBlock(block_info)
             self.scene.addItem(block_proxy)
+
+
+class DraggableBlock(QGraphicsProxyWidget):
+    def __init__(self, block_data):
+        super().__init__()
+        block = BlockBase(block_data["data"], block_data["color"])
+        self.setWidget(block)
+        self.setPos(*block_data["pos"])
+
+        # Dragging variables
+        self.dragging = False
+        self.drag_offset = QPointF()
+        self.top_snap = None
+        self.bottom_snap = None
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            # Check if the click is inside any block proxy's area
-            clicked_item = self.itemAt(event.pos())
-            if isinstance(clicked_item, QGraphicsProxyWidget):
-                self.dragging = True
-                self.dragged_item = clicked_item
-                # Calculate offset to keep relative position while dragging
-                self.drag_offset = self.dragged_item.pos() - self.mapToScene(event.pos())
-        super().mousePressEvent(event)
+            self.release_top_snap()
+            self.update_snapped_pos()
+            self.snapToOthers()
+            self.dragging = True
+            self.drag_offset = event.pos() - self.rect().topLeft()
 
     def mouseMoveEvent(self, event):
-        if self.dragging and self.dragged_item:
-            # Update block position based on mouse movement
-            new_pos = self.mapToScene(event.pos()) + self.drag_offset
-            self.dragged_item.setPos(new_pos)
-        super().mouseMoveEvent(event)
+        if self.dragging:
+            new_pos = self.mapToScene(event.pos() - self.drag_offset)
+            self.setPos(new_pos)
+            self.release_top_snap()
+            self.snapToOthers()
+            self.update_snapped_pos()
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
-            # Stop dragging
             self.dragging = False
-            self.dragged_item = None
-        super().mouseReleaseEvent(event)
+            event.accept()
+        else:
+            event.ignore()
+
+    def snapToOthers(self):
+        scene = self.scene()
+        for item in scene.items():
+            if item is self:
+                continue
+
+            self_rect = self.sceneBoundingRect()
+            other_rect = item.sceneBoundingRect()
+
+            # Check snapping conditions
+            if abs(self_rect.top() - other_rect.bottom()) < 15 \
+                    and abs(self_rect.left() - other_rect.left()) < 45:
+                self.setPos(other_rect.left(), other_rect.bottom()-5)
+                self.update_snapped_pos()
+                self.top_snap = item
+                item.bottom_snap = self
+
+    def update_snapped_pos(self):
+        if self.top_snap is not None:
+            self.setPos(self.top_snap.sceneBoundingRect().left(), self.top_snap.sceneBoundingRect().bottom()-5)
+        if self.bottom_snap is not None:
+            self.bottom_snap.update_snapped_pos()
+
+    def release_top_snap(self):
+        if self.top_snap is not None:
+            self.top_snap.bottom_snap = None
+            self.top_snap = None
+
 
 
 if __name__ == "__main__":
@@ -78,18 +95,18 @@ if __name__ == "__main__":
     # Example JSON for multiple blocks
     block_data = [
         {
-            "input_json": [
+            "data": [
                 {"text": "Hello, World"},
                 {"dropdown": ["hello", "bye", "this is a very long one"]},
                 {"int_entry": "number typing?"},
                 {"text": "test!"},
                 {"text_entry": "text entry"}
             ],
-            "color": "#888888",
+            "color": "#00ffff",
             "pos": (100, 100)
         },
         {
-            "input_json": [
+            "data": [
                 {"text": "Say"},
                 {"text_entry": "hello"}
             ],
@@ -100,7 +117,7 @@ if __name__ == "__main__":
 
     # Create and display the DraggableBlockView window with block_data
     view = DraggableBlockView(block_data)
-    view.setWindowTitle("Draggable Multiple BlockBase on QGraphicsView")
+    view.setWindowTitle("Draggable Blocks")
     view.resize(800, 600)
     view.show()
 

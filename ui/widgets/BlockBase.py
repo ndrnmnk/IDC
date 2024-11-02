@@ -2,7 +2,7 @@ from ui.subwidgets.ResizableLineEdit import ResizableLineEdit
 from ui.subwidgets.ResizableDropdown import ResizableDropdown
 from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
 from PyQt5.QtGui import QPainter, QPolygon, QBrush, QColor, QFont, QFontMetrics
-from PyQt5.QtCore import QPoint, Qt
+from PyQt5.QtCore import QPoint, Qt, QEvent
 import sys
 
 
@@ -26,6 +26,7 @@ class BlockBase(QWidget):
         self.setLayout(self.hbox)
 
         self.populate_block()
+        self.installEventFilter(self)
 
     def populate_block(self):
         for idx, json_object in enumerate(self.input_json):
@@ -54,12 +55,10 @@ class BlockBase(QWidget):
                 self.content_list.append(ResizableDropdown(parent=self, options=json_object["dropdown"]))
                 self.content_list[idx].currentIndexChanged.connect(lambda _, caller_idx=idx: self.repopulate_block(caller_idx))
                 self.width_list.append(self.content_list[idx].width())
-                self.height_list.append(22)
+                self.height_list.append(24)
             self.hbox.addWidget(self.content_list[idx], alignment=Qt.AlignLeft)
 
     def repopulate_block(self, caller_idx):
-        print(self.width_list)
-        print(self.height_list)
         self.width_list[caller_idx] = self.content_list[caller_idx].width()
         self.height_list[caller_idx] = self.content_list[caller_idx].height()
         self.update()
@@ -67,28 +66,61 @@ class BlockBase(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        x = 0
-        width = sum(self.width_list) + 6*len(self.width_list)
-        y = 0
-        height = max(self.height_list) + 6
 
-        points = [
-            QPoint(x, y),  # Top-left corner
-            QPoint(x + 10, y),  # Start of the pit
-            QPoint(x + 10, y + 5),  # Bottom-left of pit
-            QPoint(x + 40, y + 5),  # Bottom-right of pit
-            QPoint(x + 40, y),  # Exit from the pit
-            QPoint(x + width, y),  # Top-right corner
-            QPoint(x + width, y + height),  # Bottom-right corner
-            QPoint(x + 40, y + height),  # Start of bulge
-            QPoint(x + 40, y + height + 5),  # Bottom-right of bulge
-            QPoint(x + 10, y + height + 5),  # Bottom-left of bulge
-            QPoint(x + 10, y + height),  # End of bulge
-            QPoint(x, y + height)  # Bottom-left corner
-        ]
+        points = self.generate_polygon_points()
+
         painter.setBrush(QBrush(QColor(self.color)))
         polygon = QPolygon(points)
         painter.drawPolygon(polygon)
+
+    def generate_polygon_points(self):
+        width = sum(self.width_list) + 6*len(self.width_list)
+        height = max(self.height_list) + 6
+        return [
+            QPoint(0, 0),  # Top-left corner
+            QPoint(10, 0),  # Start of the pit
+            QPoint(10, 5),  # Bottom-left of pit
+            QPoint(40, 5),  # Bottom-right of pit
+            QPoint(40, 0),  # Exit from the pit
+            QPoint(width, 0),  # Top-right corner
+            QPoint(width, height),  # Bottom-right corner
+            QPoint(40, height),  # Start of bulge
+            QPoint(40, height + 5),  # Bottom-right of bulge
+            QPoint(10, height + 5),  # Bottom-left of bulge
+            QPoint(10, height),  # End of bulge
+            QPoint(0, height)  # Bottom-left corner
+        ]
+
+
+    # def polygon_contains_point(self, point):
+    #     # Check if a point is within the polygon's bounding rectangle
+    #     # For a more accurate check, use the actual polygon points
+    #     x, y = point.x(), point.y()
+    #     points = self.generate_polygon_points()
+    #     return QPolygon(points).containsPoint(point, Qt.WindingFill)
+    #
+    # def eventFilter(self, source, event):
+    #     if event.type() == QEvent.MouseButtonPress:
+    #         pos = event.pos()
+    #         # Check if click is within the polygon area
+    #         if self.polygon_contains_point(pos):
+    #             print("Polygon area clicked!")
+    #             return True  # Event handled
+    #         else:
+    #             print("Not polygon clicked")
+    #
+    #         # Check if click is on any QLabel
+    #         for widget in self.content_list:
+    #             if isinstance(widget, QLabel) and widget.geometry().contains(pos):
+    #                 print(f"{widget.text()} clicked!")
+    #                 return True  # Event handled
+    #             else:
+    #                 print("wrong widget")
+    #
+    #         # Ignore clicks on other widgets
+    #         return False  # Pass the event to other widgets
+    #
+    #     return super().eventFilter(source, event)
 
 
 if __name__ == "__main__":
