@@ -34,7 +34,6 @@ class OptionsWindow(QWidget):
 
         if item.text() == "Visual":
             self.options_display = VisualOptions()
-
         elif item.text() == "Compilation":
             self.options_display = CompilerOptions()
         elif item.text() == "Addons":

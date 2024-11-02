@@ -1,4 +1,6 @@
-options window - partially done (10%)
+options window - partially done (50%):
+    fix artifacts
+    add real options
 addons window - partially done (90%):
     add sorting
 
@@ -6,11 +8,10 @@ add/remove sprites - required
 rework textures and sounds as files - required
 AI tab - partially done (frontend only)
 options.json - required
-block snapping - needed
 block converting - needed
 block selection menu - needed
 saving/opening project - needed
-update textures - needed
+update textures - required
 
 "you need to download blablabla compiler" warning window - recommended
 animations editor - idea
