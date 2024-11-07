@@ -3,31 +3,44 @@ from ui.widgets.CodingGraphicsScene import DraggableBlockView
 
 
 class CodeTabLayout(QGridLayout):
-    def __init__(self):
-        super().__init__()
-        self.setColumnStretch(0, 1)
-        self.setColumnStretch(1, 4)
+	def __init__(self):
+		super().__init__()
+		self.setColumnStretch(0, 1)
+		self.setColumnStretch(1, 4)
 
-        label_blocks_to_pick = QLabel("Block to pick")
-        label_blocks_to_pick.setStyleSheet('background-color: grey;')
+		label_blocks_to_pick = QLabel("Block to pick")
+		label_blocks_to_pick.setStyleSheet('background-color: grey;')
 
-        self.addWidget(label_blocks_to_pick, 0, 0)
+		self.addWidget(label_blocks_to_pick, 0, 0)
 
-        test_json = [
-            {"data": [
-                {"text": "Hello, World"},
-                {"dropdown": ["hello", "bye", "this is a very long one"]},
-                {"int_entry": "number typing?"},
-                {"text": "test!"},
-                {"text_entry": "text entry"}
-            ], "color": "#00ffff", "shape": "block", "pos": (100, 100)},
-            {"data": [
-                {"text": "Say"},
-                {"text_entry": "hello"}
-            ], "color": "#0aef67", "shape": "int", "pos": (300, 300)}
-        ]
+		test_json = [
+			{"data": [
+				{"text": "Hello, World"},
+				{"dropdown": ["hello", "bye", "this is a very long one"]},
+				{"int_entry": "number typing?"},
+				{"text": "test!"},
+				{"text_entry": "text entry"}
+			], "color": "#00ffff", "shape": "block", "pos": (100, 100)},
+			{"data": [
+				{"text": "Say"},
+				{"text_entry": "hello"}
+			], "color": "#0aef67", "shape": "int", "pos": (100, 200)},
+			{"data": [
+				{"text": "Move"},
+				{"int_entry": "10"},
+				{"text": "steps"}
+			], "color": "#ff0000", "shape": "int", "pos": (100, 300)},
+			{"data": [
+				{"text": "Rotate"},
+				{"int_entry": "angle"}
+			], "color": "#0aef67", "shape": "int", "pos": (100, 400)},
+			{"data": [
+				{"text": "expand"},
+				{"int_entry": "%"},
+			], "color": "#ff0000", "shape": "int", "pos": (100, 500)}
+		]
 
-        # view = CodingGraphicsView(block_configs=test_json)
-        view = DraggableBlockView(test_json)
+		# view = CodingGraphicsView(block_configs=test_json)
+		view = DraggableBlockView(test_json)
 
-        self.addWidget(view, 0, 1)
+		self.addWidget(view, 0, 1)
