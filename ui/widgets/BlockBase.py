@@ -7,11 +7,12 @@ import sys
 
 
 class BlockBase(QWidget):
-	def __init__(self, input_json, color="#0000FF"):
+	def __init__(self, input_json, internal_name, color="#0000FF"):
 		super().__init__()
 		self.setAttribute(Qt.WA_TranslucentBackground)
 		self.color = color
 		self.input_json = input_json
+		self.internal_name = internal_name
 		self.font = QFont("Arial", 12)
 		self.font_metrics = QFontMetrics(self.font)
 
@@ -90,6 +91,9 @@ class BlockBase(QWidget):
 			QPoint(10, height),  # End of bulge
 			QPoint(0, height)  # Bottom-left corner
 		]
+
+	def get_internal_name(self):
+		return self.internal_name
 
 
 	# def polygon_contains_point(self, point):

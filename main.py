@@ -132,12 +132,12 @@ class MainWindow(QMainWindow):
 					'Linux': ['x86', 'x64', 'arm32', 'arm64'],
 					'macOS': ['x64', 'arm64']
 				}
-				 },
+				},
 			"Python":
 				{"command": "cd {}/build; cmake ..; make", "run": "{}/build/main", "platforms": {
 					'All': ['All']
 				}
-				 }
+				}
 		}
 
 		self.compiler_dropdown.currentTextChanged.connect(self.update_os_dropdown)
