@@ -28,7 +28,7 @@ class DraggableBlock(QGraphicsProxyWidget):
     def __init__(self, parent_scene, block_data):
         super().__init__()
         self.parent_scene = parent_scene
-        block = BlockBase(block_data["data"], block_data["internal_name"], block_data["color"])
+        block = BlockBase(block_data["data"], block_data["internal_name"], block_data["color"], block_data["shape"])
         self.setWidget(block)
         self.setPos(*block_data["pos"])
 
@@ -37,16 +37,24 @@ class DraggableBlock(QGraphicsProxyWidget):
         self.drag_offset = QPointF()
 
         # Snapping variables
+        if block_data["shape"] == 2:
+            self.allow_top_snap = False
+        else:
+            self.allow_top_snap = True
         self.top_snap = None
-        self.bottom_snap = None
+        if block_data["shape"] == 1:
+            self.bottom_snap = False
+        else:
+            self.bottom_snap = None
         self.snap_candidate = None
         self.preview_line = None
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.release_top_snap()
+            if self.allow_top_snap is True:
+                self.release_top_snap()
+                self.snapToOthers()
             self.update_snapped_pos()
-            self.snapToOthers()
             self.dragging = True
             self.drag_offset = event.pos() - self.rect().topLeft()
 
@@ -54,8 +62,9 @@ class DraggableBlock(QGraphicsProxyWidget):
         if self.dragging:
             new_pos = self.mapToScene(event.pos() - self.drag_offset)
             self.setPos(new_pos)
-            self.release_top_snap()
-            self.snapToOthers()
+            if self.allow_top_snap is True:
+                self.release_top_snap()
+                self.snapToOthers()
             self.update_snapped_pos()
 
     def mouseReleaseEvent(self, event):
@@ -63,8 +72,11 @@ class DraggableBlock(QGraphicsProxyWidget):
         self.clear_preview_line()
         if self.snap_candidate is not None:
             if self.snap_candidate.bottom_snap is not None:
-                self.snap_candidate.bottom_snap.top_snap = self.get_last_widget()
-                self.get_last_widget().bottom_snap = self.snap_candidate.bottom_snap
+                if self.bottom_snap is not False:
+                    self.snap_candidate.bottom_snap.top_snap = self.get_last_widget()
+                    self.get_last_widget().bottom_snap = self.snap_candidate.bottom_snap
+                else:
+                    self.snap_candidate.bottom_snap.top_snap = None
             self.setPos(self.snap_candidate.sceneBoundingRect().left(), self.snap_candidate.sceneBoundingRect().bottom() - 5)
             self.update_snapped_pos()
             self.top_snap = self.snap_candidate
@@ -98,13 +110,14 @@ class DraggableBlock(QGraphicsProxyWidget):
         other_rect = item.sceneBoundingRect()
         if abs(self_rect.top() - other_rect.bottom()) < 15 \
                 and abs(self_rect.left() - other_rect.left()) < 45:
-            return True
+            if item.bottom_snap is not False:
+                return True
         return False
 
     def update_snapped_pos(self):
         if self.top_snap is not None:
             self.setPos(self.top_snap.sceneBoundingRect().left(), self.top_snap.sceneBoundingRect().bottom()-5)
-        if self.bottom_snap is not None:
+        if self.bottom_snap is not None and self.bottom_snap is not False:
             self.bottom_snap.update_snapped_pos()
 
     def release_top_snap(self):
@@ -113,7 +126,7 @@ class DraggableBlock(QGraphicsProxyWidget):
             self.top_snap = None
 
     def get_last_widget(self):
-        if self.bottom_snap is not None:
+        if self.bottom_snap is not None and self.bottom_snap is not False:
             return self.bottom_snap.get_last_widget()
         return self
 
@@ -136,6 +149,7 @@ if __name__ == "__main__":
                 {"text": "test!"},
                 {"text_entry": "text entry"}
             ],
+            "shape": 0,
             "internal_name": "test",
             "color": "#00ffff",
             "pos": (100, 100)
@@ -145,6 +159,7 @@ if __name__ == "__main__":
                 {"text": "Say"},
                 {"text_entry": "hello"}
             ],
+            "shape": 0,
             "internal_name": "say_bla",
             "color": "#0aef67",
             "pos": (300, 300)

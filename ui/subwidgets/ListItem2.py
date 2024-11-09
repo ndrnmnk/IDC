@@ -41,7 +41,7 @@ class ListItem(QWidget):
 
 		self.image_label = QLabel()
 		# Set a placeholder image initially from disk
-		placeholder_pixmap = QPixmap("textures/logo.png")
+		placeholder_pixmap = QPixmap("textures/images/logo.png")
 		self.image_label.setPixmap(placeholder_pixmap.scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 		if img_url:
 			self.download_image_from_url(img_url)

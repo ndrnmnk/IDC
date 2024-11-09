@@ -1,20 +1,24 @@
 from ui.subwidgets.ResizableLineEdit import ResizableLineEdit
 from ui.subwidgets.ResizableDropdown import ResizableDropdown
+from textures.blocks.shapes import generate_points
 from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
 from PyQt5.QtGui import QPainter, QPolygon, QBrush, QColor, QFont, QFontMetrics
-from PyQt5.QtCore import QPoint, Qt, QEvent
+from PyQt5.QtCore import Qt
 import sys
 
 
 class BlockBase(QWidget):
-	def __init__(self, input_json, internal_name, color="#0000FF"):
+	def __init__(self, input_json, internal_name, color="#0000FF", shape=0):
 		super().__init__()
 		self.setAttribute(Qt.WA_TranslucentBackground)
 		self.color = color
+		self.shape = shape
 		self.input_json = input_json
 		self.internal_name = internal_name
 		self.font = QFont("Arial", 12)
 		self.font_metrics = QFontMetrics(self.font)
+
+		self.points, x1, y1, x2, y2 = generate_points(shape, 10,  24)
 
 		self.width_list = []
 		self.content_list = []
@@ -22,12 +26,11 @@ class BlockBase(QWidget):
 
 		self.hbox = QHBoxLayout()
 
-		self.hbox.setContentsMargins(5, 4, 5, 8)
+		self.hbox.setContentsMargins(x1, y1, x2, y2)
 		self.hbox.setSpacing(5)
 		self.setLayout(self.hbox)
 
 		self.populate_block()
-		self.installEventFilter(self)
 
 	def populate_block(self):
 		for idx, json_object in enumerate(self.input_json):
@@ -67,6 +70,7 @@ class BlockBase(QWidget):
 
 	def paintEvent(self, event):
 		painter = QPainter(self)
+		painter.setRenderHint(QPainter.Antialiasing)
 
 		points = self.generate_polygon_points()
 
@@ -77,54 +81,10 @@ class BlockBase(QWidget):
 	def generate_polygon_points(self):
 		width = sum(self.width_list) + 6*len(self.width_list)
 		height = max(self.height_list) + 6
-		return [
-			QPoint(0, 0),  # Top-left corner
-			QPoint(10, 0),  # Start of the pit
-			QPoint(10, 5),  # Bottom-left of pit
-			QPoint(40, 5),  # Bottom-right of pit
-			QPoint(40, 0),  # Exit from the pit
-			QPoint(width, 0),  # Top-right corner
-			QPoint(width, height),  # Bottom-right corner
-			QPoint(40, height),  # Start of bulge
-			QPoint(40, height + 5),  # Bottom-right of bulge
-			QPoint(10, height + 5),  # Bottom-left of bulge
-			QPoint(10, height),  # End of bulge
-			QPoint(0, height)  # Bottom-left corner
-		]
+		return generate_points(self.shape, width, height)[0]
 
 	def get_internal_name(self):
 		return self.internal_name
-
-
-	# def polygon_contains_point(self, point):
-	#     # Check if a point is within the polygon's bounding rectangle
-	#     # For a more accurate check, use the actual polygon points
-	#     x, y = point.x(), point.y()
-	#     points = self.generate_polygon_points()
-	#     return QPolygon(points).containsPoint(point, Qt.WindingFill)
-	#
-	# def eventFilter(self, source, event):
-	#     if event.type() == QEvent.MouseButtonPress:
-	#         pos = event.pos()
-	#         # Check if click is within the polygon area
-	#         if self.polygon_contains_point(pos):
-	#             print("Polygon area clicked!")
-	#             return True  # Event handled
-	#         else:
-	#             print("Not polygon clicked")
-	#
-	#         # Check if click is on any QLabel
-	#         for widget in self.content_list:
-	#             if isinstance(widget, QLabel) and widget.geometry().contains(pos):
-	#                 print(f"{widget.text()} clicked!")
-	#                 return True  # Event handled
-	#             else:
-	#                 print("wrong widget")
-	#
-	#         # Ignore clicks on other widgets
-	#         return False  # Pass the event to other widgets
-	#
-	#     return super().eventFilter(source, event)
 
 
 if __name__ == "__main__":
@@ -139,6 +99,6 @@ if __name__ == "__main__":
 		{"text_entry": "text entry"}
 	]
 
-	window = BlockBase(test_json)
+	window = BlockBase(test_json, "test", "#00ff00", 1)
 	window.show()
 	app.exec_()

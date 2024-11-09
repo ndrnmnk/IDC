@@ -21,7 +21,7 @@ class MainWindow(QMainWindow):
 		super().__init__()
 		self.setMinimumSize(480, 360)
 		self.setWindowTitle("IDC")
-		self.setWindowIcon(QIcon("textures/logo.png"))
+		self.setWindowIcon(QIcon("textures/images/logo.png"))
 		self.setStyleSheet("background-color: #FFFFFF;")
 
 		menu_bar = self.menuBar()

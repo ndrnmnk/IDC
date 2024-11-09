@@ -60,13 +60,13 @@ class Backend:
 		self.ui.problems_tab.add_item(1, 'error')
 
 		# example sounds list content
-		self.ui.sounds_tab_layout.add_sound("error", "textures/error.png")
+		self.ui.sounds_tab_layout.add_sound("error", "textures/images/error.png")
 
 		# example textures list content
-		self.ui.textures_tab_layout.add_texture("error", "textures/error.png")
-		self.ui.textures_tab_layout.add_texture("warning", "textures/warning.png")
-		self.ui.textures_tab_layout.add_texture("logo", "textures/logo.png")
-		self.ui.textures_tab_layout.add_texture("test", "textures/test.png")
+		self.ui.textures_tab_layout.add_texture("error", "textures/images/error.png")
+		self.ui.textures_tab_layout.add_texture("warning", "textures/images/warning.png")
+		self.ui.textures_tab_layout.add_texture("logo", "textures/images/logo.png")
+		self.ui.textures_tab_layout.add_texture("test", "textures/images/test.png")
 
 		# example build logs tab content
 		self.ui.logs_widget.set_text("икщ вшв тще срфтпу еру лунищфкв дфнщге *ілгдд*")

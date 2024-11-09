@@ -19,4 +19,4 @@ class SoundsTabLayout(QGridLayout):
 		self.addWidget(placeholder_label, 0, 1)
 
 	def add_sound(self, name, sound_path):
-		self.sounds_list.add_item(name, "textures/sound.png", False)
+		self.sounds_list.add_item(name, "textures/images/sound.png", False)

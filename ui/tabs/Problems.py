@@ -5,8 +5,8 @@ from PyQt5.QtGui import QIcon
 class ProblemsTabWidget(QListWidget):
 	def __init__(self):
 		super().__init__()
-		self.icon_warning = QIcon("textures/warning.png")
-		self.icon_error = QIcon("textures/error.png")
+		self.icon_warning = QIcon("textures/images/warning.png")
+		self.icon_error = QIcon("textures/images/error.png")
 
 	def add_item(self, icon_type, text):
 		if icon_type == 0:

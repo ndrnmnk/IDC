@@ -15,3 +15,14 @@ update textures - required
 
 "you need to download blablabla compiler" warning window - recommended
 animations editor - idea
+
+Options.json where colors:
+ui/widgets/PreviewLine.py
+
+Block shapes:
+# 0 - basic, can snap have snaps on top and bottom;
+# 1 - basic with ONLY top snaps;
+# 2 - start block, ONLY bottom snaps;
+3 - round variable blocks, snaps ONLY inside other blocks
+4 - operator blocks, snaps ONLY inside other blocks
+5 - if/elif/while/switch-case blocks, multi-layered, probably need separate class
