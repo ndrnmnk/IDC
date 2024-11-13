@@ -3,11 +3,13 @@ from ui.subwidgets.ResizableDropdown import ResizableDropdown
 from textures.blocks.shapes import generate_points
 from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
 from PyQt5.QtGui import QPainter, QPolygon, QBrush, QColor, QFont, QFontMetrics
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 import sys
 
 
 class BlockBase(QWidget):
+	sizeChanged = pyqtSignal()
+
 	def __init__(self, input_json, internal_name, color="#0000FF", shape=0):
 		super().__init__()
 		self.setAttribute(Qt.WA_TranslucentBackground)
@@ -67,6 +69,11 @@ class BlockBase(QWidget):
 		self.height_list[caller_idx] = self.content_list[caller_idx].height()
 		self.update()
 		self.adjustSize()
+		self.sizeChanged.emit()
+
+	def resizeEvent(self, event):
+		super().resizeEvent(event)
+		self.sizeChanged.emit()  # Emit signal on resize event
 
 	def paintEvent(self, event):
 		painter = QPainter(self)

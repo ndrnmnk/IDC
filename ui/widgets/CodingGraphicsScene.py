@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsProxyWidget
+from PyQt5.QtGui import QPainterPath, QPolygonF
 from PyQt5.QtCore import Qt, QPointF
 import sys
 
@@ -10,69 +11,92 @@ class DraggableBlockView(QGraphicsView):
     def __init__(self, block_data):
         super().__init__()
 
-        # Create a scene
+        # create a scene
         self.scene = QGraphicsScene(self)
         self.setSceneRect(0, 0, 10000, 10000)
         self.setScene(self.scene)
+        self.centerOn(0, 0)
+
+        # variables
+        self.all_array = []
+        self.starter_array = []
 
         # Add blocks
         self.add_blocks(block_data)
 
     def add_blocks(self, block_data):
-        for block_info in block_data:
-            block_proxy = DraggableBlock(self.scene, block_info)
-            self.scene.addItem(block_proxy)
+        for idx, block_info in enumerate(block_data):
+            self.all_array.append(DraggableBlock(block_info))
+            self.scene.addItem(self.all_array[idx])
+            if block_info["shape"] == 2:
+                self.starter_array.append(idx)
 
 
 class DraggableBlock(QGraphicsProxyWidget):
-    def __init__(self, parent_scene, block_data):
+    def __init__(self, block_data):
         super().__init__()
-        self.parent_scene = parent_scene
         block = BlockBase(block_data["data"], block_data["internal_name"], block_data["color"], block_data["shape"])
         self.setWidget(block)
         self.setPos(*block_data["pos"])
 
-        # Dragging variables
-        self.dragging = False
+        # get initial block hitbox
+        self.block_polygon = self.calculate_block_polygon(block)
+        # make hitbox dynamic
+        block.sizeChanged.connect(self.update_polygon)
+
+        # dragging variables
         self.drag_offset = QPointF()
 
-        # Snapping variables
-        if block_data["shape"] == 2:
-            self.allow_top_snap = False
-        else:
-            self.allow_top_snap = True
+        # snapping variables
+        self.allow_top_snap = (block_data["shape"] not in [2, 3, 4])
+        self.allow_bottom_snap = (block_data["shape"] not in [1, 3, 4])
         self.top_snap = None
-        if block_data["shape"] == 1:
-            self.bottom_snap = False
-        else:
-            self.bottom_snap = None
+        self.bottom_snap = None
         self.snap_candidate = None
         self.preview_line = None
 
+    @staticmethod
+    def calculate_block_polygon(block):
+        # get new hitbox
+        polygon_points = block.generate_polygon_points()
+        return QPolygonF(polygon_points)
+
+    def update_polygon(self):
+        # update the hitbox
+        self.block_polygon = self.calculate_block_polygon(self.widget())
+        self.update()
+
+    def shape(self):
+        # overwrite default rectangle with new hitbox
+        path = QPainterPath()
+        path.addPolygon(self.block_polygon)
+        return path
+
     def mousePressEvent(self, event):
+        # start drag and checking for snap
         if event.button() == Qt.LeftButton:
             if self.allow_top_snap is True:
                 self.release_top_snap()
                 self.snapToOthers()
             self.update_snapped_pos()
-            self.dragging = True
             self.drag_offset = event.pos() - self.rect().topLeft()
 
     def mouseMoveEvent(self, event):
-        if self.dragging:
-            new_pos = self.mapToScene(event.pos() - self.drag_offset)
-            self.setPos(new_pos)
-            if self.allow_top_snap is True:
-                self.release_top_snap()
-                self.snapToOthers()
-            self.update_snapped_pos()
+        # drag
+        new_pos = self.mapToScene(event.pos() - self.drag_offset)
+        self.setPos(new_pos)
+        # snap
+        if self.allow_top_snap is True:
+            self.release_top_snap()
+            self.snapToOthers()
+        self.update_snapped_pos()
 
     def mouseReleaseEvent(self, event):
-        self.dragging = False
+        # finalize snap
         self.clear_preview_line()
         if self.snap_candidate is not None:
             if self.snap_candidate.bottom_snap is not None:
-                if self.bottom_snap is not False:
+                if self.allow_bottom_snap:
                     self.snap_candidate.bottom_snap.top_snap = self.get_last_widget()
                     self.get_last_widget().bottom_snap = self.snap_candidate.bottom_snap
                 else:
@@ -82,12 +106,10 @@ class DraggableBlock(QGraphicsProxyWidget):
             self.top_snap = self.snap_candidate
             self.snap_candidate.bottom_snap = self
             self.snap_candidate = None
-        # print(self.widget().get_internal_name())
 
     def snapToOthers(self):
-        scene = self.scene()
-        for item in scene.items():
-            if item is self or item is self.preview_line or item is self.snap_candidate:
+        for item in self.scene().items():
+            if item in [self, self.preview_line, self.snap_candidate]:
                 continue
 
             if self.check_item_for_snap(item):
@@ -99,7 +121,7 @@ class DraggableBlock(QGraphicsProxyWidget):
                     line_width = item.widget().width() - 5
                 self.preview_line = PreviewLine(QPointF(item.sceneBoundingRect().left(), item.sceneBoundingRect().bottom()-5), line_width)
                 self.preview_line.setZValue(1)
-                self.parent_scene.addItem(self.preview_line)
+                self.scene().addItem(self.preview_line)
 
         if self.snap_candidate is not None and not self.check_item_for_snap(self.snap_candidate):
             self.clear_preview_line()
@@ -110,14 +132,15 @@ class DraggableBlock(QGraphicsProxyWidget):
         other_rect = item.sceneBoundingRect()
         if abs(self_rect.top() - other_rect.bottom()) < 15 \
                 and abs(self_rect.left() - other_rect.left()) < 45:
-            if item.bottom_snap is not False:
+            if item.allow_bottom_snap:
                 return True
         return False
 
     def update_snapped_pos(self):
+        # chains down updating positions
         if self.top_snap is not None:
             self.setPos(self.top_snap.sceneBoundingRect().left(), self.top_snap.sceneBoundingRect().bottom()-5)
-        if self.bottom_snap is not None and self.bottom_snap is not False:
+        if self.bottom_snap is not None:
             self.bottom_snap.update_snapped_pos()
 
     def release_top_snap(self):
@@ -126,13 +149,13 @@ class DraggableBlock(QGraphicsProxyWidget):
             self.top_snap = None
 
     def get_last_widget(self):
-        if self.bottom_snap is not None and self.bottom_snap is not False:
+        if self.bottom_snap is not None:
             return self.bottom_snap.get_last_widget()
         return self
 
     def clear_preview_line(self):
         if self.preview_line is not None:
-            self.parent_scene.removeItem(self.preview_line)
+            self.scene().removeItem(self.preview_line)
             self.preview_line = None
 
 

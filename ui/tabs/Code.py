@@ -29,11 +29,11 @@ class CodeTabLayout(QGridLayout):
 				{"text": "Move"},
 				{"int_entry": "10"},
 				{"text": "steps"}
-			], "internal_name": "move_x", "color": "#ff0000", "shape": 0, "pos": (100, 300)},
+			], "internal_name": "move_x", "color": "#ff0000", "shape": 4, "pos": (100, 300)},
 			{"data": [
 				{"text": "Rotate"},
 				{"int_entry": "angle"}
-			], "internal_name": "rotate_x", "color": "#ff00ff", "shape": 0, "pos": (100, 400)},
+			], "internal_name": "rotate_x", "color": "#ff00ff", "shape": 3, "pos": (100, 400)},
 			{"data": [
 				{"text": "expand"},
 				{"int_entry": "%"},
