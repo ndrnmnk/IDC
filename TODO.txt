@@ -1,15 +1,20 @@
 options window - partially done (50%):
     fix artifacts
     add real options
-addons window - partially done (90%):
+addons window - partially done (80%):
     add sorting
+    allow dependencies
+
+block selection menu - partially done(40%):
+    add block deletion
+    add scrolling
+    add tabs
 
 add/remove sprites - required
 rework textures and sounds as files - required
 AI tab - partially done (frontend only)
 options.json - required
 block converting - needed
-block selection menu - needed
 saving/opening project - needed
 update textures - required
 

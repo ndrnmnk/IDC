@@ -1,12 +1,12 @@
-from PyQt5.QtWidgets import QListWidget, QListWidgetItem
+from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QApplication
 from PyQt5.QtGui import QIcon
 
 
 class ProblemsTabWidget(QListWidget):
 	def __init__(self):
 		super().__init__()
-		self.icon_warning = QIcon("textures/images/warning.png")
-		self.icon_error = QIcon("textures/images/error.png")
+		self.icon_warning = self.style().standardIcon(QApplication.style().SP_MessageBoxWarning)
+		self.icon_error = self.style().standardIcon(QApplication.style().SP_MessageBoxCritical)
 
 	def add_item(self, icon_type, text):
 		if icon_type == 0:

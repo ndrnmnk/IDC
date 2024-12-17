@@ -1,17 +1,11 @@
-from PyQt5.QtWidgets import QLabel, QGridLayout
-from ui.widgets.CodingGraphicsScene import DraggableBlockView
+from PyQt5.QtWidgets import QGridLayout
+from ui.widgets.CodingGraphicsScene import WorkspaceView
 
 
 class CodeTabLayout(QGridLayout):
 	def __init__(self):
 		super().__init__()
-		self.setColumnStretch(0, 1)
-		self.setColumnStretch(1, 4)
-
-		label_blocks_to_pick = QLabel("Block to pick")
-		label_blocks_to_pick.setStyleSheet('background-color: grey;')
-
-		self.addWidget(label_blocks_to_pick, 0, 0)
+		self.setColumnStretch(0, 4)
 
 		test_json = [
 			{"data": [
@@ -39,8 +33,6 @@ class CodeTabLayout(QGridLayout):
 				{"int_entry": "%"},
 			], "internal_name": "expand_x", "color": "#0000ff", "shape": 2, "pos": (100, 500)}
 		]
+		view = WorkspaceView(test_json)
 
-		# view = CodingGraphicsView(block_configs=test_json)
-		view = DraggableBlockView(test_json)
-
-		self.addWidget(view, 0, 1)
+		self.addWidget(view, 0, 0)

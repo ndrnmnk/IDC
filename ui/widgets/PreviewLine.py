@@ -8,6 +8,7 @@ class PreviewLine(QGraphicsLineItem):
 	def __init__(self, pos, width):
 		super().__init__()
 		self.setPos(pos)
+		self.setZValue(3)
 
 		# Create the path with the specified points
 		path = QPainterPath()
