@@ -1,7 +1,7 @@
 from ui.subwidgets.ResizableLineEdit import ResizableLineEdit
 from ui.subwidgets.ResizableDropdown import ResizableDropdown
 from textures.blocks.shapes import generate_points
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QStyleFactory
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
 from PyQt5.QtGui import QPainter, QPolygon, QBrush, QColor, QFont, QFontMetrics
 from PyQt5.QtCore import Qt, pyqtSignal
 import sys
@@ -19,7 +19,6 @@ class BlockBase(QWidget):
 		self.internal_name = internal_name
 		# fix visuals
 		self.setAttribute(Qt.WA_TranslucentBackground)
-		self.setStyle(QStyleFactory.create("Fusion"))
 
 		self.font = QFont("Arial", 12)
 		self.font_metrics = QFontMetrics(self.font)
