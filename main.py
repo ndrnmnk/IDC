@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTabWidget, QAction, QPushButton, QHBoxLayout
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt
 import sys
 from ui.tabs.Code import CodeTabLayout
@@ -21,6 +21,7 @@ class MainWindow(QMainWindow):
 		super().__init__()
 		self.setMinimumSize(480, 360)
 		self.setWindowTitle("IDC")
+		self.setFont(QFont("Arial", 12))
 		self.setWindowIcon(QIcon("textures/images/logo.png"))
 		self.setStyleSheet("background-color: #FFFFFF;")
 
@@ -177,6 +178,8 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
 	app = QApplication(sys.argv)
+	app.setStyle("Fusion")
+	app.setStyleSheet("QWidget { color: black; }")
 	window = MainWindow()
 
 	sys.exit(app.exec_())

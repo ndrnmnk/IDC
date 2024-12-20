@@ -44,8 +44,9 @@ class AddonsManager:
 		self.ia = []  # list with only addon names
 		self.to_update = []  # list of addons with updates available
 		self.with_options = []
-
 		sys.path.append('addons')
+		if not os.path.exists('addons/'):
+			os.mkdir('addons/')
 
 		for item in os.listdir('addons/'):
 			item_path = os.path.join('addons/', item)
