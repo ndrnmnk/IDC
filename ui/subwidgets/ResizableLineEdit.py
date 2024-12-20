@@ -7,13 +7,14 @@ from PyQt5.QtCore import QRegularExpression
 class ResizableLineEdit(QLineEdit):
 	def __init__(self, placeholder="", int_entry=False, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-
+		self.setFixedHeight(22)
 		self.setPlaceholderText(placeholder)
 		self.setTextMargins(2, 0, 0, 0)  # Adds 2px padding on the left
 		if int_entry:
 			self.setStyleSheet("""
 				QLineEdit {
-					border: 2px solid #5c5c5c;
+					background-color: #ffffff;
+					border: 2px solid #000000;
 					border-radius: 10px;
 				}
 			""")
@@ -24,7 +25,8 @@ class ResizableLineEdit(QLineEdit):
 		else:
 			self.setStyleSheet("""
 				QLineEdit {
-					border: 2px solid #5c5c5c;
+					background-color: #ffffff;
+					border: 2px solid #000000;
 				}
 			""")
 

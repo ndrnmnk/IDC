@@ -5,8 +5,20 @@ from PyQt5.QtGui import QFontMetrics
 class ResizableDropdown(QComboBox):
     def __init__(self, options, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setStyle(QStyleFactory.create("Fusion"))
         self.addItems(options)
+        self.setFixedHeight(24)
+        self.font_metrics = QFontMetrics(self.font())
+        self.setStyleSheet("""
+            QComboBox {
+                background-color: #ffffff;
+                border: 2px solid #000000;
+                border-radius: 2px;
+            }
+            QComboBox::drop-down {
+                border: 3px solid #0000ff;
+                background-color: #e6f7ff;
+            }
+        """)
 
         # Update the width dynamically when the selection changes
         self.currentIndexChanged.connect(self.adjust_width)
@@ -17,16 +29,8 @@ class ResizableDropdown(QComboBox):
     def adjust_width(self):
         # Get the current text of the QComboBox
         current_text = self.currentText()
-
-        # Calculate the text width using font metrics
-        font_metrics = QFontMetrics(self.font())
-        text_width = font_metrics.horizontalAdvance(current_text)
-
-        # Get style-dependent padding
-        padding = 32
-
-        # Update the width
-        self.setFixedWidth(text_width + padding)
+        text_width = self.font_metrics.horizontalAdvance(current_text)
+        self.setFixedWidth(text_width + 28)
 
     def sizeHint(self):
         # Override sizeHint to respect the style's preferred size
