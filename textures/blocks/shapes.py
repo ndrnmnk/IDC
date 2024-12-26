@@ -48,7 +48,7 @@ def generate_points(shape_id, width, height):
 			QPoint(10, height + 14),
 			QPoint(0, height + 14)
 		], 5, 18, 5, 8
-	elif shape_id == 3:
+	elif shape_id == 3:  # operator block
 		return [
 			QPoint(10, 0),
 			QPoint(width, 0),
@@ -57,7 +57,7 @@ def generate_points(shape_id, width, height):
 			QPoint(10, height),
 			QPoint(0, int(height/2))
 		], 10, 4, 10, 3
-	elif shape_id == 4:
+	elif shape_id == 4:  # variable block
 		return [
 			QPoint(10, 0),
 			QPoint(width, 0),

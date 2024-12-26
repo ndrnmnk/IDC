@@ -4,13 +4,12 @@ from textures.blocks.shapes import generate_points
 from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
 from PyQt5.QtGui import QPainter, QPolygon, QBrush, QColor, QFont, QFontMetrics
 from PyQt5.QtCore import Qt, pyqtSignal
-import sys
 
 
 class BlockBase(QWidget):
 	sizeChanged = pyqtSignal()
 
-	def __init__(self, input_json, internal_name, color="#0000FF", shape=0):
+	def __init__(self, input_json, internal_name, color="#ffffff", shape=0):
 		super().__init__()
 		# save the data
 		self.color = color
@@ -25,6 +24,7 @@ class BlockBase(QWidget):
 
 		self.points, x1, y1, x2, y2 = generate_points(shape, 10,  24)
 
+		# lists for correct displaying
 		self.width_list = []
 		self.content_list = []
 		self.height_list = []
@@ -38,6 +38,7 @@ class BlockBase(QWidget):
 		self.populate_block()
 
 	def populate_block(self):
+		# goes through input json and adds items from there
 		for idx, json_object in enumerate(self.input_json):
 			if "text" in json_object:
 				self.content_list.append(QLabel(json_object["text"], self))
@@ -67,6 +68,7 @@ class BlockBase(QWidget):
 			self.hbox.addWidget(self.content_list[idx], alignment=Qt.AlignLeft)
 
 	def repopulate_block(self, caller_idx):
+		# update lists and size
 		self.width_list[caller_idx] = self.content_list[caller_idx].width()
 		self.height_list[caller_idx] = self.content_list[caller_idx].height()
 		self.update()
@@ -78,6 +80,7 @@ class BlockBase(QWidget):
 		self.sizeChanged.emit()  # Emit signal on resize event
 
 	def paintEvent(self, event):
+		# paint block shape
 		painter = QPainter(self)
 		painter.setRenderHint(QPainter.HighQualityAntialiasing)
 
@@ -88,9 +91,12 @@ class BlockBase(QWidget):
 		painter.drawPolygon(polygon)
 
 	def generate_polygon_points(self):
+		# creates a set of points for each block type based on self.shape and dimensions
+		# 0 - regular block
+		# 1 - block with no bottom connections
+		# 2 - starter block (the one with big bulge on top)
+		# 3 - operator block, has to snap inside other blocks
+		# 4 - variable block, has to snap inside other blocks
 		width = sum(self.width_list) + 6*len(self.width_list)
 		height = max(self.height_list) + 6
 		return generate_points(self.shape, width, height)[0]
-
-	def get_internal_name(self):
-		return self.internal_name

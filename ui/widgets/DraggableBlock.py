@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import QGraphicsProxyWidget
 from PyQt5.QtGui import QPainterPath, QPolygonF
 from PyQt5.QtCore import Qt, QPointF
-
 from ui.widgets.BlockBase import BlockBase
 from ui.widgets.PreviewLine import PreviewLine
 
@@ -9,13 +8,16 @@ from ui.widgets.PreviewLine import PreviewLine
 class DraggableBlock(QGraphicsProxyWidget):
     def __init__(self, block_data, parent_view, spawner=False):
         super().__init__()
+        # save the data
         self.parent_view = parent_view
         self.block_data = block_data
+        self.block_shape = block_data["shape"]
+        # create a base block widget
         block = BlockBase(block_data["data"], block_data["internal_name"], block_data["color"], block_data["shape"])
         self.setWidget(block)
         self.setPos(*block_data["pos"])
-        self.block_shape = block_data["shape"]
 
+        # spawner blocks are used in block menu, when clicked they spawn their copy and become regular blocks
         self.spawner = spawner
 
         # get initial block hitbox
@@ -37,6 +39,7 @@ class DraggableBlock(QGraphicsProxyWidget):
             self.spawn()
 
     def spawn(self):
+        # turns spawner block into regular one by allowing it to snap to others
         self.spawner = False
         self.allow_top_snap = (self.block_shape not in [2, 3, 4])
         self.allow_bottom_snap = (self.block_shape not in [1, 3, 4])
@@ -56,12 +59,13 @@ class DraggableBlock(QGraphicsProxyWidget):
         return int(self.geometry().height())
 
     def shape(self):
-        # overwrite default rectangle with new hitbox
+        # overwrite default rectangle with an actual hitbox
         path = QPainterPath()
         path.addPolygon(self.block_polygon)
         return path
 
     def mousePressEvent(self, event):
+        # if spawner turn to regular block and start drag
         if self.spawner:
             self.setParentItem(None)
             self.parent_view.add_block(self.block_data, self.pos(), True)
@@ -82,13 +86,16 @@ class DraggableBlock(QGraphicsProxyWidget):
         # drag
         new_pos = self.mapToScene(event.pos() - self.drag_offset)
         self.setPos(new_pos)
-        # snap
+        # check for new snaps
         if self.allow_top_snap is True:
             self.release_top_snap()
             self.snapToOthers()
         self.update_snapped_pos()
 
     def mouseReleaseEvent(self, event):
+        # if dragged to block menu, delete itself
+        # elif can snap, snap
+        # else just place onto scene
         if self.parent_view.scene().block_placed_in_menu(self):
             self.update_snapped_pos(True)
         # finalize snap
@@ -108,6 +115,7 @@ class DraggableBlock(QGraphicsProxyWidget):
             self.snap_candidate = None
 
     def snapToOthers(self):
+        # check for available snaps and show preview line
         for item in self.scene().items():
             if item in [self, self.preview_line, self.snap_candidate]:
                 continue
@@ -153,6 +161,7 @@ class DraggableBlock(QGraphicsProxyWidget):
             self.top_snap = None
 
     def get_last_widget(self):
+        # gets bottom widget in the construction
         if self.bottom_snap is not None:
             return self.bottom_snap.get_last_widget()
         return self
@@ -163,6 +172,7 @@ class DraggableBlock(QGraphicsProxyWidget):
             self.preview_line = None
 
     def suicide(self):
+        # delete this block and remove from lists
         self.clear_preview_line()
         self.scene().removeItem(self)
         self.deleteLater()
