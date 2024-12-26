@@ -1,4 +1,17 @@
 {
-  "language": "en",
-  "block_colors": []
+    "font_family": "Arial",
+    "font_size": 12,
+    "icon_path": "textures/images/logo.png",
+    "styles": {
+        "text_color": "#000000",
+        "bg_color": "#ffffff",
+        "block_menu_bg": "#ffffff",
+        "category_selector_bg": "#ffffff",
+        "text_field_bg": "#ffffff"
+    },
+    "block_colors": {
+        "Movement": "#c061cb",
+        "Visual": "#ffbe6f",
+        "Long one": "#3584e4"
+    }
 }

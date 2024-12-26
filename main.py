@@ -13,18 +13,24 @@ from ui.windows.OptionsWindow import OptionsWindow
 from ui.windows.AddonsWindow import AddonsWindow
 from ui.subwidgets.ResizableDropdown import ResizableDropdown
 from backend.backend import Backend
+from backend.config_manager import ConfigManager
 from backend.addons_manager import AddonsManager
 
 
 class MainWindow(QMainWindow):
-	def __init__(self):
+	def __init__(self, config):
 		super().__init__()
-		self.setMinimumSize(480, 360)
-		self.setWindowTitle("IDC")
-		self.setFont(QFont("Arial", 12))
-		self.setWindowIcon(QIcon("textures/images/logo.png"))
-		self.setStyleSheet("background-color: #FFFFFF;")
 
+		# Load data
+		self.setStyleSheet(f"background-color: {config.get_config('styles')['bg_color']}; ")
+
+		# Apply data
+		self.setWindowTitle("IDC")
+		self.setFont(QFont(config.get_config("font_family"), config.get_config("font_size")))
+		self.setWindowIcon(QIcon(config.get_config("icon_path")))
+		self.setMinimumSize(480, 360)
+
+		# Create top bar
 		menu_bar = self.menuBar()
 		file_menu = menu_bar.addMenu('File')
 		self.options_menu = menu_bar.addAction('Options')
@@ -37,7 +43,6 @@ class MainWindow(QMainWindow):
 		file_menu.addAction(save_action)
 		file_menu.addAction(exit_action)
 		exit_action.triggered.connect(self.close)
-
 		self.options_menu.triggered.connect(self.open_options_window)
 		self.addons_menu.triggered.connect(self.open_addons_window)
 
@@ -175,11 +180,17 @@ class MainWindow(QMainWindow):
 	def open_addons_window(self):
 		AddonsWindow(self)
 
+	def closeEvent(self, event):
+		ConfigManager().save_config()
+
 
 if __name__ == "__main__":
+	config = ConfigManager()
+	config.load_config("options.json")
+	config.load_blocks("block_info/categories.json")
 	app = QApplication(sys.argv)
 	app.setStyle("Fusion")
-	app.setStyleSheet("QWidget { color: black; }")
-	window = MainWindow()
+	app.setStyleSheet(f"QWidget {{ color: {config.get_config('styles')['text_color']}; }}")
+	window = MainWindow(config)
 
 	sys.exit(app.exec_())

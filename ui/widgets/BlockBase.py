@@ -55,8 +55,7 @@ class BlockBase(QWidget):
 				self.width_list.append(self.content_list[idx].width())
 				self.height_list.append(22)
 			elif "bool_entry" in json_object:
-				# TODO: replace with actual bool entry
-				self.content_list.append(ResizableLineEdit(parent=self, placeholder=json_object["bool_entry"], int_entry=True))
+				self.content_list.append(ResizableLineEdit(parent=self, placeholder=json_object["bool_entry"], bool_entry=True))
 				self.content_list[idx].textChanged.connect(lambda _, caller_idx=idx: self.repopulate_block(caller_idx))
 				self.width_list.append(self.content_list[idx].width())
 				self.height_list.append(22)
@@ -95,20 +94,3 @@ class BlockBase(QWidget):
 
 	def get_internal_name(self):
 		return self.internal_name
-
-
-if __name__ == "__main__":
-	from PyQt5.QtWidgets import QApplication
-	app = QApplication(sys.argv)
-
-	test_json = [
-		{"text": "Hello, World"},
-		{"dropdown": ["hello", "bye", "this is a very long one"]},
-		{"int_entry": "number typing?"},
-		{"text": "test!"},
-		{"text_entry": "text entry"}
-	]
-
-	window = BlockBase(test_json, "test", "#00ff00", 1)
-	window.show()
-	app.exec_()

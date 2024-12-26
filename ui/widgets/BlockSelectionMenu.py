@@ -1,47 +1,51 @@
-from PyQt5.QtWidgets import QApplication, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QGraphicsProxyWidget
 from ui.subwidgets.RichTextDelegate import RichTextDelegate
+from backend.config_manager import ConfigManager
 from PyQt5.QtCore import Qt
 import math
 
 
-class CategorySidebar(QTableWidget):
-	def __init__(self, categories):
-		super().__init__()
-		delegate = RichTextDelegate()
-		self.setItemDelegate(delegate)
-		self.setFixedWidth(300)
-		self.setSelectionMode(QTableWidget.SingleSelection)
-		self.setColumnCount(2)
-		self.setRowCount(math.ceil(len(categories)/2))  # Set the number of rows based on categories
+class Category(QTableWidgetItem):
+	def __init__(self, text, color):
+		colored_text = f"<span style='color: {color};'>⬛</span> " + text
+		super().__init__(colored_text)
+		self.raw_text = text
+		self.setTextAlignment(Qt.AlignCenter)
+		self.setFlags(self.flags() & ~Qt.ItemIsEditable)
 
-		self.horizontalHeader().hide()
-		self.verticalHeader().hide()
+	def get_category_name(self):
+		return self.raw_text
+
+
+class BlockSelectionMenu(QGraphicsProxyWidget):
+	def __init__(self, parent_view, categories):
+		super().__init__()
+		self.setZValue(6)
+		delegate = RichTextDelegate()
+		self.parent_view = parent_view
+		self.table_widget = QTableWidget()
+		self.table_widget.setStyleSheet(f"background-color: {ConfigManager().get_config('styles')['category_selector_bg']}; ")
+		self.setWidget(self.table_widget)
+
+		self.table_widget.setItemDelegate(delegate)
+		self.table_widget.setFixedWidth(300)
+		self.table_widget.setSelectionMode(QTableWidget.SingleSelection)
+		self.table_widget.setColumnCount(2)
+		self.table_widget.setRowCount(math.ceil(len(categories)/2))
+		self.table_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+		self.table_widget.horizontalHeader().hide()
+		self.table_widget.verticalHeader().hide()
 
 		# Add category items to the table
 		for idx, category in enumerate(categories):
-			text = f"<span style='color: {category[1]};'>⬛</span> " + category[0]  # for styling
-			item = QTableWidgetItem(text)
-			item.setTextAlignment(Qt.AlignCenter)
-			item.setFlags(item.flags() & ~Qt.ItemIsEditable)  # Make item non-editable
-			self.setItem(math.floor(idx/2), idx%2, item)  # Place item
+			item = Category(category[0], category[1])
+			self.table_widget.setItem(math.floor(idx/2), idx % 2, item)
 
 		# Handle item click
-		self.cellClicked.connect(self.on_category_clicked)
+		self.table_widget.cellClicked.connect(self.on_category_clicked)
 
 	def on_category_clicked(self, row, column):
-		item = self.item(row, column)
+		item = self.table_widget.item(row, column)
 		if item:
-			category = item.text()
-			print(category)
-
-
-app = QApplication([])
-window = CategorySidebar([
-	("category 1", "#FF0000"),
-	("category 2", "#FFFF00"),
-	("category 3", "#FF00FF"),
-	("category 4", "#00FFFF"),
-	("category 5", "#00FF00"),
-	("category 6", "#0000FF")])
-window.show()
-app.exec_()
+			category = item.get_category_name()
+			self.parent_view.on_new_category(category)

@@ -1,5 +1,6 @@
 from PyQt5.QtGui import QTextDocument, QPen, QColor
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle
+from backend.config_manager import ConfigManager
 
 
 class RichTextDelegate(QStyledItemDelegate):
@@ -13,7 +14,8 @@ class RichTextDelegate(QStyledItemDelegate):
         painter.save()
         text = index.data()
         doc = QTextDocument()
-        doc.setHtml(text)  # Set HTML content
+        doc.setDefaultStyleSheet(f"body {{ color: {ConfigManager().get_config('styles')['text_color']}; }}")  # Set default text color
+        doc.setHtml(f"<body>{text}</body>")  # Wrap content in <body>
         doc.setTextWidth(option.rect.width())  # Adjust width
 
         # Render the text document
@@ -23,5 +25,6 @@ class RichTextDelegate(QStyledItemDelegate):
 
     def sizeHint(self, option, index):
         doc = QTextDocument()
-        doc.setHtml(index.data())
+        # doc.setDefaultStyleSheet("body { color: #888888; }")
+        # doc.setHtml(f"<body>{index.data()}</body>")
         return doc.size().toSize()

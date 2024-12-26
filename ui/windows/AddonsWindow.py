@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QHBoxLayout, QScrollArea, QCheckBox, QLabel, QLineEdit
 from ui.subwidgets.ListItem2 import ListItem
 from PyQt5.QtCore import Qt
+from ui.subwidgets.RichTextDelegate import RichTextDelegate
 
 
 def remove_duplicates(json_list):
@@ -63,7 +64,7 @@ class AddonsWindow(QWidget):
 		self.grid.addWidget(self.search_bar, 0, 0)
 		self.grid.addLayout(self.top_hbox, 1, 0)
 		self.grid.addWidget(self.scroll_area, 2, 0)
-		self.grid.addWidget(QLabel("Warning: you have to restart IDC for changes to apply"), 3, 0)
+		self.grid.addWidget(QLabel("<span style='color: red;'>WARNING:</span> you have to restart IDC right after deleting addons"), 3, 0)
 		self.setLayout(self.grid)
 
 	def populate_addons(self, addons_list):

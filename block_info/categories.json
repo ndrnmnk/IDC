@@ -1,0 +1,133 @@
+{
+  "Movement": {
+    "say_smt": {
+      "shape": 0,
+      "data": [
+        {"text": "say"},
+        {"text_entry": "hi"}
+      ]
+    },
+    "move_n_steps": {
+      "shape": 0,
+      "data": [
+        {"text": "move"},
+        {"bool_entry": "10"},
+        {"text": "steps"}
+      ]
+    },
+    "rotate_n_degrees": {
+      "shape": 0,
+      "data": [
+        {"text": "rotate"},
+        {"int_entry": "90"},
+        {"text": "degrees"}
+      ]
+    },
+    "scale_n_percent": {
+      "shape": 0,
+      "data": [
+        {"text": "scale"},
+        {"int_entry": "10"},
+        {"text": "%"}
+      ]
+    },
+    "set_height_to_x": {
+      "shape": 4,
+      "data": [
+        {"text": "set height to"},
+        {"dropdown": ["yes", "snake", "one million beers"]}
+      ]
+    }
+  },
+  "Visual": {
+    "say_smt": {
+      "shape": 0,
+      "data": [
+        {"text": "yell"},
+        {"text_entry": "yes"}
+      ]
+    },
+    "move_n_steps": {
+      "shape": 0,
+      "data": [
+        {"text": "find"},
+        {"int_entry": "10"},
+        {"text": "dollars"}
+      ]
+    },
+    "rotate_n_degrees": {
+      "shape": 0,
+      "data": [
+        {"text": "set variable to"},
+        {"int_entry": "90"}
+      ]
+    },
+    "scale_n_percent": {
+      "shape": 1,
+      "data": [
+        {"text": "wait till end"}
+      ]
+    }
+  },
+  "Long one": {
+    "yell_smt": {
+      "shape": 2,
+      "data": [
+        {"text": "yell"},
+        {"text_entry": "yes"}
+      ]
+    },
+    "find_n_dollars": {
+      "shape": 0,
+      "data": [
+        {"text": "find"},
+        {"int_entry": "10"},
+        {"text": "dollars"}
+      ]
+    },
+    "set_variable_to": {
+      "shape": 0,
+      "data": [
+        {"text": "set variable to"},
+        {"int_entry": "90"}
+      ]
+    },
+    "wait_till_end": {
+      "shape": 1,
+      "data": [
+        {"text": "wait till end"}
+      ]
+    },
+    "say_smt": {
+      "shape": 0,
+      "data": [
+        {"text": "say"},
+        {"text_entry": "hi"}
+      ]
+    },
+    "move_n_steps": {
+      "shape": 0,
+      "data": [
+        {"text": "move"},
+        {"int_entry": "10"},
+        {"text": "steps"}
+      ]
+    },
+    "rotate_n_degrees": {
+      "shape": 0,
+      "data": [
+        {"text": "rotate"},
+        {"int_entry": "90"},
+        {"text": "degrees"}
+      ]
+    },
+    "scale_n_percent": {
+      "shape": 0,
+      "data": [
+        {"text": "scale"},
+        {"int_entry": "10"},
+        {"text": "%"}
+      ]
+    }
+  }
+}

@@ -2,33 +2,38 @@ import sys
 from PyQt5.QtWidgets import QApplication, QLineEdit
 from PyQt5.QtGui import QRegularExpressionValidator
 from PyQt5.QtCore import QRegularExpression
+from backend.config_manager import ConfigManager
 
 
 class ResizableLineEdit(QLineEdit):
-	def __init__(self, placeholder="", int_entry=False, *args, **kwargs):
+	def __init__(self, placeholder="", int_entry=False, bool_entry=False, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.setFixedHeight(22)
 		self.setPlaceholderText(placeholder)
-		self.setTextMargins(2, 0, 0, 0)  # Adds 2px padding on the left
+		self.setTextMargins(2, 0, 0, 0)
+		bg = ConfigManager().get_config("styles")["text_field_bg"]
+		self.setStyleSheet(f"""
+			QToolTip {{ border-radius: 0px; }}
+				background-color: {bg};
+				border: 2px solid #000000;
+		""")
 		if int_entry:
-			self.setStyleSheet("""
-				QLineEdit {
-					background-color: #ffffff;
-					border: 2px solid #000000;
-					border-radius: 10px;
-				}
-			""")
+			self.setToolTip("Number entry")
+			self.setStyleSheet(self.styleSheet() + """border-radius: 10px;""")
 			pattern = r'^[0-9.-]*$'  # Only digits, hyphen, and dot
 			regex = QRegularExpression(pattern)
 			validator = QRegularExpressionValidator(regex, self)
 			self.setValidator(validator)
+		elif bool_entry:
+			self.setToolTip("Bool entry (1 or 0)")
+			self.setStyleSheet(self.styleSheet() + """border-radius: 5px;""")
+			self.setMaxLength(1)
+			pattern = r'^[0|1]*$'  # Only 1 or 0
+			regex = QRegularExpression(pattern)
+			validator = QRegularExpressionValidator(regex, self)
+			self.setValidator(validator)
 		else:
-			self.setStyleSheet("""
-				QLineEdit {
-					background-color: #ffffff;
-					border: 2px solid #000000;
-				}
-			""")
+			self.setToolTip("String entry")
 
 		# Adjust size based on placeholder text immediately
 		self.adjust_width()

@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import QComboBox, QStyleFactory
+from PyQt5.QtWidgets import QComboBox
 from PyQt5.QtGui import QFontMetrics
+from backend.config_manager import ConfigManager
 
 
 class ResizableDropdown(QComboBox):
@@ -8,16 +9,17 @@ class ResizableDropdown(QComboBox):
         self.addItems(options)
         self.setFixedHeight(24)
         self.font_metrics = QFontMetrics(self.font())
-        self.setStyleSheet("""
-            QComboBox {
-                background-color: #ffffff;
+        bg = ConfigManager().get_config("styles")["text_field_bg"]
+        self.setStyleSheet(f"""
+            QComboBox {{
+                background-color: {bg};
                 border: 2px solid #000000;
                 border-radius: 2px;
-            }
-            QComboBox::drop-down {
-                border: 3px solid #0000ff;
-                background-color: #e6f7ff;
-            }
+            }}
+            QComboBox::drop-down {{
+                border: 10px solid #0000ff;
+                background-color: {bg};
+            }}
         """)
 
         # Update the width dynamically when the selection changes

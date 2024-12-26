@@ -5,24 +5,18 @@ addons window - partially done (80%):
     add sorting
     allow dependencies
 
-block selection menu - partially done(40%):
-    add block deletion
+block selection menu - partially done(50%):
     add scrolling
     add tabs
 
-add/remove sprites - required
 rework textures and sounds as files - required
 AI tab - partially done (frontend only)
 options.json - required
 block converting - needed
 saving/opening project - needed
-update textures - required
 
 "you need to download blablabla compiler" warning window - recommended
 animations editor - idea
-
-Options.json where colors:
-ui/widgets/PreviewLine.py
 
 Block shapes:
 # 0 - basic, can snap have snaps on top and bottom;

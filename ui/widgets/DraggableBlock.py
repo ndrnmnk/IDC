@@ -52,6 +52,9 @@ class DraggableBlock(QGraphicsProxyWidget):
         self.block_polygon = self.calculate_block_polygon(self.widget())
         self.update()
 
+    def get_height(self):
+        return int(self.geometry().height())
+
     def shape(self):
         # overwrite default rectangle with new hitbox
         path = QPainterPath()
@@ -63,6 +66,8 @@ class DraggableBlock(QGraphicsProxyWidget):
             self.setParentItem(None)
             self.parent_view.add_block(self.block_data, self.pos(), True)
             self.spawn()
+            self.parent_view.menu_blocks_array.remove(self)
+            self.parent_view.regular_blocks_array.append(self)
         else:
             self.setZValue(2)
         # start drag and checking for snap
@@ -126,8 +131,11 @@ class DraggableBlock(QGraphicsProxyWidget):
         other_rect = item.sceneBoundingRect()
         if abs(self_rect.top() - other_rect.bottom()) < 15 \
                 and abs(self_rect.left() - other_rect.left()) < 45:
-            if item.allow_bottom_snap:
-                return True
+            try:
+                if item.allow_bottom_snap:
+                    return True
+            except AttributeError:
+                return False
         return False
 
     def update_snapped_pos(self, suicide=False):
@@ -155,9 +163,10 @@ class DraggableBlock(QGraphicsProxyWidget):
             self.preview_line = None
 
     def suicide(self):
-        # TODO: remove from the list
         self.clear_preview_line()
-        if self.scene():
-            self.scene().removeItem(self)
-        # Schedule deletion
+        self.scene().removeItem(self)
         self.deleteLater()
+        if self.spawner:
+            self.parent_view.menu_blocks_array.remove(self)
+        else:
+            self.parent_view.regular_blocks_array.remove(self)
