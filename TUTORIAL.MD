@@ -35,14 +35,14 @@ Addons must contain these files:
    └──__init__.py
 ```
 
-info.json must contain something like this:
+Where `info.json` must contain something like this:
 
 ```json
 {
-  "name": "Addon_name_that_uses_underscores_as_spaces",
-  "description": "Description of addon (required)",
-  "img_url": "link.to/logo-of-addon, or None",
-  "git_link": "link.to/git-repo-of-addon, or None",
+  "name": "Addon_name_in_snake_style",
+  "description": "Description of an addon (required)",
+  "img_url": "example.com/link-to-logo-of-addon, or None",
+  "git_link": "example.com/link-to-git-repo-of-addon, or None",
   "version": 1.0,
   "has_options": true
 }
@@ -56,7 +56,7 @@ def run(ui):
 
 def options_widget():
     # this function is required only if "has_options" is true in info.json
-    return QLabel("this is created using rude addon")
+    return QLabel("this label was made using example addon")
 ```
 
-And that's it! Go create your own addons!
+And that's it! Now you can create your own addons!
