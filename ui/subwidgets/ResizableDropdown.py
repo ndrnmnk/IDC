@@ -1,9 +1,12 @@
 from PyQt5.QtWidgets import QComboBox
 from PyQt5.QtGui import QFontMetrics
+from PyQt5.QtCore import pyqtSignal
 from backend.config_manager import ConfigManager
 
 
 class ResizableDropdown(QComboBox):
+    size_changed = pyqtSignal()
+
     def __init__(self, options, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.addItems(options)
@@ -17,8 +20,7 @@ class ResizableDropdown(QComboBox):
                 border-radius: 2px;
             }}
             QComboBox::drop-down {{
-                border: 10px solid #0000ff;
-                background-color: {bg};
+                background-color: "#0000ff";
             }}
         """)
 
@@ -33,9 +35,27 @@ class ResizableDropdown(QComboBox):
         current_text = self.currentText()
         text_width = self.font_metrics.horizontalAdvance(current_text)
         self.setFixedWidth(text_width + 28)
+        self.size_changed.emit()
 
     def sizeHint(self):
         # Override sizeHint to respect the style's preferred size
         hint = super().sizeHint()
         hint.setWidth(self.width())  # Maintain calculated width an
         return hint
+
+    def set_border_width(self, width=2, use_preview_color=False):
+        current_style = self.styleSheet()
+        if use_preview_color:
+            border_color = ConfigManager().get_config("styles")["preview_line_color"]
+        else:
+            border_color = "#000000"
+        updated_style = f"border: {width}px solid {border_color};"
+        # Replace existing border style or append the new one
+        if "border:" in current_style:
+            new_style = "\n".join([
+                line if not line.strip().startswith("border:") else updated_style
+                for line in current_style.splitlines()
+            ])
+        else:
+            new_style = current_style + updated_style
+        self.setStyleSheet(new_style)

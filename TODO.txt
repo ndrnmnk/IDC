@@ -5,13 +5,20 @@ addons window - partially done (80%):
     add sorting
     allow dependencies
 
-block selection menu - partially done(50%):
-    add scrolling
-    add tabs
+block selection menu - partially done(90%):
+    bugfix
+Blocks - partially done(60%):
+    add blocks like if, while, etc.
+    fix in-block unsnap teleport
+    add converting to code
+
+REFACTOR BLOCKS:
+    add snapping
+    add converting to code
+    optimize shapes.py
 
 rework textures and sounds as files - required
 AI tab - partially done (frontend only)
-options.json - required
 block converting - needed
 saving/opening project - needed
 
@@ -22,6 +29,10 @@ Block shapes:
 # 0 - basic, can snap have snaps on top and bottom;
 # 1 - basic with ONLY top snaps;
 # 2 - start block, ONLY bottom snaps;
-!3 - round variable blocks, snaps ONLY inside other blocks
-!4 - operator blocks, snaps ONLY inside other blocks
-5 - if/elif/while/switch-case blocks, multi-layered, probably need separate class
+3 - round variable blocks, snaps ONLY inside other blocks
+4 - operator blocks, snaps ONLY inside other blocks
+
+BUGS:
+1. Scenario where block height between layers is not getting updated
+2. Block elements aren't moved down if there is a change in height of a layer
+3. Snaplines don't disappear
