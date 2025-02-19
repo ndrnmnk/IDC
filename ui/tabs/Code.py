@@ -210,4 +210,4 @@ class CodeTabLayout(QGridLayout):
 				]
 			]}
 
-		self.view.add_blocks([json1, json2, json3, json4, json5, json6, json7, json8, json9, json10])
+		self.view.load_block_menu([json1, json2, json3, json4, json5, json6, json7, json8, json9, json10])

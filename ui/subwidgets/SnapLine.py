@@ -13,6 +13,7 @@ class SnapLine(QGraphicsWidget):
 		self.width = width
 		self.snapped_widget = None
 		self.setPos(pos)
+		self.setZValue(3)
 		self.setMaximumSize(width, 5)
 		self.visible = False
 

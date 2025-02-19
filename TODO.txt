@@ -13,9 +13,7 @@ Blocks - partially done(60%):
     add converting to code
 
 REFACTOR BLOCKS:
-    add snapping
     add converting to code
-    optimize shapes.py
 
 rework textures and sounds as files - required
 AI tab - partially done (frontend only)
@@ -33,6 +31,5 @@ Block shapes:
 4 - operator blocks, snaps ONLY inside other blocks
 
 BUGS:
-1. Scenario where block height between layers is not getting updated
-2. Block elements aren't moved down if there is a change in height of a layer
-3. Snaplines don't disappear
+1. The deletion of parent block leaves children
+2. The size issue of block types 3 and 4

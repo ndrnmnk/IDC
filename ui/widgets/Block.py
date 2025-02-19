@@ -76,6 +76,7 @@ class Block(QGraphicsObject):
 		self.populate_block()
 		self.path = self.create_path_from_points(self.generate_block_points())
 
+		self.setZValue(2 * self.spawner)
 		if not self.spawner:
 			self.create_lines_for_snappable_points()
 		# finally, show this widget
@@ -93,6 +94,7 @@ class Block(QGraphicsObject):
 
 	def mouseReleaseEvent(self, event):
 		super().mouseReleaseEvent(event)
+		self.parent_view.check_block_for_deletion(self)
 		self.setZValue(0)
 		self.try_to_snap()
 
@@ -193,6 +195,8 @@ class Block(QGraphicsObject):
 			self.create_lines_for_snappable_points()
 			self.input_json["pos"] = [self.pos().x(), self.pos().y()]
 			self.parent_view.add_block(self.input_json, True)
+			self.parent_view.menu_block_list.remove(self)
+			self.parent_view.block_list.append(self)
 			self.spawner = False
 
 	def try_to_snap(self):
