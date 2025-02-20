@@ -5,15 +5,12 @@ addons window - partially done (80%):
     add sorting
     allow dependencies
 
-block selection menu - partially done(90%):
-    bugfix
-Blocks - partially done(60%):
-    add blocks like if, while, etc.
-    fix in-block unsnap teleport
+block selection menu - partially done(50%):
+    add category selector
+    add scrollbars
+Blocks - partially done(90%):
     add converting to code
 
-REFACTOR BLOCKS:
-    add converting to code
 
 rework textures and sounds as files - required
 AI tab - partially done (frontend only)
@@ -21,7 +18,6 @@ block converting - needed
 saving/opening project - needed
 
 "you need to download blablabla compiler" warning window - recommended
-animations editor - idea
 
 Block shapes:
 # 0 - basic, can snap have snaps on top and bottom;

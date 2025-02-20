@@ -188,16 +188,22 @@ class Block(QGraphicsObject):
 			self.setParentItem(None)
 			# Restore the position in the scene
 			self.setPos(current_scene_pos)
-			# chain size update to parent blocks
+			# Chain size update to parent blocks
 			self.snap.unsnap()
 			self.snap = None
 		elif self.spawner:
+			# Convert the block's local coordinates to scene coordinates
+			scene_pos = self.mapToScene(0, 0)
 			self.create_lines_for_snappable_points()
+			# Use the scene coordinates so the block stays in the right place
 			self.input_json["pos"] = [self.pos().x(), self.pos().y()]
 			self.parent_view.add_block(self.input_json, True)
 			self.parent_view.menu_block_list.remove(self)
 			self.parent_view.block_list.append(self)
 			self.spawner = False
+			# Unparent and set the block to its scene position
+			self.setParentItem(None)
+			self.setPos(scene_pos)
 
 	def try_to_snap(self):
 		if self.snap_candidate is not None:

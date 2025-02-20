@@ -16,22 +16,25 @@ class ResizableLineEdit(QLineEdit):
         self.setAttribute(Qt.WA_TranslucentBackground)
         bg = ConfigManager().get_config("styles")["text_field_bg"]
         # bg = "#ffffff"
-        self.setStyleSheet(f"""
-            QToolTip {{ border-radius: 0px; }}
-            QLineEdit {{
-                background-color: {bg};
-                border: 2px solid #000000;
-            }}
-        """)
         if int_entry:
             self.setToolTip("Number entry")
-            self.setStyleSheet(self.styleSheet() + """border-radius: 10px;""")
+            border_radius = 10
             pattern = r'^[0-9.-]*$'  # Only digits, hyphen, and dot
             regex = QRegularExpression(pattern)
             validator = QRegularExpressionValidator(regex, self)
             self.setValidator(validator)
         else:
+            border_radius = 0
             self.setToolTip("String entry")
+
+        self.setStyleSheet(f"""
+             QToolTip {{ border-radius: 0px; }}
+             QLineEdit {{
+                 background-color: {bg};
+                 border: 2px solid #000000;
+                 border-radius: {border_radius}px;
+             }}
+         """)
 
         # Adjust size based on placeholder text immediately
         self.adjust_width()
