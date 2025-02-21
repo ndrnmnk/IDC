@@ -3,6 +3,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from io import BytesIO
 import requests
+from ui.subwidgets.RichTextDelegate import RichTextDelegate
 
 
 class ImageDownloader(QThread):

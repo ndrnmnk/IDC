@@ -1,12 +1,14 @@
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsRectItem
 from PyQt5.QtGui import QBrush, QColor, QWheelEvent
 from ui.widgets.Block import Block
+from ui.widgets.BlockSelectionMenu import BlockSelectionMenu
+from backend.config_manager import ConfigManager
 
 
 class BlockMenu(QGraphicsRectItem):
 	def __init__(self):
 		super().__init__(0, 0, 300, 10000)
-		self.setBrush(QBrush(QColor("#eeeeee")))
+		self.setBrush(QBrush(QColor(ConfigManager().get_config()["styles"]["block_menu_bg"])))
 		self.setZValue(1)
 
 		self.offset = 0
@@ -16,8 +18,8 @@ class BlockMenu(QGraphicsRectItem):
 	def wheelEvent(self, event: QWheelEvent):
 		# Determine the scroll direction
 		self.offset += event.delta()
-		self.offset = min(0, self.offset)
-		self.offset = max(self.view_height-self.max_offset, self.offset)
+		self.offset = max(self.view_height-self.max_offset, self.offset)  # bottom limit
+		self.offset = min(0, self.offset)  # top limit
 
 		event.accept()  # Prevent event propagation
 		self.scene().view.updateMenuPos()
@@ -32,6 +34,9 @@ class CodingGraphicsScene(QGraphicsScene):
 		self.menu = BlockMenu()
 		self.addItem(self.menu)
 
+		self.selector = BlockSelectionMenu(self.view, list(ConfigManager().get_config()["block_colors"].items()))
+		self.addItem(self.selector)
+
 
 class WorkspaceView(QGraphicsView):
 	def __init__(self):
@@ -41,14 +46,25 @@ class WorkspaceView(QGraphicsView):
 		self.centerOn(0, 0)
 		self.block_list = []
 		self.menu_block_list = []
+		self.scene().menu.view_height = self.viewport().height()
 
-	def load_block_menu(self, menu_blocks_list):
-		t = 10
-		for block_json in menu_blocks_list:
+	def load_block_menu(self, category):
+		# load configs
+		menu_blocks_list = ConfigManager().get_blocks()[category]
+		color = ConfigManager().get_config()["block_colors"][category]
+
+		# get a starting position
+		t = int(self.scene().selector.boundingRect().height()) + 10
+		# populate
+		for key in menu_blocks_list:  # for key in json
+			block_json = menu_blocks_list[key]
 			block_json["pos"] = [10, t]
+			block_json["internal_name"] = key
+			block_json["color"] = color
 			t += self.add_block(block_json, True) + 20
 		self.scene().menu.max_offset = int(t)
-		self.scene().menu.view_height = self.viewport().height()
+		self.scene().menu.offset = 0
+		self.updateMenuPos()
 
 	def add_blocks(self, all_blocks_list):
 		for block_json in all_blocks_list:
@@ -71,12 +87,22 @@ class WorkspaceView(QGraphicsView):
 		if caller.pos().x() + 20 < self.scene().menu.sceneBoundingRect().right():
 			caller.suicide()
 
+	def on_new_category(self, category):
+		self.clear_menu()
+		self.load_block_menu(category)
+
+	def clear_menu(self):
+		for block in self.menu_block_list[:]:
+			block.suicide()
+
 	def updateMenuPos(self):
 		try:
 			# Convert the top-left corner of the viewport (0,0) to scene coordinates
-			top_left_scene = self.mapToScene(0, self.scene().menu.offset)
+			top_left_scene = self.mapToScene(0, 0)
 			# Position the rectangle at that point
-			self.scene().menu.setPos(top_left_scene)
+			self.scene().menu.setPos(top_left_scene.x(), top_left_scene.y()+ self.scene().menu.offset)
+			self.scene().selector.setPos(top_left_scene)
+
 		except:
 			print("smt weird happened with menu pos, ignoring")
 

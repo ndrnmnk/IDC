@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGraphicsObject, QGraphicsTextItem
+from PyQt5.QtWidgets import QGraphicsObject, QGraphicsTextItem, QGraphicsProxyWidget, QComboBox
 from PyQt5.QtGui import QPainter, QColor, QPolygonF, QPen, QPainterPath, QFont
 from PyQt5.QtCore import QRectF, pyqtSignal
 from textures.blocks.shapes import generate_points
@@ -32,8 +32,8 @@ class Block(QGraphicsObject):
 	0 - regular block, allows top and bottom snaps
 	1 - no bottom connections block
 	2 - starter block, bottom snaps only
-	3 - variable block, can be snapped in EntryManager
-	4 - operator block, can be snapped in EntryManager
+	3 - operator block, can be snapped in EntryManager
+	4 - variable block, can be snapped in EntryManager
 	
 	For shapes 0, 1 and 2 other blocks can be snapped between the layers. 
 	Shapes 3 and 4 with multiple layers look weird and function like single-layer ones.
@@ -130,18 +130,16 @@ class Block(QGraphicsObject):
 
 	def create_lines_for_snappable_points(self):
 		for idx, point in enumerate(self.snappable_points):
-			self.snap_line_list.append(SnapLine(point, self.boundingRect().width()-40, self))
+			self.snap_line_list.append(SnapLine(point, self.boundingRect().width(), self))
 			self.snap_line_list[idx].sizeChanged.connect(lambda layer=idx: self.between_layer_height_changed(layer))
 
 	def repopulate_block(self, layer, idx):
 		self.prepareGeometryChange()
 
 		if idx != -1:  # if not called because of layer repopulate
-			h_changed = True
 			self.width_list[layer][idx] = self.content_list[layer][idx].get_width()
 			self.height_list[layer][idx] = self.content_list[layer][idx].get_height()
 		else:
-			h_changed = True
 			idx = 0
 
 		tx = self.content_list[layer][idx].x() + self.width_list[layer][idx] + 2
@@ -150,18 +148,17 @@ class Block(QGraphicsObject):
 			self.content_list[layer][idxn].setPos(tx, ty)
 			tx += self.width_list[layer][idxn]
 
-		if h_changed:
-			tx = 2
-			ty += max(self.height_list[layer])
+		tx = 2
+		ty += max(self.height_list[layer])
 
-			# Repopulate all the layers below the processed one
-			for lower_layer in range(layer + 1, len(self.content_list)):
-				ty += self.between_layers_height_list[lower_layer - 1]
-				for idxn in range(len(self.content_list[lower_layer])):
-					self.content_list[lower_layer][idxn].setPos(tx, ty)
-					tx += self.width_list[lower_layer][idxn]
-				tx = 2
-				ty += max(self.height_list[lower_layer])
+		# Repopulate all the layers below the processed one
+		for lower_layer in range(layer + 1, len(self.content_list)):
+			ty += self.between_layers_height_list[lower_layer - 1]
+			for idxn in range(len(self.content_list[lower_layer])):
+				self.content_list[lower_layer][idxn].setPos(tx, ty)
+				tx += self.width_list[lower_layer][idxn]
+			tx = 2
+			ty += max(self.height_list[lower_layer])
 
 		self.path = self.create_path_from_points(self.generate_block_points())
 
@@ -227,7 +224,7 @@ class Block(QGraphicsObject):
 		for item in self.scene().items():
 			if (self.shape_index in [0, 1] and (not isinstance(item, SnapLine) or item in self.snap_line_list)) \
 					or (self.shape_index in [3, 4] and (not isinstance(item, EntryManager) or item in self.content_list
-						or item.snapped_block or item.parentItem().spawner)):
+						or item.snapped_block or item.parentItem().spawner or not item.allowed_snaps[self.shape_index-3])):
 				continue
 
 			if self.check_item_for_snap(item):
@@ -297,7 +294,6 @@ class Block(QGraphicsObject):
 		self.add_content_item(layer, idx, content, tx, ty, lambda caller_idx=idx, caller_layer=layer: self.repopulate_block(caller_layer, caller_idx))
 
 	def suicide(self):
-		print("finally")
 		self.parent_view.scene().removeItem(self)
 
 		for line in self.snap_line_list:

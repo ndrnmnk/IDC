@@ -12,7 +12,7 @@ class ResizableDropdown(QComboBox):
         self.addItems(options)
         self.setFixedHeight(24)
         self.font_metrics = QFontMetrics(self.font())
-        bg = ConfigManager().get_config("styles")["text_field_bg"]
+        bg = ConfigManager().get_config()["styles"]["text_field_bg"]
         self.setStyleSheet(f"""
             QComboBox {{
                 background-color: {bg};
@@ -37,16 +37,10 @@ class ResizableDropdown(QComboBox):
         self.setFixedWidth(text_width + 28)
         self.size_changed.emit()
 
-    def sizeHint(self):
-        # Override sizeHint to respect the style's preferred size
-        hint = super().sizeHint()
-        hint.setWidth(self.width())  # Maintain calculated width an
-        return hint
-
     def set_border_width(self, width=2, use_preview_color=False):
         current_style = self.styleSheet()
         if use_preview_color:
-            border_color = ConfigManager().get_config("styles")["preview_line_color"]
+            border_color = ConfigManager().get_config()["styles"]["preview_line_color"]
         else:
             border_color = "#000000"
         updated_style = f"border: {width}px solid {border_color};"

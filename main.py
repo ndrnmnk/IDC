@@ -20,14 +20,13 @@ from backend.addons_manager import AddonsManager
 class MainWindow(QMainWindow):
 	def __init__(self, config):
 		super().__init__()
-
 		# Load data
-		self.setStyleSheet(f"background-color: {config.get_config('styles')['bg_color']}; ")
+		self.setStyleSheet(f"background-color: {config.get_config()['styles']['bg_color']};")
 
 		# Apply data
 		self.setWindowTitle("IDC")
-		self.setFont(QFont(config.get_config("font_family"), config.get_config("font_size")))
-		self.setWindowIcon(QIcon(config.get_config("icon_path")))
+		self.setFont(QFont(config.get_config()["font_family"], config.get_config()["font_size"]))
+		self.setWindowIcon(QIcon(config.get_config()["icon_path"]))
 		self.setMinimumSize(480, 360)
 
 		# Create top bar
@@ -53,10 +52,10 @@ class MainWindow(QMainWindow):
 		# create a layout
 		self.grid = QGridLayout(self.central_widget)
 		self.grid.setColumnStretch(0, 1)
-		self.grid.setColumnStretch(1, 2)
+		self.grid.setColumnStretch(1, 4)
 		self.grid.setRowStretch(0, 0)
-		self.grid.setRowStretch(1, 15)
-		self.grid.setRowStretch(2, 20)
+		self.grid.setRowStretch(1, 1)
+		self.grid.setRowStretch(2, 1)
 
 		# CREATE MAIN TABS
 		# create tab selector widget
@@ -190,7 +189,7 @@ if __name__ == "__main__":
 	config.load_blocks("block_info/categories.json")
 	app = QApplication(sys.argv)
 	app.setStyle("Fusion")
-	app.setStyleSheet(f"QWidget {{ color: {config.get_config('styles')['text_color']}; }}")
+	app.setStyleSheet(f"QWidget {{ color: {config.get_config()['styles']['text_color']}; }}")
 	window = MainWindow(config)
 
 	sys.exit(app.exec_())

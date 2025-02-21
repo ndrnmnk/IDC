@@ -16,7 +16,7 @@ class BoolLineEdit(QLineEdit):
 		self.setFont(self.font)
 		self.font_metrics = QFontMetrics(self.font)
 		self.border_color = "#000000"
-		bg = ConfigManager().get_config("styles")["text_field_bg"]
+		bg = ConfigManager().get_config()["styles"]["text_field_bg"]
 		self.setStyleSheet(f"""
 			QLineEdit {{
 				border: none;
@@ -51,7 +51,7 @@ class BoolLineEdit(QLineEdit):
 	def set_border_width(self, width=2, use_preview_color=False):
 		self.border_width = width
 		if use_preview_color:
-			self.border_color = ConfigManager().get_config("styles")["preview_line_color"]
+			self.border_color = ConfigManager().get_config()["styles"]["preview_line_color"]
 		else:
 			self.border_color = "#000000"
 		self.repaint()
@@ -64,7 +64,7 @@ class BoolLineEdit(QLineEdit):
 		pen.setWidth(self.border_width)  # Outline thickness
 		painter.setPen(pen)
 
-		bg = ConfigManager().get_config("styles")["text_field_bg"]
+		bg = ConfigManager().get_config()["styles"]["text_field_bg"]
 		painter.setBrush(QColor(bg))
 		points = generate_points(3, self.width(), [22], [0])[0]
 		polygon = QPolygonF(points)

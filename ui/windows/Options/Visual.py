@@ -23,13 +23,13 @@ class VisualOptions(QGridLayout):
 		self.addWidget(label, 5, 0)
 
 		# add options for built-in styles
-		for idx, item in enumerate(ConfigManager().get_config("styles").keys()):
+		for idx, item in enumerate(ConfigManager().get_config()["styles"].keys()):
 			button = QPushButton('Edit')
 			button.clicked.connect(lambda _, cat=item: self.open_color_dialog(cat, True))
 			self.addWidget(button, idx, 1)
 
 		# add options for categories
-		for idx, category in enumerate(ConfigManager().get_blocks(0).keys(), 6):
+		for idx, category in enumerate(ConfigManager().get_blocks().keys(), 6):
 			self.addWidget(QLabel(category), idx, 0)
 			button = QPushButton('Edit')
 			button.clicked.connect(lambda _, cat=category: self.open_color_dialog(cat))

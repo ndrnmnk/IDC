@@ -6,12 +6,11 @@ addons window - partially done (80%):
     allow dependencies
     allow colored text
 
-block selection menu - partially done(50%):
-    add category selector
-    add scrollbars
+block selection menu - partially done(90%):
+    add scrollbar
+    fix width of category selector
 Blocks - partially done(95%):
     add converting to code
-    add checks for block type before snap in
 
 rework textures and sounds as files - required
 AI tab - partially done (frontend only)
@@ -24,5 +23,8 @@ Block shapes:
 # 0 - basic, can snap have snaps on top and bottom;
 # 1 - basic with ONLY top snaps;
 # 2 - start block, ONLY bottom snaps;
-3 - round variable blocks, snaps ONLY inside other blocks
-4 - operator blocks, snaps ONLY inside other blocks
+3 - operator blocks, snaps ONLY inside other blocks
+4 - round variable blocks, snaps ONLY inside other blocks
+
+BUGS:
+    dimensions of dropdown are not calculated correctly with childrenBoundingRect

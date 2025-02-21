@@ -1,3 +1,4 @@
+from PyQt5.QtGui import QWheelEvent
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QGraphicsProxyWidget
 from ui.subwidgets.RichTextDelegate import RichTextDelegate
 from backend.config_manager import ConfigManager
@@ -21,13 +22,12 @@ class BlockSelectionMenu(QGraphicsProxyWidget):
 	def __init__(self, parent_view, categories):
 		super().__init__()
 		self.setZValue(6)
-		delegate = RichTextDelegate()
 		self.parent_view = parent_view
 		self.table_widget = QTableWidget()
-		self.table_widget.setStyleSheet(f"background-color: {ConfigManager().get_config('styles')['category_selector_bg']}; ")
+		self.table_widget.setStyleSheet(f"background-color: {ConfigManager().get_config()['styles']['category_selector_bg']}; ")
 		self.setWidget(self.table_widget)
 
-		self.table_widget.setItemDelegate(delegate)
+		self.table_widget.setItemDelegate(RichTextDelegate())
 		self.table_widget.setFixedWidth(300)
 		self.table_widget.setSelectionMode(QTableWidget.SingleSelection)
 		self.table_widget.setColumnCount(2)
@@ -49,3 +49,7 @@ class BlockSelectionMenu(QGraphicsProxyWidget):
 		if item:
 			category = item.get_category_name()
 			self.parent_view.on_new_category(category)
+			
+	def wheelEvent(self, event: QWheelEvent):
+		super().wheelEvent(event)
+		event.accept()  # Prevent event propagation

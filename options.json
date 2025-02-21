@@ -4,15 +4,16 @@
     "icon_path": "textures/images/logo.png",
     "styles": {
         "text_color": "#000000",
-        "bg_color": "#ffffff",
-        "block_menu_bg": "#63452c",
-        "category_selector_bg": "#ffffff",
+        "bg_color": "#eeeeee",
+        "block_menu_bg": "#dddddd",
+        "category_selector_bg": "#ddddff",
         "text_field_bg": "#ffffff",
-        "preview_line_color": "#8800ff"
+        "preview_line_color": "#8888ff"
     },
     "block_colors": {
         "Movement": "#c061cb",
         "Visual": "#ffbe6f",
-        "Long one": "#3584e4"
+        "Long oneeeeeeeeee": "#3584e4",
+        "T": "#ffff00"
     }
 }

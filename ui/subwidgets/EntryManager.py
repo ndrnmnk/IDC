@@ -14,7 +14,7 @@ class EntryManager(QGraphicsProxyWidget):
 			from ui.subwidgets.ResizableLineEdit import ResizableLineEdit
 			self.entry = ResizableLineEdit(placeholder_text, int_entry=entry_type)
 			self.allow_variable_snap_in = True
-			self.allowed_snaps = [True, True]
+			self.allowed_snaps = [1, 1]
 		elif entry_type == 2:
 			from ui.subwidgets.BoolLineEdit import BoolLineEdit
 			self.entry = BoolLineEdit(placeholder_text)
@@ -28,7 +28,6 @@ class EntryManager(QGraphicsProxyWidget):
 		self.widget().size_changed.connect(self.sizeChanged.emit)
 
 	def snap_in(self, widget_to_snap):
-		# check for block type before snap in
 		self.snapped_block = widget_to_snap
 		self.snapped_block.sizeChanged.connect(self.sizeChanged.emit)
 		self.setWidget(None)
@@ -48,7 +47,7 @@ class EntryManager(QGraphicsProxyWidget):
 	def get_height(self):
 		if not self.snapped_block:
 			return self.boundingRect().height()
-		return self.snapped_block.boundingRect().height()
+		return self.snapped_block.boundingRect().height() + 4
 
 	def unsnap(self):
 		self.snapped_block.disconnect()

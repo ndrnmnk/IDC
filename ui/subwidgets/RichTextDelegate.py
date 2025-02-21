@@ -14,7 +14,7 @@ class RichTextDelegate(QStyledItemDelegate):
         painter.save()
         text = index.data()
         doc = QTextDocument()
-        doc.setDefaultStyleSheet(f"body {{ color: {ConfigManager().get_config('styles')['text_color']}; }}")  # Set default text color
+        doc.setDefaultStyleSheet(f"body {{ color: {ConfigManager().get_config()['styles']['text_color']}; }}")  # Set default text color
         doc.setHtml(f"<body>{text}</body>")  # Wrap content in <body>
         doc.setTextWidth(option.rect.width())  # Adjust width
 

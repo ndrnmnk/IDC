@@ -21,12 +21,10 @@ class ConfigManager:
         with open(file_path, 'r') as file:
             self.blocks = json.load(file)
 
-    def get_config(self, key, default=None):
-        return self.config.get(key, default)
+    def get_config(self):
+        return self.config
 
-    def get_blocks(self, key, default=None):
-        if key is not 0:
-            return self.blocks.get(key, default)
+    def get_blocks(self):
         return self.blocks
 
     def set(self, key, value):

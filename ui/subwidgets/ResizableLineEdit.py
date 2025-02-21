@@ -14,7 +14,7 @@ class ResizableLineEdit(QLineEdit):
         self.setTextMargins(2, 0, 0, 0)
         self.border_width = 2
         self.setAttribute(Qt.WA_TranslucentBackground)
-        bg = ConfigManager().get_config("styles")["text_field_bg"]
+        bg = ConfigManager().get_config()["styles"]["text_field_bg"]
         # bg = "#ffffff"
         if int_entry:
             self.setToolTip("Number entry")
@@ -56,7 +56,7 @@ class ResizableLineEdit(QLineEdit):
         self.border_width = width
         current_style = self.styleSheet()
         if use_preview_color:
-            border_color = ConfigManager().get_config("styles")["preview_line_color"]
+            border_color = ConfigManager().get_config()["styles"]["preview_line_color"]
         else:
             border_color = "#000000"
         updated_style = f"border: {width}px solid {border_color};"

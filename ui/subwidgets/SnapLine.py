@@ -56,7 +56,7 @@ class SnapLine(QGraphicsWidget):
 		if not self.visible:
 			return
 
-		color = QColor(ConfigManager().get_config("styles")["preview_line_color"])
+		color = QColor(ConfigManager().get_config()["styles"]["preview_line_color"])
 		painter.setRenderHint(QPainter.HighQualityAntialiasing)
 		pen = QPen(color, 3, Qt.SolidLine)
 		painter.setPen(pen)
