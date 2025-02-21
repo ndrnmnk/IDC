@@ -69,14 +69,16 @@ class WorkspaceView(QGraphicsView):
 
 	def check_block_for_deletion(self, caller):
 		if caller.pos().x() + 20 < self.scene().menu.sceneBoundingRect().right():
-			caller.deleteLater()
-			self.block_list.remove(caller)
+			caller.suicide()
 
 	def updateMenuPos(self):
-		# Convert the top-left corner of the viewport (0,0) to scene coordinates
-		top_left_scene = self.mapToScene(0, self.scene().menu.offset)
-		# Position the rectangle at that point
-		self.scene().menu.setPos(top_left_scene)
+		try:
+			# Convert the top-left corner of the viewport (0,0) to scene coordinates
+			top_left_scene = self.mapToScene(0, self.scene().menu.offset)
+			# Position the rectangle at that point
+			self.scene().menu.setPos(top_left_scene)
+		except:
+			print("smt weird happened with menu pos, ignoring")
 
 	def scrollContentsBy(self, dx, dy):
 		# First, perform the default scroll behavior

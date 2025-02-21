@@ -226,7 +226,8 @@ class Block(QGraphicsObject):
 	def check_for_snap(self):
 		for item in self.scene().items():
 			if (self.shape_index in [0, 1] and (not isinstance(item, SnapLine) or item in self.snap_line_list)) \
-					or (self.shape_index in [3, 4] and (not isinstance(item, EntryManager) or item in self.content_list)):
+					or (self.shape_index in [3, 4] and (not isinstance(item, EntryManager) or item in self.content_list
+						or item.snapped_block or item.parentItem().spawner)):
 				continue
 
 			if self.check_item_for_snap(item):
@@ -295,237 +296,26 @@ class Block(QGraphicsObject):
 		content = EntryManager(self, entry_type, entry_data)
 		self.add_content_item(layer, idx, content, tx, ty, lambda caller_idx=idx, caller_layer=layer: self.repopulate_block(caller_layer, caller_idx))
 
+	def suicide(self):
+		print("finally")
+		self.parent_view.scene().removeItem(self)
 
-if __name__ == "__main__":
-	from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene
+		for line in self.snap_line_list:
+			line.disconnect()
+			if line.snapped_block:
+				line.snapped_block.suicide()
+				line.unsnap()
 
-	app = QApplication([])
-	scene = QGraphicsScene()
-	view = QGraphicsView()
-	view.setScene(scene)
-	view.show()
+		for layer in self.content_list:
+			for item in layer:
+				if isinstance(item, EntryManager):
+					item.disconnect()
+					if item.snapped_block:
+						item.snapped_block.suicide()
+						item.unsnap()
 
-	json1 = {
-		"shape": 0,
-		"internal_name": "move_n_steps",
-		"color": "#888888",
-		"data": [
-			[
-				{"dropdown": ["hgfghgfghgfghgf", "run"]},
-				{"text": "whatever"},
-				{"int_entry": "10"},
-				{"text": "steps to"},
-				{"text_entry": "WW3"},
-				{"text": "that will begin in"},
-				{"bool_entry": "0"}
-			],
-			[
-				{"text": "if"},
-				{"bool_entry": "0"}
-			],
-			[
-				{"text": "elif"},
-				{"bool_entry": "0"}
-			],
-			[
-				{"text": "else"}
-			],
-			[
-				{"text": "why do you need so much layers"}
-			]
-		]}
-
-	json2 = {
-		"shape": 0,
-		"internal_name": "move_n_steps",
-		"color": "#888888",
-		"data": [
-			[
-				{"text": "Move"},
-				{"int_entry": "10"},
-				{"text": "steps to"},
-				{"text_entry": "WW3"},
-				{"text": "that will begin in"},
-				{"bool_entry": "0"}
-			]
-		]}
-
-	json3 = {
-		"shape": 1,
-		"internal_name": "move_n_steps",
-		"color": "#888888",
-		"data": [
-			[
-				{"text": "move"},
-				{"int_entry": "10"},
-				{"text": "steps to"},
-				{"text_entry": "WW3"},
-				{"text": "that will begin in"},
-				{"bool_entry": "0"}
-			],
-			[
-				{"text": "if"},
-				{"bool_entry": "0"}
-			],
-			[
-				{"text": "elif"},
-				{"bool_entry": "0"}
-			],
-			[
-				{"text": "else"}
-			],
-			[
-				{"text": "why do you need so much layers"}
-			]
-		]}
-
-	json4 = {
-		"shape": 1,
-		"internal_name": "move_n_steps",
-		"color": "#888888",
-		"data": [
-			[
-				{"text": "Move"},
-				{"int_entry": "10"},
-				{"text": "steps to"},
-				{"text_entry": "WW3"},
-				{"text": "that will begin in"},
-				{"bool_entry": "0"}
-			]
-		]}
-
-	json5 = {
-		"shape": 2,
-		"internal_name": "move_n_steps",
-		"color": "#888888",
-		"data": [
-			[
-				{"text": "move"},
-				{"int_entry": "10"},
-				{"text": "steps to"},
-				{"text_entry": "WW3"},
-				{"text": "that will begin in"},
-				{"bool_entry": "0"}
-			],
-			[
-				{"text": "if"},
-				{"bool_entry": "0"}
-			],
-			[
-				{"text": "elif"},
-				{"bool_entry": "0"}
-			],
-			[
-				{"text": "else"}
-			],
-			[
-				{"text": "why do you need so much layers"}
-			]
-		]}
-
-	json6 = {
-		"shape": 2,
-		"internal_name": "move_n_steps",
-		"color": "#888888",
-		"data": [
-			[
-				{"text": "Move"},
-				{"int_entry": "10"},
-				{"text": "steps to"},
-				{"text_entry": "WW3"},
-				{"text": "that will begin in"},
-				{"bool_entry": "0"}
-			]
-		]}
-
-	json7 = {
-		"shape": 3,
-		"internal_name": "move_n_steps",
-		"color": "#888888",
-		"data": [
-			[
-				{"text": "move"},
-				{"int_entry": "10"},
-				{"text": "steps to"},
-				{"text_entry": "WW3"},
-				{"text": "that will begin in"},
-				{"bool_entry": "0"}
-			],
-			[
-				{"text": "икщ ащкпще ещ срфтпу еру лунищфкв дфнщге *ісгдд*"}
-			]
-		]}
-
-	json8 = {
-		"shape": 3,
-		"internal_name": "move_n_steps",
-		"color": "#888888",
-		"data": [
-			[
-				{"text": "Move"},
-				{"int_entry": "10"},
-				{"text": "steps to"},
-				{"text_entry": "WW3"},
-				{"text": "that will begin in"},
-				{"bool_entry": "0"}
-			]
-		]}
-
-	json9 = {
-		"shape": 1,
-		"internal_name": "move_n_steps",
-		"color": "#ff0000",
-		"data": [
-			[
-				{"text_entry": " "}
-			],
-			[
-				{"text": "check out my git: https://github.com/ndrnmnk"}
-			]
-		]}
-
-	json10 = {
-		"shape": 4,
-		"internal_name": "move_n_steps",
-		"color": "#888888",
-		"data": [
-			[
-				{"text": "This is the new beta of me scratch clone"}
-			]
-		]}
-
-	block1 = Block(None, json1, True)
-	block2 = Block(None, json2, False)
-	block3 = Block(None, json3, False)
-	block4 = Block(None, json4, False)
-	block5 = Block(None, json5, False)
-	block6 = Block(None, json6, False)
-	block7 = Block(None, json7, False)
-	block8 = Block(None, json8, False)
-	block9 = Block(None, json9, False)
-	block0 = Block(None, json10, False)
-	scene.addItem(block1)
-	scene.addItem(block2)
-	scene.addItem(block3)
-	scene.addItem(block4)
-	scene.addItem(block5)
-	scene.addItem(block6)
-	scene.addItem(block7)
-	scene.addItem(block8)
-	scene.addItem(block9)
-	scene.addItem(block0)
-	block1.setPos(50, 100)
-	block2.setPos(100, 350)
-	block3.setPos(100, 400)
-	block4.setPos(100, 650)
-	block5.setPos(600, 100)
-	block6.setPos(600, 350)
-	block7.setPos(600, 400)
-	block8.setPos(600, 550)
-	block9.setPos(600, 700)
-	block0.setPos(600, 600)
-
-	window = view
-	window.setMinimumSize(1200, 800)
-
-	app.exec_()
+		if self.spawner:
+			self.parent_view.menu_block_list.remove(self)
+		else:
+			self.parent_view.block_list.remove(self)
+		self.deleteLater()

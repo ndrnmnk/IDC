@@ -9,30 +9,30 @@ class EntryManager(QGraphicsProxyWidget):
 		super().__init__(parent)
 		self.snapped_block = None
 		self.entry_type = entry_type
-		self.allow_variable_snap_in = False
-		self.allow_operator_snap_in = False
-		self.allow_bottom_snap = False
+		self.allowed_snaps = [0, 0]  # bool snap, variable snap
 		if entry_type < 2:
 			from ui.subwidgets.ResizableLineEdit import ResizableLineEdit
 			self.entry = ResizableLineEdit(placeholder_text, int_entry=entry_type)
 			self.allow_variable_snap_in = True
+			self.allowed_snaps = [True, True]
 		elif entry_type == 2:
 			from ui.subwidgets.BoolLineEdit import BoolLineEdit
 			self.entry = BoolLineEdit(placeholder_text)
-			self.allow_operator_snap_in = True
+			self.allowed_snaps = [1, 0]
 		elif entry_type == 3:
 			from ui.subwidgets.ResizableDropdown import ResizableDropdown
 			self.entry = ResizableDropdown(options=placeholder_text)
-			self.allow_variable_snap_in = True
+			self.allowed_snaps = [0, 0]
 
 		self.setWidget(self.entry)
 		self.widget().size_changed.connect(self.sizeChanged.emit)
 
 	def snap_in(self, widget_to_snap):
+		# check for block type before snap in
 		self.snapped_block = widget_to_snap
-		self.sizeChanged.emit()
+		self.snapped_block.sizeChanged.connect(self.sizeChanged.emit)
 		self.setWidget(None)
-		# hide self.entry without making snapped_block invisible
+		self.sizeChanged.emit()
 
 	def show_line(self):
 		self.entry.set_border_width(4, True)
@@ -51,6 +51,7 @@ class EntryManager(QGraphicsProxyWidget):
 		return self.snapped_block.boundingRect().height()
 
 	def unsnap(self):
+		self.snapped_block.disconnect()
 		self.snapped_block = None
 		self.sizeChanged.emit()
 		self.setWidget(self.entry)

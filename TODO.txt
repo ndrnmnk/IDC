@@ -4,13 +4,14 @@ options window - partially done (50%):
 addons window - partially done (80%):
     add sorting
     allow dependencies
+    allow colored text
 
 block selection menu - partially done(50%):
     add category selector
     add scrollbars
-Blocks - partially done(90%):
+Blocks - partially done(95%):
     add converting to code
-
+    add checks for block type before snap in
 
 rework textures and sounds as files - required
 AI tab - partially done (frontend only)
@@ -25,7 +26,3 @@ Block shapes:
 # 2 - start block, ONLY bottom snaps;
 3 - round variable blocks, snaps ONLY inside other blocks
 4 - operator blocks, snaps ONLY inside other blocks
-
-BUGS:
-1. The deletion of parent block leaves children
-2. The size issue of block types 3 and 4

@@ -11,7 +11,7 @@ class SnapLine(QGraphicsWidget):
 	def __init__(self, pos, width, parent=None):
 		super().__init__(parent)
 		self.width = width
-		self.snapped_widget = None
+		self.snapped_block = None
 		self.setPos(pos)
 		self.setZValue(3)
 		self.setMaximumSize(width, 5)
@@ -28,23 +28,23 @@ class SnapLine(QGraphicsWidget):
 		self.update()
 
 	def snap_in(self, widget):
-		if self.snapped_widget:
-			old_widget = self.snapped_widget
-			self.snapped_widget.unsnap()
+		if self.snapped_block:
+			old_widget = self.snapped_block
+			self.snapped_block.unsnap()
 			if widget.shape_index != 1 or widget.snap_line_list:
 				old_widget.snap_candidate = widget.snap_line_list[0]
 				old_widget.try_to_snap()
-		self.snapped_widget = widget
-		self.snapped_widget.sizeChanged.connect(self.sizeChanged.emit)
+		self.snapped_block = widget
+		self.snapped_block.sizeChanged.connect(self.sizeChanged.emit)
 
 	def unsnap(self):
-		self.snapped_widget.sizeChanged.disconnect()
-		self.snapped_widget = None
+		self.snapped_block.sizeChanged.disconnect()
+		self.snapped_block = None
 		self.sizeChanged.emit()
 
 	def get_height(self):
-		if self.snapped_widget:
-			rect = self.snapped_widget.boundingRect().united(self.snapped_widget.childrenBoundingRect())
+		if self.snapped_block:
+			rect = self.snapped_block.boundingRect().united(self.snapped_block.childrenBoundingRect())
 			return rect.height() - 5
 		return 18
 
