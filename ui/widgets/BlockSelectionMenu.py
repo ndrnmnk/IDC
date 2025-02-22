@@ -1,8 +1,8 @@
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QGraphicsProxyWidget, QHeaderView
 from PyQt5.QtGui import QWheelEvent
-from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QGraphicsProxyWidget
+from PyQt5.QtCore import Qt
 from ui.subwidgets.RichTextDelegate import RichTextDelegate
 from backend.config_manager import ConfigManager
-from PyQt5.QtCore import Qt
 import math
 
 
@@ -29,6 +29,7 @@ class BlockSelectionMenu(QGraphicsProxyWidget):
 
 		self.table_widget.setItemDelegate(RichTextDelegate())
 		self.table_widget.setFixedWidth(300)
+		self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 		self.table_widget.setSelectionMode(QTableWidget.SingleSelection)
 		self.table_widget.setColumnCount(2)
 		self.table_widget.setRowCount(math.ceil(len(categories)/2))

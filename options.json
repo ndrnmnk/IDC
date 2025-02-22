@@ -15,5 +15,12 @@
         "Visual": "#ffbe6f",
         "Long oneeeeeeeeee": "#3584e4",
         "T": "#ffff00"
+    },
+    "addon_category_colors": {
+        "Installed": "#00ff00",
+        "Compilers": "#ff0000",
+        "Customization": "#ffff00",
+        "Others": "#888888",
+        "Not defined": "#ffffff"
     }
 }

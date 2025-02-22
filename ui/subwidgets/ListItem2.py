@@ -3,7 +3,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from io import BytesIO
 import requests
-from ui.subwidgets.RichTextDelegate import RichTextDelegate
+from backend.config_manager import ConfigManager
 
 
 class ImageDownloader(QThread):
@@ -26,12 +26,16 @@ class ImageDownloader(QThread):
 
 
 class ListItem(QWidget):
-	def __init__(self, manager, name, description, img_url=None, git_link=None):
+	def __init__(self, manager, name, description, categories=None, img_url=None, git_link=None):
 		super().__init__()
+
+		if categories is None:
+			categories = ["Compilers", "Customization"]
 
 		self.manager = manager
 		self.git_link = git_link
 		self.name = name
+		self.categories = categories
 
 		hbox = QHBoxLayout()
 		vbox = QVBoxLayout()
@@ -52,6 +56,7 @@ class ListItem(QWidget):
 		if self.git_link is None or name in self.manager.ia:
 			self.btn.setText("Uninstall")
 			self.btn.pressed.connect(self.uninstall_module)
+			self.categories.append("Installed")
 			if name in self.manager.to_update:
 				print(name + " could be updated")
 				self.btn2 = QPushButton()
@@ -72,6 +77,8 @@ class ListItem(QWidget):
 		hbox.addWidget(self.image_label)
 		hbox.addLayout(vbox)
 		vbox.addWidget(title_label)
+		vbox.addLayout(self.generate_categories_hbox())
+		# vbox.addWidget(QLabel(str(categories)))
 		vbox.addWidget(QLabel(description))
 		buttons_hbox.addWidget(self.btn)
 		vbox.addLayout(buttons_hbox)
@@ -108,3 +115,9 @@ class ListItem(QWidget):
 			self.btn.pressed.connect(self.install_module)
 		else:
 			self.deleteLater()
+
+	def generate_categories_hbox(self):
+		hbox = QHBoxLayout()
+		for item in self.categories:
+			hbox.addWidget(QLabel(f"<span style='background-color:{ConfigManager().get_config()['addon_category_colors'][item]};'>{item}</span>"))
+		return hbox

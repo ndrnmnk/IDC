@@ -4,18 +4,13 @@ options window - partially done (30%):
 addons window - partially done (80%):
     add sorting
     allow dependencies
-    allow colored text
 
-block selection menu - partially done(90%):
-    add scrollbar
-    fix width of category selector
 Blocks - partially done(95%):
     add enable/disable block ability for addons
     add converting to code
 
 rework textures and sounds as files - required
 AI tab - partially done (frontend only)
-block converting - needed
 saving/opening project - needed
 
 "you need to download blablabla compiler" warning window - recommended

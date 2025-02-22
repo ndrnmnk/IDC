@@ -1,13 +1,14 @@
-from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsRectItem
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsRectItem, QScrollBar, QGraphicsProxyWidget
 from PyQt5.QtGui import QBrush, QColor, QWheelEvent
+from PyQt5.QtCore import Qt
 from ui.widgets.Block import Block
 from ui.widgets.BlockSelectionMenu import BlockSelectionMenu
 from backend.config_manager import ConfigManager
 
 
 class BlockMenu(QGraphicsRectItem):
-	def __init__(self):
-		super().__init__(0, 0, 300, 10000)
+	def __init__(self, width=300, scene_height=10000):
+		super().__init__(0, 0, width, scene_height)
 		self.setBrush(QBrush(QColor(ConfigManager().get_config()["styles"]["block_menu_bg"])))
 		self.setZValue(1)
 
@@ -37,6 +38,14 @@ class CodingGraphicsScene(QGraphicsScene):
 		self.selector = BlockSelectionMenu(self.view, list(ConfigManager().get_config()["block_colors"].items()))
 		self.addItem(self.selector)
 
+		self.menu_scrollbar = QGraphicsProxyWidget()
+		self.scrollbar_menu = QScrollBar(Qt.Vertical)
+		self.scrollbar_menu.setRange(0, 0)
+		self.menu_scrollbar.setWidget(self.scrollbar_menu)
+		self.scrollbar_menu.valueChanged.connect(self.view.on_scrollbar_changed)
+		self.addItem(self.menu_scrollbar)
+		self.menu_scrollbar.setZValue(1)
+
 
 class WorkspaceView(QGraphicsView):
 	def __init__(self):
@@ -64,6 +73,12 @@ class WorkspaceView(QGraphicsView):
 			t += self.add_block(block_json, True) + 20
 		self.scene().menu.max_offset = int(t)
 		self.scene().menu.offset = 0
+		# update scrollbar range
+		scroll_range = max(0, int(t) - self.viewport().height())
+		self.scene().scrollbar_menu.setRange(0, scroll_range)
+		self.scene().scrollbar_menu.setPageStep(self.viewport().height())
+		self.scene().scrollbar_menu.setValue(0)
+
 		self.updateMenuPos()
 
 	def add_blocks(self, all_blocks_list):
@@ -91,6 +106,11 @@ class WorkspaceView(QGraphicsView):
 		self.clear_menu()
 		self.load_block_menu(category)
 
+	def on_scrollbar_changed(self, value):
+		# Invert the scrollbar value so that 0 means offset=0 (menu at top)
+		self.scene().menu.offset = -value
+		self.updateMenuPos()
+
 	def clear_menu(self):
 		for block in self.menu_block_list[:]:
 			block.suicide()
@@ -100,10 +120,16 @@ class WorkspaceView(QGraphicsView):
 			# Convert the top-left corner of the viewport (0,0) to scene coordinates
 			top_left_scene = self.mapToScene(0, 0)
 			# Position the rectangle at that point
-			self.scene().menu.setPos(top_left_scene.x(), top_left_scene.y()+ self.scene().menu.offset)
+			self.scene().menu.setPos(top_left_scene.x(), top_left_scene.y()+self.scene().menu.offset)
 			self.scene().selector.setPos(top_left_scene)
+			self.scene().menu_scrollbar.setPos(top_left_scene.x()+285, top_left_scene.y()+int(self.scene().selector.boundingRect().height()))
 
-		except:
+			# sync scrollbar and menu scroll
+			self.scene().scrollbar_menu.blockSignals(True)
+			self.scene().scrollbar_menu.setValue(-self.scene().menu.offset)
+			self.scene().scrollbar_menu.blockSignals(False)
+		except Exception as e:
+			print(e)
 			print("smt weird happened with menu pos, ignoring")
 
 	def scrollContentsBy(self, dx, dy):
@@ -113,7 +139,14 @@ class WorkspaceView(QGraphicsView):
 		self.updateMenuPos()
 
 	def resizeEvent(self, event):
+		# Also update position when the view is resized
 		super().resizeEvent(event)
 		self.scene().menu.view_height = self.viewport().height()
-		# Also update the rectangle position when the view is resized
+		self.scene().scrollbar_menu.setFixedSize(15, self.viewport().height()-int(self.scene().selector.boundingRect().height()))
+
+		# Update scrollbar range
+		scroll_range = max(0, self.scene().menu.max_offset - self.scene().menu.view_height)
+		self.scene().scrollbar_menu.setRange(0, scroll_range)
+		self.scene().scrollbar_menu.setPageStep(self.scene().menu.view_height)
+
 		self.updateMenuPos()
