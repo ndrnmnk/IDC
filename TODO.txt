@@ -1,4 +1,4 @@
-options window - partially done (50%):
+options window - partially done (30%):
     fix artifacts
     add real options
 addons window - partially done (80%):
@@ -10,6 +10,7 @@ block selection menu - partially done(90%):
     add scrollbar
     fix width of category selector
 Blocks - partially done(95%):
+    add enable/disable block ability for addons
     add converting to code
 
 rework textures and sounds as files - required
@@ -25,6 +26,3 @@ Block shapes:
 # 2 - start block, ONLY bottom snaps;
 3 - operator blocks, snaps ONLY inside other blocks
 4 - round variable blocks, snaps ONLY inside other blocks
-
-BUGS:
-    dimensions of dropdown are not calculated correctly with childrenBoundingRect

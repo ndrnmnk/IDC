@@ -2,9 +2,11 @@ from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QFrame
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 
+
 class ListItem(QFrame):
-	def __init__(self, name, image_path, show_image_size=True):
+	def __init__(self, name, image_path, show_image_res=True):
 		super().__init__()
+		self.setFixedSize(80, 140)
 
 		# Create the image label
 		self.image_label = QLabel(self)
@@ -20,7 +22,7 @@ class ListItem(QFrame):
 		text_layout.addWidget(self.image_label)
 		text_layout.addWidget(name_label)
 
-		if show_image_size:
+		if show_image_res:
 			size_label = QLabel(f"{pixmap.width()}x{pixmap.height()}")
 			size_label.setStyleSheet("font-size: 10px;")
 			text_layout.addWidget(size_label)

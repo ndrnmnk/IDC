@@ -264,10 +264,7 @@ class Block(QGraphicsObject):
 		return path
 
 	def boundingRect(self) -> QRectF:
-		rect = self.path.boundingRect()
-		if self.shape_index == 1:
-			return QRectF(rect.x(), rect.y(), rect.width(), rect.height() + 5)
-		return rect
+		return self.path.boundingRect()
 
 	def paint(self, painter: QPainter, option, widget=None):
 		painter.setBrush(QColor(self.color))
@@ -315,3 +312,16 @@ class Block(QGraphicsObject):
 		else:
 			self.parent_view.block_list.remove(self)
 		self.deleteLater()
+
+	def customBoundingRect(self) -> QRectF:
+		# Start with this Block's own bounding rect.
+		combined_rect = self.boundingRect()
+		# Recursively include bounding rects of child Block instances.
+		for child in self.childItems():
+			if (isinstance(child, EntryManager) or isinstance(child, SnapLine)) and child.snapped_block:
+				# Get child's custom bounding rect and translate it to this block's coordinate system.
+				child_rect = child.mapRectToParent(child.snapped_block.customBoundingRect())
+				combined_rect = combined_rect.united(child_rect)
+		if self.shape_index == 1:
+			return QRectF(combined_rect.x(), combined_rect.y(), combined_rect.width(), combined_rect.height() + 5)
+		return combined_rect

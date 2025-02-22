@@ -41,12 +41,12 @@ class EntryManager(QGraphicsProxyWidget):
 
 	def get_width(self):
 		if not self.snapped_block:
-			return self.boundingRect().width()
+			return self.entry.width()
 		return self.snapped_block.boundingRect().width()
 
 	def get_height(self):
 		if not self.snapped_block:
-			return self.boundingRect().height()
+			return self.entry.height()
 		return self.snapped_block.boundingRect().height() + 4
 
 	def unsnap(self):

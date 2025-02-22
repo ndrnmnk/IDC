@@ -44,7 +44,7 @@ class SnapLine(QGraphicsWidget):
 
 	def get_height(self):
 		if self.snapped_block:
-			rect = self.snapped_block.boundingRect().united(self.snapped_block.childrenBoundingRect())
+			rect = self.snapped_block.customBoundingRect()
 			return rect.height() - 5
 		return 18
 
