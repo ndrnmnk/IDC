@@ -1,23 +1,17 @@
-options window - partially done (30%):
-    fix artifacts
-    add real options
 addons window - partially done (80%):
     add sorting
     allow dependencies
+
+options window - partially done (30%):
+    fix artifacts
+    add real options
+
+rework textures and sounds as files - required
+saving/opening project - needed
 
 Blocks - partially done(95%):
     add enable/disable block ability for addons
     add converting to code
 
-rework textures and sounds as files - required
 AI tab - partially done (frontend only)
-saving/opening project - needed
-
 "you need to download blablabla compiler" warning window - recommended
-
-Block shapes:
-# 0 - basic, can snap have snaps on top and bottom;
-# 1 - basic with ONLY top snaps;
-# 2 - start block, ONLY bottom snaps;
-3 - operator blocks, snaps ONLY inside other blocks
-4 - round variable blocks, snaps ONLY inside other blocks

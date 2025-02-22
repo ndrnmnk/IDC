@@ -108,79 +108,46 @@
     }
   },
   "T": {
-    "json1": {
+    "json0": {
 			"shape": 0,
 			"data": [
 				[
-					{"dropdown": ["hgfghgfghgfghgf", "run"]},
-					{"text": "whatever"},
-					{"int_entry": "10"},
-					{"text": "steps to"},
-					{"text_entry": "WW3"},
-					{"text": "that will begin in"},
-					{"bool_entry": "0"}
+					{"dropdown": ["a very long option because yes", "short option"]},
+					{"text": "omg text"},
+					{"int_entry": "numbers here"},
+					{"text": "text again"},
+					{"text_entry": "text input yay"},
+					{"text": "bruh"},
+					{"bool_entry": "and true/false entry"}
 				],
-				[{"text": "if"}, {"bool_entry": "0"}],
-				[{"text": "elif"}, {"bool_entry": "0"}],
-				[{"text": "else"}],
+				[{"text": "there multiple layers"}],
+				[{"text": "and one more"}, {"text_entry": "layer"}],
 				[{"text": "why do you need so much layers"}]
 			]},
-    "json2": {
-			"shape": 4,
+    "json1": {
+			"shape": 1,
 			"data": [
-				[
-					{"text": "Move"},
-					{"int_entry": "10"},
-					{"text": "steps to"},
-					{"text_entry": "WW3"},
-					{"text": "that will begin in"},
-					{"bool_entry": "0"}
-				],
-				[{"text": "hell oworld"}]
+				[{"text": "Why block on top has bulge but not me"}],
+				[{"bool_entry": "IDK, but why less layers"}]
 			]},
     "json3": {
-			"shape": 0,
-			"data": [
-				[
-					{"text": "move"},
-					{"int_entry": "10"},
-					{"text": "steps to"},
-					{"text_entry": "WW3"},
-					{"text": "that will begin in"},
-					{"bool_entry": "0"}
-				],
-				[{"text": "if"}, {"bool_entry": "0"}],
-				[{"text": "elif"}, {"bool_entry": "0"}],
-				[{"text": "else"}],
-				[{"text": "why do you need so much layers"}]
-			]},
-    "json4": {
-			"shape": 0,
-			"data": [
-				[
-					{"text": "Move"},
-					{"int_entry": "10"},
-					{"text": "steps to"},
-					{"text_entry": "WW3"},
-					{"text": "that will begin in"},
-					{"bool_entry": "0"}
-				]
-			]},
-    "json5": {
 			"shape": 2,
 			"data": [
-				[
-					{"text": "move"},
-					{"int_entry": "10"},
-					{"text": "steps to"},
-					{"text_entry": "WW3"},
-					{"text": "that will begin in"},
-					{"bool_entry": "0"}
-				],
-				[{"text": "if"}, {"bool_entry": "0"}],
-				[{"text": "elif"}, {"bool_entry": "0"}],
-				[{"text": "else"}],
-				[{"text": "why do you need so much layers"}]
+				[{"text": "BIG"}, {"int_entry": "bulge"}],
+				[{"bool_entry": "haha"}, {"text": "loosers"}],
+				[{"text": "ahahahaha look below me"}]
+			]},
+    "json4": {
+			"shape": 3,
+			"data": [
+				[{"dropdown": ["добийте", "врятуйте"]}],
+				[{"int_entry": "me"}, {"text": "pleaseeeee"}]
+			]},
+    "json5": {
+			"shape": 4,
+			"data": [
+				[{"dropdown": ["muntybr", "ththryjegykjteh"]}],
+				[{"int_entry": "thtrhetrthtwgt"}, {"text": "3142543634"}]
 			]},
     "json6": {
 			"shape": 2,
@@ -204,8 +171,7 @@
 					{"text_entry": "WW3"},
 					{"text": "that will begin in"},
 					{"bool_entry": "0"}
-				],
-				[{"text": "икщ ащкпще ещ срфтпу еру лунищфкв дфнщге *ісгдд*"}]
+				]
 			]},
     "json8": {
 			"shape": 3,
@@ -235,11 +201,6 @@
 					{"text": "that will begin in"},
 					{"bool_entry": "0"}
 				]
-			]},
-        "json11": {
-			"shape": 1,
-			"data": [
-				[{"dropdown": ["why", "no", "iuytrgewdddddddddddddddddd"]}]
 			]}
   }
 }
