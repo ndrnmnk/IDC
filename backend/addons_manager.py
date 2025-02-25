@@ -58,7 +58,7 @@ class AddonsManager:
 
 	def get_available_addons(self):
 		self.available_addons = [
-			{"name": "useless_addon", "description": "I AM NOT A MORON", "img_url": "https://cdn2.hubspot.net/hubfs/53/image8-2.jpg", "git_link": "https://github.com/ndrnmnk/t", "version": 1.0}
+			{"name": "useless_addon", "description": "I AM NOT A MORON", "img_url": "https://cdn2.hubspot.net/hubfs/53/image8-2.jpg", "git_link": "https://github.com/ndrnmnk/t", "version": 1.0, "categories": ["Others"]}
 		]
 
 	def download_addon(self, caller_widget):

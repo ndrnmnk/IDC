@@ -1,6 +1,6 @@
-addons window - partially done (80%):
-    add sorting
+addons window - partially done (90%):
     allow dependencies
+    possible optimizations?
 
 options window - partially done (70%):
     add real options

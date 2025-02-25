@@ -31,13 +31,16 @@ class AddonsWindow(QWidget):
 
         # Top controls
         self.top_hbox = QHBoxLayout()
-        categories = ["Installed", "Customization", "Compilers", "Others"]
-        for category in categories:
+        self.categories = ["Installed", "Customization", "Compilers", "Others"]
+        self.cb_list = []
+        for idx, category in enumerate(self.categories):
             cb = QCheckBox(category)
+            cb.stateChanged.connect(lambda state, i=idx: self.update_cb_list(i, state))
             self.top_hbox.addWidget(cb)
 
         self.search_bar = QLineEdit()
-        self.search_bar.setPlaceholderText("Search")
+        self.search_bar.setPlaceholderText("Search (press Enter to display results)")
+        self.search_bar.editingFinished.connect(self.apply_filter)
 
         # Main vertical layout for addons
         self.vbox = QVBoxLayout()
@@ -73,13 +76,14 @@ class AddonsWindow(QWidget):
 
         self.show()
 
-    def load_more_addons(self):
+    def load_more_addons(self, filter=False):
         for i in range(self.current_index, min(self.current_index + self.batch_size, len(self.all_addons))):
             item = self.all_addons[i]
             addon_widget = ListItem(
                 manager=self.parent.addons_manager,
                 name=item["name"],
                 description=item["description"],
+                categories=item["categories"],
                 img_url=item["img_url"],
                 git_link=item["git_link"]
             )
@@ -93,3 +97,41 @@ class AddonsWindow(QWidget):
             # Only load more if there are still addons remaining
             if self.current_index < len(self.all_addons):
                 self.load_more_addons()
+
+    def filtered_addons(self):
+        res = []
+        query = self.search_bar.text().lower().replace(" ", "_")
+        for item in self.all_addons:
+            if item["name"].lower().startswith(query) and set(self.cb_list).issubset(item["categories"]):
+                res.append(item)
+        return res
+
+    def apply_filter(self):
+        # Get the filtered list of addons
+        filtered = self.filtered_addons()
+
+        # Remove all existing ListItems from the vertical layout
+        while self.vbox.count():
+            item = self.vbox.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()  # Schedule the widget for deletion
+
+        # Populate the layout with the filtered addons
+        for addon in filtered:
+            addon_widget = ListItem(
+                manager=self.parent.addons_manager,
+                name=addon["name"],
+                description=addon["description"],
+                categories=addon["categories"],
+                img_url=addon["img_url"],
+                git_link=addon["git_link"]
+            )
+            self.vbox.addWidget(addon_widget)
+
+    def update_cb_list(self, index, state):
+        if state:
+            self.cb_list.append(self.categories[index])
+        else:
+            self.cb_list.remove(self.categories[index])
+        self.apply_filter()

@@ -58,7 +58,8 @@ class ListItem(QWidget):
 		if self.git_link is None or name in self.manager.ia:  # if module is installed
 			self.btn.setText("Uninstall")
 			self.btn.pressed.connect(self.uninstall_module)
-			self.categories.append("Installed")
+			if "Installed" not in self.categories:
+				self.categories.append("Installed")
 			if name in self.manager.to_update:  # if module can be updated, add a second button
 				print(name + " could be updated")
 				self.btn2 = QPushButton()
@@ -92,7 +93,6 @@ class ListItem(QWidget):
 		# Add the description_browser widget to your layout instead of a QLabel
 		vbox.addWidget(self.description_browser)
 
-
 		buttons_hbox.addWidget(self.btn)
 		vbox.addLayout(buttons_hbox)
 		self.setLayout(hbox)
@@ -116,7 +116,9 @@ class ListItem(QWidget):
 			self.btn2.deleteLater()
 			del self.btn2
 		except AttributeError:
-			self.categories.append("Installed")
+			if "Installed" not in self.categories:
+				print("not in the list")
+				self.categories.append("Installed")
 			self.update_categories_layout()
 			self.btn.setText("Uninstall")
 			self.btn.pressed.disconnect()
@@ -135,8 +137,10 @@ class ListItem(QWidget):
 
 	def generate_categories_hbox(self):
 		hbox = QHBoxLayout()
+		hbox.setAlignment(Qt.AlignLeft)
 		for item in self.categories:
-			hbox.addWidget(QLabel(f"<span style='background-color:{ConfigManager().get_config()['addon_category_colors'][item]};'>{item}</span>"))
+			hbox.addWidget(QLabel(
+				f"<span style='background-color:{ConfigManager().get_config()['addon_category_colors'][item]};'>{item}</span>"))
 		return hbox
 
 	def update_categories_layout(self):
