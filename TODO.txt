@@ -2,11 +2,12 @@ addons window - partially done (80%):
     add sorting
     allow dependencies
 
-options window - partially done (30%):
-    fix artifacts
+options window - partially done (70%):
     add real options
 
-rework textures and sounds as files - required
+main window - partially done (??%):
+    rework compiler/arch/OS selection
+    rework textures and sounds as files
 saving/opening project - needed
 
 Blocks - partially done(95%):

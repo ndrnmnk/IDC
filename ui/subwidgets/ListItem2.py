@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QTextBrowser
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from io import BytesIO
@@ -30,8 +30,8 @@ class ListItem(QWidget):
 		super().__init__()
 
 		if categories is None:
-			categories = ["Compilers", "Customization"]
-
+			categories = []
+		self.setMaximumHeight(200)
 		self.manager = manager
 		self.git_link = git_link
 		self.name = name
@@ -44,8 +44,9 @@ class ListItem(QWidget):
 		vbox.setAlignment(Qt.AlignTop)
 		buttons_hbox.setAlignment(Qt.AlignLeft)
 
+		# set placeholder image while trying to load actual logo
 		self.image_label = QLabel()
-		# Set a placeholder image initially from disk
+		self.image_label.setFixedWidth(100)
 		placeholder_pixmap = QPixmap("textures/images/logo.png")
 		self.image_label.setPixmap(placeholder_pixmap.scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 		if img_url:
@@ -53,23 +54,24 @@ class ListItem(QWidget):
 
 		self.btn = QPushButton()
 		self.btn.setFixedWidth(64)
-		if self.git_link is None or name in self.manager.ia:
+
+		if self.git_link is None or name in self.manager.ia:  # if module is installed
 			self.btn.setText("Uninstall")
 			self.btn.pressed.connect(self.uninstall_module)
 			self.categories.append("Installed")
-			if name in self.manager.to_update:
+			if name in self.manager.to_update:  # if module can be updated, add a second button
 				print(name + " could be updated")
 				self.btn2 = QPushButton()
 				self.btn2.setText("Update")
 				self.btn2.pressed.connect(lambda: self.manager.update_addon(self))
 				buttons_hbox.addWidget(self.btn2)
-		else:
+		else:  # if module is not installed, add install button
 			self.btn.setText("Install")
 			self.btn.pressed.connect(self.install_module)
 
-		if self.git_link is None:
+		if self.git_link is None:  # if no GitHub link, just put text as title
 			title_label = QLabel(self.name)
-		else:
+		else:  # if GitHub link is present, hyperlink it to the title
 			title_label = QLabel(f"<a href='{git_link}'>{name}</a>")
 		title_label.setOpenExternalLinks(True)
 		title_label.setStyleSheet("font-size: 14pt;")
@@ -77,9 +79,20 @@ class ListItem(QWidget):
 		hbox.addWidget(self.image_label)
 		hbox.addLayout(vbox)
 		vbox.addWidget(title_label)
-		vbox.addLayout(self.generate_categories_hbox())
-		# vbox.addWidget(QLabel(str(categories)))
-		vbox.addWidget(QLabel(description))
+		self.categories_layout = self.generate_categories_hbox()
+		vbox.addLayout(self.categories_layout)
+
+		self.description_browser = QTextBrowser()
+		self.description_browser.setReadOnly(True)
+		self.description_browser.setHtml(description)
+		self.description_browser.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+		# self.description_browser.setStyleSheet("background: transparent;")  # transparent bg
+		self.description_browser.setMaximumHeight(100)  # i don't know actual available height, but this works
+
+		# Add the description_browser widget to your layout instead of a QLabel
+		vbox.addWidget(self.description_browser)
+
+
 		buttons_hbox.addWidget(self.btn)
 		vbox.addLayout(buttons_hbox)
 		self.setLayout(hbox)
@@ -103,6 +116,8 @@ class ListItem(QWidget):
 			self.btn2.deleteLater()
 			del self.btn2
 		except AttributeError:
+			self.categories.append("Installed")
+			self.update_categories_layout()
 			self.btn.setText("Uninstall")
 			self.btn.pressed.disconnect()
 			self.btn.pressed.connect(self.uninstall_module)
@@ -111,6 +126,8 @@ class ListItem(QWidget):
 		self.manager.delete_addon(self.name)
 		if self.git_link is not None:
 			self.btn.setText("Install")
+			self.categories.remove("Installed")
+			self.update_categories_layout()
 			self.btn.pressed.disconnect()
 			self.btn.pressed.connect(self.install_module)
 		else:
@@ -121,3 +138,16 @@ class ListItem(QWidget):
 		for item in self.categories:
 			hbox.addWidget(QLabel(f"<span style='background-color:{ConfigManager().get_config()['addon_category_colors'][item]};'>{item}</span>"))
 		return hbox
+
+	def update_categories_layout(self):
+		# Remove old items
+		while self.categories_layout.count():
+			child = self.categories_layout.takeAt(0)
+			if child.widget():
+				child.widget().deleteLater()
+
+		# Add new category labels
+		for item in self.categories:
+			label = QLabel(
+				f"<span style='background-color:{ConfigManager().get_config()['addon_category_colors'][item]};'>{item}</span>")
+			self.categories_layout.addWidget(label)

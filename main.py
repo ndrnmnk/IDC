@@ -22,7 +22,6 @@ class MainWindow(QMainWindow):
 		super().__init__()
 		# Load data
 		self.setStyleSheet(f"background-color: {config.get_config()['styles']['bg_color']};")
-
 		# Apply data
 		self.setWindowTitle("IDC")
 		self.setFont(QFont(config.get_config()["font_family"], config.get_config()["font_size"]))
