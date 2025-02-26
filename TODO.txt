@@ -2,9 +2,6 @@ addons window - partially done (90%):
     allow dependencies
     possible optimizations?
 
-options window - partially done (70%):
-    add real options
-
 main window - partially done (??%):
     rework compiler/arch/OS selection
     rework textures and sounds as files

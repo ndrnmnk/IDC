@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QLabel
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread, pyqtSignal
 import importlib, shutil, json, sys, git, os
+from backend.config_manager import ConfigManager
 
 
 def find_matching_indices(list1, list2):
@@ -62,7 +63,10 @@ class AddonsManager:
 		]
 
 	def download_addon(self, caller_widget):
-		self.git_clone_thread = GitClone(caller_widget.git_link, f"addons/{caller_widget.name}")
+		if type(caller_widget) is not dict:
+			self.git_clone_thread = GitClone(caller_widget.git_link, f"addons/{caller_widget.name}")
+		else:
+			self.git_clone_thread = GitClone(caller_widget["git_link"], f"addons/{caller_widget['name']}")
 		self.git_clone_thread.cloned_successfully.connect(lambda: self.after_downloading_addon(caller_widget))
 		self.git_clone_thread.start()
 
@@ -87,21 +91,31 @@ class AddonsManager:
 		shutil.rmtree(f"addons/{addon_name}")
 
 	def after_downloading_addon(self, caller_widget):
-		self.import_addon(caller_widget.name)
-		caller_widget.post_process()
+		if type(caller_widget) is not dict:
+			self.import_addon(caller_widget.name)
+			caller_widget.post_process()
+		else:
+			self.import_addon(caller_widget["name"])
 		del self.git_clone_thread
 
 	def check_addons_updates(self):
 		possible_updates = find_matching_indices(self.imported_addons, self.available_addons)
 		for item in possible_updates:
 			if self.imported_addons[item[0]]["version"] < self.available_addons[item[1]]["version"]:
-				self.to_update.append(self.imported_addons[item[0]]["name"])
+				self.to_update.append(self.imported_addons[item[0]])
 		if self.to_update:
-			print(f"found addon updates: {self.to_update}")
+			print("found addon updates")
+			for item in self.to_update:
+				if ConfigManager().get_config()["autoupdate_addons"]:
+					self.update_addon(item)
 
 	def update_addon(self, caller_widget):
-		self.delete_addon(caller_widget.name)
-		self.download_addon(caller_widget)
+		if type(caller_widget) is dict:
+			self.delete_addon(caller_widget["name"])
+			self.download_addon(caller_widget)
+		else:
+			self.delete_addon(caller_widget.name)
+			self.download_addon(caller_widget)
 
 	def get_options(self):
 		vbox = QVBoxLayout()

@@ -51,7 +51,7 @@ class BoolLineEdit(QLineEdit):
 	def set_border_width(self, width=2, use_preview_color=False):
 		self.border_width = width
 		if use_preview_color:
-			self.border_color = ConfigManager().get_config()["styles"]["preview_line_color"]
+			self.border_color = ConfigManager().get_config()["styles"]["snapline_color"]
 		else:
 			self.border_color = "#000000"
 		self.repaint()

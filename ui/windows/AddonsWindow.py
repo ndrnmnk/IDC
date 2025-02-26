@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QHBoxLayout, QScrollArea, QCheckBox, QLabel, QLineEdit
 from ui.subwidgets.ListItem2 import ListItem
 from PyQt5.QtCore import Qt
+from backend.config_manager import ConfigManager
 
 
 def remove_duplicates(json_list):
@@ -40,7 +41,10 @@ class AddonsWindow(QWidget):
 
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("Search (press Enter to display results)")
-        self.search_bar.editingFinished.connect(self.apply_filter)
+        if ConfigManager().get_config()["dynamic_addons_updating"]:
+            self.search_bar.textEdited.connect(self.apply_filter)
+        else:
+            self.search_bar.editingFinished.connect(self.apply_filter)
 
         # Main vertical layout for addons
         self.vbox = QVBoxLayout()
@@ -76,7 +80,7 @@ class AddonsWindow(QWidget):
 
         self.show()
 
-    def load_more_addons(self, filter=False):
+    def load_more_addons(self):
         for i in range(self.current_index, min(self.current_index + self.batch_size, len(self.all_addons))):
             item = self.all_addons[i]
             addon_widget = ListItem(

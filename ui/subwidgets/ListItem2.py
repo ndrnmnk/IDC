@@ -60,7 +60,7 @@ class ListItem(QWidget):
 			self.btn.pressed.connect(self.uninstall_module)
 			if "Installed" not in self.categories:
 				self.categories.append("Installed")
-			if name in self.manager.to_update:  # if module can be updated, add a second button
+			if any(d.get("name") == name for d in self.manager.to_update):  # if module can be updated, add a second button
 				print(name + " could be updated")
 				self.btn2 = QPushButton()
 				self.btn2.setText("Update")
@@ -117,7 +117,6 @@ class ListItem(QWidget):
 			del self.btn2
 		except AttributeError:
 			if "Installed" not in self.categories:
-				print("not in the list")
 				self.categories.append("Installed")
 			self.update_categories_layout()
 			self.btn.setText("Uninstall")

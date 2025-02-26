@@ -56,7 +56,7 @@ class ResizableLineEdit(QLineEdit):
         self.border_width = width
         current_style = self.styleSheet()
         if use_preview_color:
-            border_color = ConfigManager().get_config()["styles"]["preview_line_color"]
+            border_color = ConfigManager().get_config()["styles"]["snapline_color"]
         else:
             border_color = "#000000"
         updated_style = f"border: {width}px solid {border_color};"

@@ -40,7 +40,7 @@ class ResizableDropdown(QComboBox):
     def set_border_width(self, width=2, use_preview_color=False):
         current_style = self.styleSheet()
         if use_preview_color:
-            border_color = ConfigManager().get_config()["styles"]["preview_line_color"]
+            border_color = ConfigManager().get_config()["styles"]["snapline_color"]
         else:
             border_color = "#000000"
         updated_style = f"border: {width}px solid {border_color};"

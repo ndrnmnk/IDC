@@ -40,6 +40,7 @@ class CodingGraphicsScene(QGraphicsScene):
 
 		self.menu_scrollbar = QGraphicsProxyWidget()
 		self.scrollbar_menu = QScrollBar(Qt.Vertical)
+		self.scrollbar_menu.setStyleSheet(f"background-color: {ConfigManager().get_config()['styles']['block_menu_bg']}")
 		self.scrollbar_menu.setRange(0, 0)
 		self.menu_scrollbar.setWidget(self.scrollbar_menu)
 		self.scrollbar_menu.valueChanged.connect(self.view.on_scrollbar_changed)

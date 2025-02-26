@@ -22,5 +22,7 @@
         "Customization": "#ffff00",
         "Others": "#888888",
         "Not defined": "#ffffff"
-    }
+    },
+    "dynamic_addons_updating": 2,
+    "autoupdate_addons": 0
 }
