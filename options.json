@@ -8,7 +8,7 @@
         "block_menu_bg": "#dddddd",
         "category_selector_bg": "#ddddff",
         "text_field_bg": "#ffffff",
-        "preview_line_color": "#8888ff"
+        "snapline_color": "#8888ff"
     },
     "block_colors": {
         "Movement": "#c061cb",
@@ -23,6 +23,6 @@
         "Others": "#888888",
         "Not defined": "#ffffff"
     },
-    "dynamic_addons_updating": 2,
+    "dynamic_addons_updating": 0,
     "autoupdate_addons": 0
 }

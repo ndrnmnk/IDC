@@ -1,6 +1,5 @@
 addons window - partially done (90%):
     allow dependencies
-    possible optimizations?
 
 main window - partially done (??%):
     rework compiler/arch/OS selection

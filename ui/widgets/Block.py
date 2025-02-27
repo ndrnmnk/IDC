@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGraphicsObject, QGraphicsTextItem, QGraphicsProxyWidget, QComboBox
+from PyQt5.QtWidgets import QGraphicsObject, QGraphicsTextItem
 from PyQt5.QtGui import QPainter, QColor, QPolygonF, QPen, QPainterPath, QFont
 from PyQt5.QtCore import QRectF, pyqtSignal
 from textures.blocks.shapes import generate_points
@@ -38,35 +38,31 @@ class Block(QGraphicsObject):
 	For shapes 0, 1 and 2 other blocks can be snapped between the layers. 
 	Shapes 3 and 4 with multiple layers look weird and function like single-layer ones.
 	
-	Spawner blocks spawn their copy and become regular ones after user clicks/drags on them.
+	Spawner blocks spawn their copy and become regular ones after user clicks/drags them.
 	"""
 
 	def __init__(self, parent, input_json, spawner=False):
 		super().__init__()
 
-		self.parent_view = parent
+		self.parent_view = parent  # crashes when parent is passed to super().__init__(), so using this
 
-		# basic variables
+		# save data
 		self.input_json = input_json
 		self.spawner = spawner
 		self.shape_index = input_json["shape"]
-		self.color = input_json["color"]
-		self.internal_name = input_json["internal_name"]
 
-		# load constants, set flags
+		# set flags
 		self.setFlag(QGraphicsObject.ItemIsMovable)
 		self.setFlag(QGraphicsObject.ItemIsSelectable)
-		self.font = QFont("Arial", 12)
 
-		# width and height management
+		# width and height management variables
 		self.width_list = []
 		self.height_list = []
 		self.between_layers_height_list = []
+		# snapping variables
 		self.content_list = []
-
 		self.snappable_points = []
 		self.snap_line_list = []
-
 		self.snap_candidate = None
 		self.snap = None
 
@@ -75,10 +71,10 @@ class Block(QGraphicsObject):
 		# prepare for launch
 		self.populate_block()
 		self.path = self.create_path_from_points(self.generate_block_points())
-
 		self.setZValue(2 * self.spawner)
 		if not self.spawner:
 			self.create_lines_for_snappable_points()
+
 		# finally, show this widget
 		self.show()
 
@@ -108,7 +104,7 @@ class Block(QGraphicsObject):
 			for idx, json_member in enumerate(self.input_json["data"][layer]):
 				if "text" in json_member:
 					content = QGraphicsTextItem(json_member["text"], parent=self)
-					content.setFont(self.font)
+					content.setFont(QFont("Arial", 12))
 					self.add_content_item(layer, idx, content, tx, ty)
 				elif "text_entry" in json_member:
 					self.handle_entry_item(layer, idx, 0, json_member["text_entry"], tx, ty)
@@ -135,7 +131,6 @@ class Block(QGraphicsObject):
 
 	def repopulate_block(self, layer, idx):
 		self.prepareGeometryChange()
-
 		if idx != -1:  # if not called because of layer repopulate
 			self.width_list[layer][idx] = self.content_list[layer][idx].get_width()
 			self.height_list[layer][idx] = self.content_list[layer][idx].get_height()
@@ -179,42 +174,44 @@ class Block(QGraphicsObject):
 
 	def unsnap(self):
 		if self.snap:
-			# Get the current position in the scene before unparenting
+			# get current scene pos
 			current_scene_pos = self.mapToScene(0, 0)
-			# Unparent the item
+			# unparent
 			self.setParentItem(None)
-			# Restore the position in the scene
+			# restore pos
 			self.setPos(current_scene_pos)
-			# Chain size update to parent blocks
+			# update variables
 			self.snap.unsnap()
 			self.snap = None
 		elif self.spawner:
-			# Convert the block's local coordinates to scene coordinates
+			# convert coordinates
 			scene_pos = self.mapToScene(0, 0)
+			# make snappable for other blocks
 			self.create_lines_for_snappable_points()
-			# Use the scene coordinates so the block stays in the right place
+			# update pos so new widget will be in its position
 			self.input_json["pos"] = [self.pos().x(), self.pos().y()]
+			# update scene variables and create a new spawner block
 			self.parent_view.add_block(self.input_json, True)
 			self.parent_view.menu_block_list.remove(self)
 			self.parent_view.block_list.append(self)
 			self.spawner = False
-			# Unparent and set the block to its scene position
+			# unparent
 			self.setParentItem(None)
 			self.setPos(scene_pos)
 
 	def try_to_snap(self):
 		if self.snap_candidate is not None:
 			self.snap_candidate.clear_line()
-			# Compute position of top left corner of snap candidate
+			# get top left corner of snap candidate
 			rect = self.snap_candidate.sceneBoundingRect()
 			self.setParentItem(self.snap_candidate)
-			# Adjust the position relative to the new parent
+			# calculate pos
 			parent_pos = self.snap_candidate.mapToScene(0, 0)
 			local_target_x = rect.left() - parent_pos.x()
 			local_target_y = rect.top() - parent_pos.y()
-			# Update the position in the new parent's coordinate system
+			# update pos
 			self.setPos(local_target_x - self.boundingRect().left(), local_target_y - self.boundingRect().top())
-			# Update snap state
+			# update snap variables
 			self.snap = self.snap_candidate
 			self.snap.snap_in(self)
 			self.snap.sizeChanged.emit()
@@ -222,6 +219,7 @@ class Block(QGraphicsObject):
 
 	def check_for_snap(self):
 		for item in self.scene().items():
+			# type check for snappable widgets
 			if (self.shape_index in [0, 1] and (not isinstance(item, SnapLine) or item in self.snap_line_list)) \
 					or (self.shape_index in [3, 4] and (not isinstance(item, EntryManager) or item in self.content_list
 						or item.snapped_block or item.parentItem().spawner or not item.allowed_snaps[self.shape_index-3])):
@@ -233,12 +231,13 @@ class Block(QGraphicsObject):
 				item.show_line()
 				self.snap_candidate = item
 
-		# if dragged far enough from snap candidate, don't snap to it
+		# if dragged far enough from snap candidate, forget about it
 		if self.snap_candidate is not None and not self.check_item_for_snap(self.snap_candidate):
 			self.snap_candidate.clear_line()
 			self.snap_candidate = None
 
 	def check_item_for_snap(self, item):
+		# if item is close enough, return True
 		self_rect = self.sceneBoundingRect()
 		other_rect = item.sceneBoundingRect()
 		if abs(self_rect.top() - other_rect.top()) < 15 and abs(self_rect.left() - other_rect.left()) < 45:
@@ -248,11 +247,11 @@ class Block(QGraphicsObject):
 	def generate_block_points(self):
 		width = []
 		height = []
+		# calculate the dimensions
 		for idx in range(len(self.width_list)):
 			width.append((sum(self.width_list[idx])) + 2 * len(self.width_list[idx]))
 			height.append(max(self.height_list[idx]))
 		points, self.snappable_points = generate_points(self.shape_index, max(width), height, self.between_layers_height_list)
-		self.top_margin = 2 + 15*(self.shape_index == 2)
 		return QPolygonF(points)
 
 	@staticmethod
@@ -267,10 +266,10 @@ class Block(QGraphicsObject):
 		return self.path.boundingRect()
 
 	def paint(self, painter: QPainter, option, widget=None):
-		painter.setBrush(QColor(self.color))
+		painter.setBrush(QColor(self.input_json["color"]))
 		painter.setPen(QPen(QColor("#000000")))
 		painter.drawPath(self.path)
-		# draw hitboxes, used for debugging
+		# draw bboxes, used for debugging
 		# for child in self.childItems():
 		# 	rect = child.mapToParent(child.boundingRect()).boundingRect()
 		# 	painter.drawRect(rect)
@@ -314,14 +313,13 @@ class Block(QGraphicsObject):
 		self.deleteLater()
 
 	def customBoundingRect(self) -> QRectF:
-		# Start with this Block's own bounding rect.
-		combined_rect = self.boundingRect()
-		# Recursively include bounding rects of child Block instances.
+		"""Returns bounding rect of this widget and child blocks (if any)"""
+		combined_rect = self.boundingRect()  # start with own rect
 		for child in self.childItems():
 			if (isinstance(child, EntryManager) or isinstance(child, SnapLine)) and child.snapped_block:
-				# Get child's custom bounding rect and translate it to this block's coordinate system.
+				# if child widget is a block, get its customBoundingRect and combine with our own
 				child_rect = child.mapRectToParent(child.snapped_block.customBoundingRect())
 				combined_rect = combined_rect.united(child_rect)
-		if self.shape_index == 1:
+		if self.shape_index == 1:  # without this, blocks with shape 1 go inside other blocks
 			return QRectF(combined_rect.x(), combined_rect.y(), combined_rect.width(), combined_rect.height() + 5)
 		return combined_rect
