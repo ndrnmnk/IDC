@@ -36,17 +36,14 @@ class ListItem(QWidget):
     Widget representing a single addon item with image, title, description,
     category labels, and an install/uninstall button (with an optional update button).
     """
-    def __init__(self, manager, name, description, categories=None, img_url=None, git_link=None):
+    def __init__(self, manager, name):
         super().__init__()
-        if categories is None:
-            categories = []
         self.setMaximumHeight(200)
 
-        # Store parameters
-        self.manager = manager
-        self.git_link = git_link
+        # Get data
         self.name = name
-        self.categories = categories  # List of category strings
+        self.manager = manager
+        self.get_data()
 
         # Create and configure layouts
         self.main_hbox = QHBoxLayout()
@@ -57,8 +54,7 @@ class ListItem(QWidget):
         self.buttons_hbox.setAlignment(Qt.AlignLeft)
 
         # Initialize UI components
-        self._init_image_label(img_url)
-        self._init_action_button()
+        self._init_image_label(self.img_url)
         title_label = self._create_title_label()
         self.main_vbox.addWidget(title_label)
 
@@ -71,19 +67,31 @@ class ListItem(QWidget):
         # Create description browser for detailed text
         self.description_browser = QTextBrowser()
         self.description_browser.setReadOnly(True)
-        self.description_browser.setHtml(description)
+        self.description_browser.setHtml(self.description)
         self.description_browser.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.description_browser.setMaximumHeight(100)
         self.main_vbox.addWidget(self.description_browser)
 
         # Add action button(s)
-        self.buttons_hbox.addWidget(self.btn)
+        self._init_buttons()
         # If update button was created, it would have been added already
         self.main_vbox.addLayout(self.buttons_hbox)
 
         self.main_hbox.addWidget(self.image_label)
         self.main_hbox.addLayout(self.main_vbox)
         self.setLayout(self.main_hbox)
+
+    def get_data(self):
+        self.installed = self.name in self.manager.addons_names
+        self.updates_available = (self.installed and self.manager.addons_metadata[self.name].get("updates_available", False))
+        if self.installed:
+            manager_path = self.manager.addons_metadata[self.name]
+        else:
+            manager_path = self.manager.available_addons[self.name]
+        self.git_link = manager_path.get("git_link", None)
+        self.categories = manager_path.get("categories", [])
+        self.img_url = manager_path.get("img_url", None)
+        self.description = manager_path.get("description", "")
 
     def _init_image_label(self, img_url):
         """
@@ -99,28 +107,30 @@ class ListItem(QWidget):
         if img_url:
             self.download_image_from_url(img_url)
 
-    def _init_action_button(self):
+    def _init_buttons(self):
         """
         Initialize the main action button and, if applicable, the update button.
         """
-        self.btn = QPushButton()
-        self.btn.setFixedWidth(64)
+        self.btn_install = QPushButton("Install")
+        self.btn_install.setFixedWidth(64)
+        self.btn_uninstall = QPushButton("Uninstall")
+        self.btn_uninstall.setFixedWidth(64)
+        self.btn_update = QPushButton("Update")
+        self.btn_update.setFixedWidth(64)
 
-        # If no git link is provided or the module is already installed...
-        if self.git_link is None or self.name in self.manager.ia:
-            self.btn.setText("Uninstall")
-            self.btn.pressed.connect(self.uninstall_module)
-            if "Installed" not in self.categories:
-                self.categories.append("Installed")
-            # If an update is available, add an update button
-            if any(d.get("name") == self.name for d in self.manager.to_update):
-                print(f"{self.name} could be updated")
-                self.update_button = QPushButton("Update")
-                self.update_button.pressed.connect(lambda: self.manager.update_addon(self))
-                self.buttons_hbox.addWidget(self.update_button)
+        self.btn_install.pressed.connect(lambda: self.manager.download_addon_step1(self.name, self))
+        self.btn_uninstall.pressed.connect(lambda: self.manager.delete_addon(self.name, self))
+        self.btn_update.pressed.connect(lambda: self.manager.update_addon(self.name, self))
+
+        self.buttons_hbox.addWidget(self.btn_install)
+        self.buttons_hbox.addWidget(self.btn_uninstall)
+        self.buttons_hbox.addWidget(self.btn_update)
+        if self.updates_available:
+            self.btn_install.hide()
+            self.btn_uninstall.show()
+            self.btn_update.show()
         else:
-            self.btn.setText("Install")
-            self.btn.pressed.connect(self.install_module)
+            self.post_process(self.installed)
 
     def _create_title_label(self):
         """
@@ -143,10 +153,6 @@ class ListItem(QWidget):
         self.image_downloader.image_downloaded.connect(self.update_image)
         self.image_downloader.start()
 
-    def install_module(self):
-        """Trigger the installation process via the manager."""
-        self.manager.download_addon(self)
-
     def update_image(self, pixmap):
         """
         Resize the downloaded pixmap and update the image label.
@@ -156,39 +162,22 @@ class ListItem(QWidget):
         self.image_label.setPixmap(resized_pixmap)
         self.image_downloader = None
 
-    def post_process(self):
-        """
-        Update the UI after an update operation.
-        If an update button exists, remove it. Otherwise, update the category list
-        and change the button to "Uninstall".
-        """
-        try:
-            self.update_button.deleteLater()
-            del self.update_button
-        except AttributeError:
-            self.categories.append("Installed")
-            self.update_categories_layout()
-            self.btn.setText("Uninstall")
-            self.btn.pressed.disconnect()
-            self.btn.pressed.connect(self.uninstall_module)
-
-    def uninstall_module(self):
-        """
-        Trigger the uninstallation process via the manager.
-        Adjust the UI based on whether a GitHub link is present.
-        """
-        self.manager.delete_addon(self.name)
-        if self.git_link is not None:
-            self.btn.setText("Install")
-            try:
-                self.categories.remove("Installed")
-            except ValueError:
-                pass
-            self.update_categories_layout()
-            self.btn.pressed.disconnect()
-            self.btn.pressed.connect(self.install_module)
-        else:
-            self.deleteLater()
+    def post_process(self, action):
+        if action == 2:
+            self.btn_install.hide()
+            self.btn_update.hide()
+            self.btn_uninstall.show()
+        if action == 1:
+            self.btn_install.hide()
+            self.btn_update.hide()
+            self.btn_uninstall.show()
+        if action == 0:
+            if self.git_link is not None:
+                self.btn_uninstall.hide()
+                self.btn_update.hide()
+                self.btn_install.show()
+            else:
+                self.deleteLater()
 
     def update_categories_layout(self):
         """Remove all existing category labels from the layout and repopulate it."""

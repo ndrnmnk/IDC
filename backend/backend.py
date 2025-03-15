@@ -79,12 +79,12 @@ class Backend:
 		print(self.project_path)
 		self.set_buttons_state(False)
 		command = self.get_build_command().format(f"{self.project_path}")
-		self.run_command(command, self.ui.logs_widget)
+		self.run_command(command)
 
 	def run_task(self):
 		self.set_buttons_state(False)
 		command = self.get_build_command(run=1).format(f"{self.project_path}")
-		self.run_command(command, self.ui.logs_widget)
+		self.run_command(command)
 
 	def kill_task(self):
 		if self.runner:
@@ -98,18 +98,22 @@ class Backend:
 				return self.ui.compilers[json_obj]["command"]
 		return None  # return None if not found
 
-	def run_command(self, command, logs_widget):
-		self.runner = CommandRunner(command, logs_widget)
+	def run_command(self, command):
+		if self.runner and self.runner.isRunning():
+			self.ui.logs_widget.append("A new command added to the queue")
+			self.runner.finished_signal.connect(lambda c=command: self.run_command(c))
+			return
+		self.runner = CommandRunner(command, self.ui.logs_widget)
 
 		# connect the signals to update logs_widget and to enable buttons
-		self.runner.output_signal.connect(lambda text: logs_widget.append(text))
+		self.runner.output_signal.connect(lambda text: self.ui.logs_widget.append(text))
 		self.runner.finished_signal.connect(self.set_buttons_state)
 
 		# Start the thread to run the command in the background
 		self.runner.start()
 
 	def closeEvent(self, event):
-		# ensure that the thread finished before the application closed (chatgpt ahh comment)
+		# ensure that the thread finished before the application closed
 		if self.runner is not None:
 			self.runner.wait()  # blocks until process finishes
 		event.accept()

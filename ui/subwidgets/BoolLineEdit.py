@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtGui import QRegularExpressionValidator, QPainter, QColor, QFont, QFontMetrics, QPen, QPolygonF
 from PyQt5.QtCore import QRegularExpression, Qt, pyqtSignal
-from textures.blocks.shapes import generate_points
+from backend.shapes import generate_points
 from backend.config_manager import ConfigManager
 
 

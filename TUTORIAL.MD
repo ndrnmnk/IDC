@@ -43,20 +43,37 @@ Where `info.json` must contain something like this:
   "description": "Description of an addon (required)",
   "img_url": "example.com/link-to-logo-of-addon, or None",
   "git_link": "example.com/link-to-git-repo-of-addon, or None",
+  "categories": ["ListOfCategories"],
   "version": 1.0,
   "has_options": true
 }
 ```
 
-And `__init__.py` must contain `run(ui)` function, which will start the module. Here is an example:
+And `__init__.py` must contain `run(ui)` function, which will return an addon class. Addon class must inherit from 
+BaseAddon (check `backend/BaseAddon.py` to see which functions can be overridden). Here is an example:
 
 ```python
-def run(ui):
-    ui.setStyleSheet("background-color: lightgray;")
+from backend.BaseAddon import BaseAddon
+from PyQt5.QtWidgets import QLabel
 
-def options_widget():
-    # this function is required only if "has_options" is true in info.json
-    return QLabel("this label was made using example addon")
+
+class ExampleAddonClassName(BaseAddon):
+	def init(self):
+		print("hi there")
+
+	def on_options(self):
+		return QLabel("This label will appear in options")
+	
+	def on_delete(self):
+		print("why do you delete me(")
+		return True  # if returns false, module won't be removed; DON'T ABUSE THIS
+
+	def on_idc_close(self):
+		print("bye!")
+
+
+def run(ui):
+	return ExampleAddonClassName(ui)
 ```
 
 And that's it! Now you can create your own addons!

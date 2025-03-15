@@ -1,14 +1,12 @@
-addons window - partially done (90%):
-    allow dependencies
-
 main window - partially done (??%):
-    rework compiler/arch/OS selection
     rework textures and sounds as files
-saving/opening project - needed
+saving/opening project - 5%
+
+Make addon shortcuts actually execute
 
 Blocks - partially done(95%):
     add enable/disable block ability for addons
+    add block entry
     add converting to code
 
 AI tab - partially done (frontend only)
-"you need to download blablabla compiler" warning window - recommended

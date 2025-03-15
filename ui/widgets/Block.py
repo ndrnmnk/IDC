@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QGraphicsObject, QGraphicsTextItem
 from PyQt5.QtGui import QPainter, QColor, QPolygonF, QPen, QPainterPath, QFont
 from PyQt5.QtCore import QRectF, pyqtSignal
-from textures.blocks.shapes import generate_points
+from backend.shapes import generate_points
 from ui.subwidgets.EntryManager import EntryManager
 from ui.subwidgets.SnapLine import SnapLine
 

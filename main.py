@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTabWidget, QAction, QPushButton, QHBoxLayout
+import os
+
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTabWidget, QAction, QPushButton, QHBoxLayout, QFileDialog
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt
 import sys
@@ -40,6 +42,7 @@ class MainWindow(QMainWindow):
 		file_menu.addAction(open_action)
 		file_menu.addAction(save_action)
 		file_menu.addAction(exit_action)
+		open_action.triggered.connect(self.open_project)
 		exit_action.triggered.connect(self.close)
 		self.options_menu.triggered.connect(self.open_options_window)
 		self.addons_menu.triggered.connect(self.open_addons_window)
@@ -103,8 +106,7 @@ class MainWindow(QMainWindow):
 		self.run_btn = QPushButton(text="run")
 		self.kill_btn = QPushButton(text="kill")
 		self.compiler_dropdown = ResizableDropdown([])
-		self.target_os_dropdown = ResizableDropdown([])
-		self.target_arch_dropdown = ResizableDropdown([])
+		self.compiler_options_btn = QPushButton("Compiler Options")
 		# fix width
 		self.build_btn.setFixedWidth(40)
 		self.run_btn.setFixedWidth(40)
@@ -115,8 +117,7 @@ class MainWindow(QMainWindow):
 		buttons_layout.addWidget(self.run_btn)
 		buttons_layout.addWidget(self.kill_btn)
 		buttons_layout.addWidget(self.compiler_dropdown)
-		buttons_layout.addWidget(self.target_os_dropdown)
-		buttons_layout.addWidget(self.target_arch_dropdown)
+		buttons_layout.addWidget(self.compiler_options_btn)
 		buttons_widget = QWidget()
 		buttons_widget.setLayout(buttons_layout)
 
@@ -128,49 +129,25 @@ class MainWindow(QMainWindow):
 
 		tabs_misc.setCurrentIndex(1)  # logs tab
 
+		self.opened_project_path = None
+
 		# project path will be inserted into {}
-		self.compilers = {
-			"C++ (cmake)":
-				{"command": "cd {}/build; cmake ..; make", "run": "{}/build/main", "platforms": {
-					'Windows': ['x86', 'x64', 'arm64'],
-					'Linux': ['x86', 'x64', 'arm32', 'arm64'],
-					'macOS': ['x64', 'arm64']
-				}
-				},
-			"Python":
-				{"command": "cd {}/build; cmake ..; make", "run": "{}/build/main", "platforms": {
-					'All': ['All']
-				}
-				}
-		}
-
-		self.compiler_dropdown.currentTextChanged.connect(self.update_os_dropdown)
-		self.target_os_dropdown.currentTextChanged.connect(self.update_arch_dropdown)
-
-		self.addons_manager = AddonsManager(self)
-
-		for item in self.compilers:
-			self.compiler_dropdown.addItem(item)
-		del item
+		self.compilers = {}
+		self.current_compiler = None
 
 		self.backend = Backend(self)
+		self.addons_manager = AddonsManager(self)
 
 		self.show()
 
-	def update_os_dropdown(self):
-		self.target_os_dropdown.clear()
-		oss = self.compilers[self.compiler_dropdown.currentText()]["platforms"].keys()
-		self.target_os_dropdown.addItems(oss)
+	def add_compiler(self, name, module):
+		self.compilers[name] = module
+		self.compiler_dropdown.addItem(name)
 
-	def update_arch_dropdown(self):
-		self.target_arch_dropdown.clear()
-		try:
-			archs = self.compilers[self.compiler_dropdown.currentText()]["platforms"][self.target_os_dropdown.currentText()]
-		except KeyError:
-			# because of weird KeyError appearing after running update_os_dropdown, it uses the first available os
-			a = list(self.compilers[self.compiler_dropdown.currentText()]["platforms"].keys())
-			archs = self.compilers[self.compiler_dropdown.currentText()]["platforms"][a[0]]
-		self.target_arch_dropdown.addItems(archs)
+	def on_new_compiler(self):
+		self.current_compiler = self.compilers[self.compiler_dropdown.currentText()]
+		self.compiler_options_btn.disconnect()
+		self.compiler_options_btn.pressed.connect(self.current_compiler.on_compiler_options)
 
 	def open_options_window(self):
 		OptionsWindow(self)
@@ -178,8 +155,19 @@ class MainWindow(QMainWindow):
 	def open_addons_window(self):
 		AddonsWindow(self)
 
+	def open_project(self):
+		file_path, _ = QFileDialog.getOpenFileName(None, "Select a File", "", "IDC Project (*.idcp)")
+		if not self.opened_project_path:
+			self.opened_project_path = os.path.dirname(file_path)
+			print(self.opened_project_path)
+		else:
+			print("save the project? [Y/n]")
+
 	def closeEvent(self, event):
 		ConfigManager().save_config()
+		for addon in self.addons_manager.addons_names:
+			self.addons_manager.addons[addon].on_idc_close()
+		super().closeEvent(event)
 
 
 if __name__ == "__main__":

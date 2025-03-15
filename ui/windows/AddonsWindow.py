@@ -7,21 +7,21 @@ from PyQt5.QtCore import Qt
 from backend.config_manager import ConfigManager
 
 
-def remove_duplicates(json_list):
-    """
-    Remove duplicate addon entries based on the 'name' key.
-    If two entries share the same name, prefer the one with the 'installed' key.
-    """
-    result = {}
-    for item in json_list:
-        name = item.get('name')
-        # If name exists and the new item has 'installed', replace it
-        if name in result:
-            if 'installed' in item:
-                result[name] = item
+def merge_dicts(dict1, dict2):
+    merged = {}
+    # Get all unique keys from both dictionaries
+    all_keys = set(dict1.keys()).union(dict2.keys())
+    for key in all_keys:
+        if key in dict1 and key in dict2:
+            # Prefer the dictionary where 'installed' is True
+            if dict1[key].get("installed", False):
+                merged[key] = dict1[key]
+            else:
+                merged[key] = dict2[key]
         else:
-            result[name] = item
-    return list(result.values())
+            # Add the existing entry from either dictionary
+            merged[key] = dict1.get(key, dict2.get(key))
+    return merged
 
 
 class AddonsWindow(QWidget):
@@ -40,9 +40,7 @@ class AddonsWindow(QWidget):
         self.current_index = 0
 
         # Combine available and imported addons and remove duplicates
-        self.all_addons = remove_duplicates(
-            parent.addons_manager.available_addons + parent.addons_manager.imported_addons
-        )
+        self.all_addons = merge_dicts(parent.addons_manager.available_addons, parent.addons_manager.addons_metadata)
 
         # Build UI and connect signals
         self._init_ui()
@@ -61,7 +59,6 @@ class AddonsWindow(QWidget):
         self.grid = QGridLayout()
         self.grid.setRowStretch(0, 0)
         self.grid.setRowStretch(2, 1)
-        self.grid.setRowStretch(3, 0)
 
         # Top controls: checkboxes for categories
         self.top_hbox = QHBoxLayout()
@@ -92,32 +89,24 @@ class AddonsWindow(QWidget):
         self.scroll_area_widget.setLayout(self.vbox)
         self.scroll_area.setWidget(self.scroll_area_widget)
 
-        # A warning label at the bottom
-        warning_label = QLabel("<span style='color: red;'>WARNING:</span> you have to restart IDC right after deleting addons")
-
         # Arrange everything in the grid layout
         self.grid.addWidget(self.search_bar, 0, 0)
         self.grid.addLayout(self.top_hbox, 1, 0)
         self.grid.addWidget(self.scroll_area, 2, 0)
-        self.grid.addWidget(warning_label, 3, 0)
         self.setLayout(self.grid)
 
-    def create_list_item(self, item):
+    def create_list_item(self, item_name):
         """Helper method to create a ListItem widget from an addon dictionary."""
         return ListItem(
             manager=self.parent().addons_manager,
-            name=item["name"],
-            description=item["description"],
-            categories=item["categories"],
-            img_url=item["img_url"],
-            git_link=item["git_link"]
+            name=item_name
         )
 
     def load_more_addons(self):
         """Load a batch of addons into the scroll area."""
         end_index = min(self.current_index + self.batch_size, len(self.all_addons))
         for i in range(self.current_index, end_index):
-            addon_widget = self.create_list_item(self.all_addons[i])
+            addon_widget = self.create_list_item(list(self.all_addons.keys())[i])
             self.vbox.addWidget(addon_widget)
         self.current_index = end_index
 
@@ -133,7 +122,7 @@ class AddonsWindow(QWidget):
         query = self.search_bar.text().lower().replace(" ", "_")
         return [
             item for item in self.all_addons
-            if item["name"].lower().startswith(query) and self.active_categories.issubset(item["categories"])
+            if item.lower().startswith(query) and self.active_categories.issubset(self.all_addons[item]["categories"])
         ]
 
     def apply_filter(self):
