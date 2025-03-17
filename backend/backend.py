@@ -1,5 +1,9 @@
+import os
+
+from PyQt5.QtWidgets import QMessageBox, QFileDialog
 from PyQt5.QtCore import QThread, pyqtSignal
 import subprocess
+import json
 
 
 class CommandRunner(QThread):
@@ -42,13 +46,6 @@ class Backend:
 	def __init__(self, ui):
 		self.ui = ui
 
-		self.process = None
-		self.project_path = "/home/andrey/IDC-COMPILE-TEST"
-		# bind actions to buttons
-		self.ui.build_btn.pressed.connect(self.build_task)
-		self.ui.run_btn.pressed.connect(self.run_task)
-		self.ui.kill_btn.pressed.connect(self.kill_task)
-
 		# example sprite list content
 		self.ui.spritelist.add_item('Cat', '2D Sprite')
 		self.ui.spritelist.add_item('Dialog window', 'UI')
@@ -75,21 +72,6 @@ class Backend:
 
 		self.runner = None
 
-	def build_task(self):
-		print(self.project_path)
-		self.set_buttons_state(False)
-		command = self.get_build_command().format(f"{self.project_path}")
-		self.run_command(command)
-
-	def run_task(self):
-		self.set_buttons_state(False)
-		command = self.get_build_command(run=1).format(f"{self.project_path}")
-		self.run_command(command)
-
-	def kill_task(self):
-		if self.runner:
-			self.runner.terminate_process()
-
 	def get_build_command(self, run=0):
 		for json_obj in self.ui.compilers:
 			if json_obj == self.ui.compiler_dropdown.currentText():
@@ -107,7 +89,6 @@ class Backend:
 
 		# connect the signals to update logs_widget and to enable buttons
 		self.runner.output_signal.connect(lambda text: self.ui.logs_widget.append(text))
-		self.runner.finished_signal.connect(self.set_buttons_state)
 
 		# Start the thread to run the command in the background
 		self.runner.start()
@@ -118,7 +99,41 @@ class Backend:
 			self.runner.wait()  # blocks until process finishes
 		event.accept()
 
-	def set_buttons_state(self, state=True):
-		self.ui.build_btn.setEnabled(state)
-		self.ui.run_btn.setEnabled(state)
-		self.ui.kill_btn.setEnabled(not state)
+	def verify_close(self):
+		reply = QMessageBox.warning(self.ui, "IDC: Exit", "Save the project before exit?", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+		if reply == QMessageBox.Cancel:
+			print("cancel")
+			return False
+		if reply == QMessageBox.Yes:
+			self.save_project()
+			return True
+		else:
+			return True
+
+	def open_project(self):
+		if not self.ui.opened_project_path:
+			file_path, _ = QFileDialog.getOpenFileName(None, "Select a File", "", "IDC Project (*.idcp)")
+			self.ui.opened_project_path = os.path.dirname(file_path)
+			for addon in self.ui.addons_manager.addons_names:
+				self.ui.addons_manager.addons[addon].on_open_project()
+				with open(file_path) as f:
+					data = json.load(f)
+			self.ui.code_tab.load_project(data)
+		else:
+			reply = QMessageBox.question(self.ui, "IDC warning", "Save current project before continuing?", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+			if reply == QMessageBox.Yes:
+				self.save_project()
+			if reply != QMessageBox.Cancel:
+				self.ui.opened_project_path = None
+				self.open_project()
+
+	def save_project(self):
+		for addon in self.ui.addons_manager.addons_names:
+			self.ui.addons_manager.addons[addon].on_save_project()
+		if not self.ui.opened_project_path:
+			self.open_project()
+		print(self.ui.opened_project_path)
+		full_project_path = os.path.join(self.ui.opened_project_path, "Project.idcp")
+		with open(full_project_path, 'w', encoding='utf-8') as f:
+			json.dump(self.ui.code_tab.get_data(True), f, ensure_ascii=False, indent=4)
+

@@ -1,10 +1,8 @@
-import os
-
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTabWidget, QAction, QPushButton, QHBoxLayout, QFileDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTabWidget, QAction, QPushButton, QHBoxLayout
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt
 import sys
-from ui.tabs.Code import CodeTabLayout
+from ui.widgets.CodingGraphicsScene import WorkspaceView
 from ui.tabs.Sounds import SoundsTabLayout
 from ui.tabs.Textures import TexturesTabLayout
 from ui.tabs.Logs import LogsTabLayout
@@ -42,7 +40,6 @@ class MainWindow(QMainWindow):
 		file_menu.addAction(open_action)
 		file_menu.addAction(save_action)
 		file_menu.addAction(exit_action)
-		open_action.triggered.connect(self.open_project)
 		exit_action.triggered.connect(self.close)
 		self.options_menu.triggered.connect(self.open_options_window)
 		self.addons_menu.triggered.connect(self.open_addons_window)
@@ -62,7 +59,7 @@ class MainWindow(QMainWindow):
 		# CREATE MAIN TABS
 		# create tab selector widget
 		tabs_main = QTabWidget()
-		self.code_tab = QWidget()
+		self.code_tab = WorkspaceView()
 		self.textures_tab = QWidget()
 		self.sounds_tab = QWidget()
 		tabs_main.addTab(self.code_tab, 'Code')
@@ -72,9 +69,6 @@ class MainWindow(QMainWindow):
 		self.textures_tab_layout = TexturesTabLayout()
 		# use tabs layouts
 		self.textures_tab.setLayout(self.textures_tab_layout)
-
-		self.code_tab_layout = CodeTabLayout()
-		self.code_tab.setLayout(self.code_tab_layout)
 
 		self.sounds_tab_layout = SoundsTabLayout()
 		self.sounds_tab.setLayout(self.sounds_tab_layout)
@@ -138,6 +132,12 @@ class MainWindow(QMainWindow):
 		self.backend = Backend(self)
 		self.addons_manager = AddonsManager(self)
 
+		open_action.triggered.connect(self.backend.open_project)
+		save_action.triggered.connect(self.backend.save_project)
+
+		self.compiler_dropdown.currentIndexChanged.connect(self.on_new_compiler)
+		self.on_new_compiler()
+
 		self.show()
 
 	def add_compiler(self, name, module):
@@ -147,6 +147,12 @@ class MainWindow(QMainWindow):
 	def on_new_compiler(self):
 		self.current_compiler = self.compilers[self.compiler_dropdown.currentText()]
 		self.compiler_options_btn.disconnect()
+		self.build_btn.disconnect()
+		self.run_btn.disconnect()
+		self.kill_btn.disconnect()
+		self.build_btn.pressed.connect(self.current_compiler.on_compile)
+		self.run_btn.pressed.connect(self.current_compiler.on_run)
+		self.kill_btn.pressed.connect(self.current_compiler.on_kill)
 		self.compiler_options_btn.pressed.connect(self.current_compiler.on_compiler_options)
 
 	def open_options_window(self):
@@ -155,19 +161,14 @@ class MainWindow(QMainWindow):
 	def open_addons_window(self):
 		AddonsWindow(self)
 
-	def open_project(self):
-		file_path, _ = QFileDialog.getOpenFileName(None, "Select a File", "", "IDC Project (*.idcp)")
-		if not self.opened_project_path:
-			self.opened_project_path = os.path.dirname(file_path)
-			print(self.opened_project_path)
-		else:
-			print("save the project? [Y/n]")
-
 	def closeEvent(self, event):
 		ConfigManager().save_config()
-		for addon in self.addons_manager.addons_names:
-			self.addons_manager.addons[addon].on_idc_close()
-		super().closeEvent(event)
+		if self.backend.verify_close():
+			for addon in self.addons_manager.addons_names:
+				self.addons_manager.addons[addon].on_idc_close()
+			super().closeEvent(event)
+		else:
+			event.ignore()
 
 
 if __name__ == "__main__":

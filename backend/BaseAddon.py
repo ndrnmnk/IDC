@@ -11,13 +11,16 @@ class BaseAddon:
 	def on_open_project(self):
 		pass
 
-	def on_close_project(self):
+	def on_save_project(self):
 		pass
 
 	def on_compile(self):
 		pass
 
 	def on_run(self):
+		pass
+
+	def on_kill(self):
 		pass
 
 	def on_compiler_options(self):
@@ -31,3 +34,9 @@ class BaseAddon:
 
 	def on_delete(self):
 		return True
+
+	def on_install(self):
+		pass
+
+	def on_update(self):
+		pass

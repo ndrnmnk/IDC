@@ -27,6 +27,18 @@ class EntryManager(QGraphicsProxyWidget):
 		self.setWidget(self.entry)
 		self.widget().size_changed.connect(self.sizeChanged.emit)
 
+	def get_text(self):
+		if self.entry_type == 3:
+			return self.entry.currentText()
+		else:
+			return self.entry.text()
+
+	def set_text(self, text):
+		if self.entry_type == 3:
+			self.entry.setCurrentText(text)
+		else:
+			self.entry.setText(text)
+
 	def snap_in(self, widget_to_snap):
 		self.snapped_block = widget_to_snap
 		self.snapped_block.sizeChanged.connect(self.sizeChanged.emit)

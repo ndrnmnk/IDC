@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QListWidget, QListWidgetItem, QStackedWidget
 from PyQt5.QtCore import Qt
 from ui.windows.Options.Visual import VisualOptions
-from ui.windows.Options.Compilers import CompilerOptions
 from ui.windows.Options.General import GeneralOptions
 
 
@@ -27,7 +26,6 @@ class OptionsWindow(QWidget):
 		self.menu.setFixedWidth(100)
 		self.menu.addItem(QListWidgetItem("General"))
 		self.menu.addItem(QListWidgetItem("Visual"))
-		self.menu.addItem(QListWidgetItem("Compilation"))
 		self.menu.addItem(QListWidgetItem("Addons"))
 		self.main_hbox.addWidget(self.menu)
 
@@ -40,12 +38,10 @@ class OptionsWindow(QWidget):
 		# Create and add the different option pages
 		self.general_page = GeneralOptions()
 		self.visual_page = VisualOptions()
-		self.compiler_page = CompilerOptions()
 		self.addons_page = AddonsOptionsWidget(self)
 
 		self.stacked_widget.addWidget(self.general_page)
 		self.stacked_widget.addWidget(self.visual_page)
-		self.stacked_widget.addWidget(self.compiler_page)
 		self.stacked_widget.addWidget(self.addons_page)
 
 		self.stacked_widget.setCurrentIndex(0)

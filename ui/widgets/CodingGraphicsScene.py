@@ -61,16 +61,12 @@ class WorkspaceView(QGraphicsView):
 	def load_block_menu(self, category):
 		# load configs
 		menu_blocks_list = ConfigManager().get_blocks()[category]
-		color = ConfigManager().get_config()["block_colors"][category]
 
 		# get a starting position
 		t = int(self.scene().selector.boundingRect().height()) + 10
 		# populate
 		for key in menu_blocks_list:  # for key in json
-			block_json = menu_blocks_list[key]
-			block_json["pos"] = [10, t]
-			block_json["internal_name"] = key
-			block_json["color"] = color
+			block_json = self.compile_block_json(menu_blocks_list[key], category, key, [10, t])
 			t += self.add_block(block_json, True) + 20
 		self.scene().menu.max_offset = int(t)
 		self.scene().menu.offset = 0
@@ -82,9 +78,13 @@ class WorkspaceView(QGraphicsView):
 
 		self.updateMenuPos()
 
-	def add_blocks(self, all_blocks_list):
-		for block_json in all_blocks_list:
-			self.add_block(block_json, False)
+	@staticmethod
+	def compile_block_json(base, category, internal_name, pos):
+		res = base
+		res["category"] = category
+		res["internal_name"] = internal_name
+		res["pos"] = pos
+		return res
 
 	def add_block(self, block_json, spawner):
 		if spawner:
@@ -97,7 +97,7 @@ class WorkspaceView(QGraphicsView):
 			self.block_list.append(Block(self, block_json, False))
 			self.scene().addItem(self.block_list[-1])
 			self.block_list[-1].setPos(*block_json["pos"])
-			return 0
+			return self.block_list[-1]
 
 	def check_block_for_deletion(self, caller):
 		if caller.pos().x() + 20 < self.scene().menu.sceneBoundingRect().right():
@@ -151,3 +151,37 @@ class WorkspaceView(QGraphicsView):
 		self.scene().scrollbar_menu.setPageStep(self.scene().menu.view_height)
 
 		self.updateMenuPos()
+
+	def get_data(self, return_all=False):
+		"""Returns block data for saving(return_all=1) or compiling(return_all=0)"""
+		res = []
+		if not return_all:
+			for block in self.block_list:
+				if block.shape_index == 2:
+					res.append(block.get_content())
+		else:
+			for block in self.block_list:
+				if not block.snap:
+					res.append(block.get_content())
+		return res
+
+	def load_project(self, project_json, parent_block=None):
+		for idx, json_item in enumerate(project_json):
+			if isinstance(json_item, dict):
+				# create a new json for a block
+				new_json = ConfigManager().get_blocks()[json_item["category"]][json_item["internal_name"]]
+				new_json = self.compile_block_json(new_json, json_item["category"], json_item["internal_name"], json_item["pos"])
+				# create new block
+				block = self.add_block(new_json, False)
+				if parent_block:
+					if new_json["shape"] in (0, 1):
+						block.snap_candidate = parent_block.snap_line_list[idx]
+					if new_json["shape"] in (3, 4):
+						block.snap_candidate = parent_block.get_entry_list()[idx]
+						print(block.snap_candidate)
+					block.try_to_snap()
+				entry_list = block.get_entry_list()
+				for i, var in enumerate(json_item["content"]):
+					entry_list[i].set_text(var[0])
+				self.load_project([x[1] for x in json_item["content"]], block)
+				self.load_project(json_item["snaps"], block)

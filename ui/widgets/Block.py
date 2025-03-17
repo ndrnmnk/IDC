@@ -1,9 +1,11 @@
 from PyQt5.QtWidgets import QGraphicsObject, QGraphicsTextItem
 from PyQt5.QtGui import QPainter, QColor, QPolygonF, QPen, QPainterPath, QFont
 from PyQt5.QtCore import QRectF, pyqtSignal
+
 from backend.shapes import generate_points
 from ui.subwidgets.EntryManager import EntryManager
 from ui.subwidgets.SnapLine import SnapLine
+from backend.config_manager import ConfigManager
 
 
 def sum_max_elements(layer, matrix):
@@ -66,7 +68,7 @@ class Block(QGraphicsObject):
 		self.snap_candidate = None
 		self.snap = None
 
-		self.top_margin = 2 + 15*(self.shape_index == 2)
+		self.top_margin = 2 + 15 * (self.shape_index == 2)
 
 		# prepare for launch
 		self.populate_block()
@@ -121,7 +123,8 @@ class Block(QGraphicsObject):
 					print("what is this")
 				tx += self.width_list[layer][idx]
 			self.between_layers_height_list.append(18)
-			ty += self.between_layers_height_list[layer] + max(self.height_list[layer])  # height of top layer + actual height between layers
+			ty += self.between_layers_height_list[layer] + max(
+				self.height_list[layer])  # height of top layer + actual height between layers
 		self.between_layers_height_list.pop()
 
 	def create_lines_for_snappable_points(self):
@@ -222,7 +225,8 @@ class Block(QGraphicsObject):
 			# type check for snappable widgets
 			if (self.shape_index in [0, 1] and (not isinstance(item, SnapLine) or item in self.snap_line_list)) \
 					or (self.shape_index in [3, 4] and (not isinstance(item, EntryManager) or item in self.content_list
-						or item.snapped_block or item.parentItem().spawner or not item.allowed_snaps[self.shape_index-3])):
+														or item.snapped_block or item.parentItem().spawner or not
+														item.allowed_snaps[self.shape_index - 3])):
 				continue
 
 			if self.check_item_for_snap(item):
@@ -251,7 +255,8 @@ class Block(QGraphicsObject):
 		for idx in range(len(self.width_list)):
 			width.append((sum(self.width_list[idx])) + 2 * len(self.width_list[idx]))
 			height.append(max(self.height_list[idx]))
-		points, self.snappable_points = generate_points(self.shape_index, max(width), height, self.between_layers_height_list)
+		points, self.snappable_points = generate_points(self.shape_index, max(width), height,
+														self.between_layers_height_list)
 		return QPolygonF(points)
 
 	@staticmethod
@@ -266,13 +271,14 @@ class Block(QGraphicsObject):
 		return self.path.boundingRect()
 
 	def paint(self, painter: QPainter, option, widget=None):
-		painter.setBrush(QColor(self.input_json["color"]))
+		painter.setBrush(QColor(ConfigManager().get_config()["block_colors"][self.input_json["category"]]))
 		painter.setPen(QPen(QColor("#000000")))
 		painter.drawPath(self.path)
-		# draw bboxes, used for debugging
-		# for child in self.childItems():
-		# 	rect = child.mapToParent(child.boundingRect()).boundingRect()
-		# 	painter.drawRect(rect)
+
+	# draw bboxes, used for debugging
+	# for child in self.childItems():
+	# 	rect = child.mapToParent(child.boundingRect()).boundingRect()
+	# 	painter.drawRect(rect)
 
 	def shape(self) -> QPainterPath:
 		return self.path
@@ -287,7 +293,9 @@ class Block(QGraphicsObject):
 
 	def handle_entry_item(self, layer, idx, entry_type, entry_data, tx, ty):
 		content = EntryManager(self, entry_type, entry_data)
-		self.add_content_item(layer, idx, content, tx, ty, lambda caller_idx=idx, caller_layer=layer: self.repopulate_block(caller_layer, caller_idx))
+		self.add_content_item(layer, idx, content, tx, ty,
+							  lambda caller_idx=idx, caller_layer=layer: self.repopulate_block(caller_layer,
+																							   caller_idx))
 
 	def suicide(self):
 		self.parent_view.scene().removeItem(self)
@@ -323,3 +331,31 @@ class Block(QGraphicsObject):
 		if self.shape_index == 1:  # without this, blocks with shape 1 go inside other blocks
 			return QRectF(combined_rect.x(), combined_rect.y(), combined_rect.width(), combined_rect.height() + 5)
 		return combined_rect
+
+	def get_content(self):
+		res = {"category": self.input_json["category"],
+			"internal_name": self.input_json["internal_name"], "pos": [self.pos().x(), self.pos().y()]}
+
+		content = []
+		for widget in self.get_entry_list():
+			if widget.snapped_block:
+				content.append([widget.get_text(), widget.snapped_block.get_content()])
+			else:
+				content.append([widget.get_text(), None])
+		snaps = []
+		for line in self.snap_line_list:
+			if line.snapped_block:
+				snaps.append(line.snapped_block.get_content())
+			else:
+				snaps.append(None)
+		res["content"] = content
+		res["snaps"] = snaps
+		return res
+
+	def get_entry_list(self):
+		res = []
+		for layer in self.content_list:
+			for widget in layer:
+				if isinstance(widget, EntryManager):
+					res.append(widget)
+		return res

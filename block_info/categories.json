@@ -32,25 +32,25 @@
     }
   },
   "Visual": {
-    "say_smt": {
+    "yell_smt": {
       "shape": 0,
       "data": [
         [{"text": "yell"}, {"text_entry": "yes"}]
       ]
     },
-    "move_n_steps": {
+    "find_n_dollars": {
       "shape": 0,
       "data": [
         [{"text": "find"}, {"int_entry": "10"}, {"text": "dollars"}]
       ]
     },
-    "rotate_n_degrees": {
+    "set_var_to": {
       "shape": 0,
       "data": [
         [{"text": "set variable to"}, {"int_entry": "90"}]
       ]
     },
-    "scale_n_percent": {
+    "wait_till_end": {
       "shape": 1,
       "data": [
         [{"text": "wait till end"}]
@@ -58,13 +58,13 @@
     }
   },
   "Long oneeeeeeeeee": {
-    "yell_smt": {
+    "yell_yes": {
       "shape": 2,
       "data": [
         [{"text": "yell"}, {"text_entry": "yes"}]
       ]
     },
-    "find_n_dollars": {
+    "find_10_dollars": {
       "shape": 0,
       "data": [
         [{"text": "find"}, {"int_entry": "10"}, {"text": "dollars"}]
@@ -76,31 +76,31 @@
         [{"text": "set variable to"}, {"int_entry": "90"}]
       ]
     },
-    "wait_till_end": {
+    "wait_until_end": {
       "shape": 1,
       "data": [
         [{"text": "wait till end"}]
       ]
     },
-    "say_smt": {
+    "say_hi": {
       "shape": 0,
       "data": [
         [{"text": "say"}, {"text_entry": "hi"}]
       ]
     },
-    "move_n_steps": {
+    "move_10_steps": {
       "shape": 0,
       "data": [
         [{"text": "move"}, {"int_entry": "10"}, {"text": "steps"}]
       ]
     },
-    "rotate_n_degrees": {
+    "rotate_90_degrees": {
       "shape": 0,
       "data": [
         [{"text": "rotate"}, {"int_entry": "90"}, {"text": "degrees"}]
       ]
     },
-    "scale_n_percent": {
+    "scale_10_percent": {
       "shape": 0,
       "data": [
         [{"text": "scale"}, {"int_entry": "10"}, {"text": "%"}]
