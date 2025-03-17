@@ -1,206 +1,32 @@
 {
-  "Movement": {
-    "say_smt": {
+  "Basic": {
+    "print_smt": {
       "shape": 0,
       "data": [
-        [{"text": "say"}, {"text_entry": "hi"}]
-      ]
-    },
-    "move_n_steps": {
-      "shape": 0,
-      "data": [
-        [{"text": "move"}, {"bool_entry": "10"}, {"text": "steps"}]
-      ]
-    },
-    "rotate_n_degrees": {
-      "shape": 0,
-      "data": [
-        [{"text": "rotate"}, {"int_entry": "90"}, {"text": "degrees"}]
-      ]
-    },
-    "scale_n_percent": {
-      "shape": 0,
-      "data": [
-        [{"text": "scale"}, {"int_entry": "10"}, {"text": "%"}]
-      ]
-    },
-    "set_height_to_x": {
-      "shape": 4,
-      "data": [
-        [{"text": "set height to"}, {"dropdown": ["yes", "snake", "one million beers"]}]
+        [
+          {
+            "text": "print"
+          },
+          {
+            "text_entry": "text"
+          }
+        ]
       ]
     }
   },
-  "Visual": {
-    "yell_smt": {
-      "shape": 0,
-      "data": [
-        [{"text": "yell"}, {"text_entry": "yes"}]
-      ]
-    },
-    "find_n_dollars": {
-      "shape": 0,
-      "data": [
-        [{"text": "find"}, {"int_entry": "10"}, {"text": "dollars"}]
-      ]
-    },
-    "set_var_to": {
-      "shape": 0,
-      "data": [
-        [{"text": "set variable to"}, {"int_entry": "90"}]
-      ]
-    },
-    "wait_till_end": {
-      "shape": 1,
-      "data": [
-        [{"text": "wait till end"}]
-      ]
-    }
-  },
-  "Long oneeeeeeeeee": {
-    "yell_yes": {
+  "Events": {
+    "on_launch": {
       "shape": 2,
       "data": [
-        [{"text": "yell"}, {"text_entry": "yes"}]
+        [{"text": "On launch"}]
       ]
     },
-    "find_10_dollars": {
+    "if": {
       "shape": 0,
       "data": [
-        [{"text": "find"}, {"int_entry": "10"}, {"text": "dollars"}]
-      ]
-    },
-    "set_variable_to": {
-      "shape": 0,
-      "data": [
-        [{"text": "set variable to"}, {"int_entry": "90"}]
-      ]
-    },
-    "wait_until_end": {
-      "shape": 1,
-      "data": [
-        [{"text": "wait till end"}]
-      ]
-    },
-    "say_hi": {
-      "shape": 0,
-      "data": [
-        [{"text": "say"}, {"text_entry": "hi"}]
-      ]
-    },
-    "move_10_steps": {
-      "shape": 0,
-      "data": [
-        [{"text": "move"}, {"int_entry": "10"}, {"text": "steps"}]
-      ]
-    },
-    "rotate_90_degrees": {
-      "shape": 0,
-      "data": [
-        [{"text": "rotate"}, {"int_entry": "90"}, {"text": "degrees"}]
-      ]
-    },
-    "scale_10_percent": {
-      "shape": 0,
-      "data": [
-        [{"text": "scale"}, {"int_entry": "10"}, {"text": "%"}]
+        [{"text": "If"}, {"bool_entry": ""}, {"text": "do"}],
+        [{"text": ""}]
       ]
     }
-  },
-  "T": {
-    "json0": {
-			"shape": 0,
-			"data": [
-				[
-					{"dropdown": ["a very long option because yes", "short option"]},
-					{"text": "omg text"},
-					{"int_entry": "numbers here"},
-					{"text": "text again"},
-					{"text_entry": "text input yay"},
-					{"text": "bruh"},
-					{"bool_entry": "and true/false entry"}
-				],
-				[{"text": "there multiple layers"}],
-				[{"text": "and one more"}, {"text_entry": "layer"}],
-				[{"text": "why do you need so much layers"}]
-			]},
-    "json1": {
-			"shape": 1,
-			"data": [
-				[{"text": "Why block on top has bulge but not me"}],
-				[{"bool_entry": "IDK, but why less layers"}]
-			]},
-    "json3": {
-			"shape": 2,
-			"data": [
-				[{"text": "BIG"}, {"int_entry": "bulge"}],
-				[{"bool_entry": "haha"}, {"text": "loosers"}],
-				[{"text": "ahahahaha look below me"}]
-			]},
-    "json4": {
-			"shape": 3,
-			"data": [
-				[{"dropdown": ["добийте", "врятуйте"]}],
-				[{"int_entry": "me"}, {"text": "pleaseeeee"}]
-			]},
-    "json5": {
-			"shape": 4,
-			"data": [
-				[{"dropdown": ["muntybr", "ththryjegykjteh"]}],
-				[{"int_entry": "thtrhetrthtwgt"}, {"text": "3142543634"}]
-			]},
-    "json6": {
-			"shape": 2,
-			"data": [
-				[
-					{"text": "Move"},
-					{"int_entry": "10"},
-					{"text": "steps to"},
-					{"text_entry": "WW3"},
-					{"text": "that will begin in"},
-					{"bool_entry": "0"}
-				]
-			]},
-    "json7": {
-			"shape": 3,
-			"data": [
-				[
-					{"text": "move"},
-					{"int_entry": "10"},
-					{"text": "steps to"},
-					{"text_entry": "WW3"},
-					{"text": "that will begin in"},
-					{"bool_entry": "0"}
-				]
-			]},
-    "json8": {
-			"shape": 3,
-			"data": [
-				[
-					{"text": "Move"},
-					{"int_entry": "10"},
-					{"text": "steps to"},
-					{"text_entry": "WW3"},
-					{"text": "that will begin in"},
-					{"bool_entry": "0"}
-				]
-			]},
-    "json9": {
-			"shape": 1,
-			"data": [
-				[{"text": "hhhhhhhhhhhhhhhhhhhhhhhhh"}]
-			]},
-    "json10": {
-			"shape": 4,
-			"data": [
-				[
-					{"text": "Move"},
-					{"int_entry": "10"},
-					{"text": "steps to"},
-					{"text_entry": "WW3"},
-					{"text": "that will begin in"},
-					{"bool_entry": "0"}
-				]
-			]}
   }
 }

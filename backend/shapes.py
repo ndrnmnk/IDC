@@ -62,7 +62,7 @@ def generate_points(shape_id, width, height, between_layers_height):
 				QPointF(width, start_y),
 				QPointF(width, start_y+h)]
 			if not idx == len(height) - 1:
-				start_x = 40
+				start_x = 20
 			else:
 				start_x = 0
 			res = res + [
@@ -91,7 +91,7 @@ def generate_points(shape_id, width, height, between_layers_height):
 				QPointF(width, start_y),
 				QPointF(width, start_y+h)]
 			if not idx == len(height) - 1:
-				start_x = 40
+				start_x = 20
 				snappable_points.append(QPointF(start_x, start_y+h))
 				res = res + [
 					QPointF(start_x + bulge_x + 30, start_y + h),
@@ -130,7 +130,7 @@ def generate_points(shape_id, width, height, between_layers_height):
 					QPointF(width, start_y+h)
 				]
 			if not idx == len(height) - 1:
-				start_x = 40
+				start_x = 20
 			else:
 				start_x = 0
 			snappable_points.append(QPointF(start_x, start_y+h))

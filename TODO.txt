@@ -3,6 +3,7 @@ main window - partially done (??%):
 
 Blocks - partially done(95%):
     add enable/disable block ability for addons
+    add + button for blocks like switch/case
     add block entry
 
 AI tab - partially done (frontend only)

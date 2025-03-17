@@ -11,10 +11,8 @@
         "snapline_color": "#8888ff"
     },
     "block_colors": {
-        "Movement": "#c061cb",
-        "Visual": "#ffbe6f",
-        "Long oneeeeeeeeee": "#3584e4",
-        "T": "#ffff00"
+        "Basic": "#c061cb",
+        "Events": "#ff8800"
     },
     "addon_category_colors": {
         "Installed": "#00ff00",
