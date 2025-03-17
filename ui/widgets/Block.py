@@ -339,9 +339,9 @@ class Block(QGraphicsObject):
 		content = []
 		for widget in self.get_entry_list():
 			if widget.snapped_block:
-				content.append([widget.get_text(), widget.snapped_block.get_content()])
+				content.append([[widget.get_text(), widget.entry_type], widget.snapped_block.get_content()])
 			else:
-				content.append([widget.get_text(), None])
+				content.append([[widget.get_text(), widget.entry_type], None])
 		snaps = []
 		for line in self.snap_line_list:
 			if line.snapped_block:

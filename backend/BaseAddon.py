@@ -1,8 +1,9 @@
 
 
 class BaseAddon:
-	def __init__(self, ui):
+	def __init__(self, ui, fn):
 		self.ui = ui
+		self.folder_name = fn
 		self.init()
 
 	def init(self):

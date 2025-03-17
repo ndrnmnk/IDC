@@ -1,9 +1,7 @@
-main window - partially done (??%):
-    rework textures and sounds as files
-
 Blocks - partially done(95%):
     add enable/disable block ability for addons
-    add + button for blocks like switch/case
-    add block entry
+    add block entry (for shapes 0-2)
 
-AI tab - partially done (frontend only)
+Add multiple sprites support
+Add more options
+AI tab

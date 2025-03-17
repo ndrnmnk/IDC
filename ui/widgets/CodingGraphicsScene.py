@@ -182,6 +182,6 @@ class WorkspaceView(QGraphicsView):
 					block.try_to_snap()
 				entry_list = block.get_entry_list()
 				for i, var in enumerate(json_item["content"]):
-					entry_list[i].set_text(var[0])
+					entry_list[i].set_text(var[0][0])
 				self.load_project([x[1] for x in json_item["content"]], block)
 				self.load_project(json_item["snaps"], block)

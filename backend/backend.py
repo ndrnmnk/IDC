@@ -51,11 +51,6 @@ class Backend:
 		self.ui.spritelist.add_item('Dialog window', 'UI')
 		self.ui.spritelist.add_item('Cube', '3D Sprite')
 
-		# example problems tab content
-		self.ui.problems_tab.add_item(0, 'warning')
-		self.ui.problems_tab.add_item(0, 'warning')
-		self.ui.problems_tab.add_item(1, 'error')
-
 		# example sounds list content
 		self.ui.sounds_tab_layout.add_sound("error", "textures/images/error.png")
 
@@ -110,15 +105,16 @@ class Backend:
 		else:
 			return True
 
-	def open_project(self):
+	def open_project(self, no_load=False):
 		if not self.ui.opened_project_path:
 			file_path, _ = QFileDialog.getOpenFileName(None, "Select a File", "", "IDC Project (*.idcp)")
 			self.ui.opened_project_path = os.path.dirname(file_path)
 			for addon in self.ui.addons_manager.addons_names:
 				self.ui.addons_manager.addons[addon].on_open_project()
+			if not no_load:
 				with open(file_path) as f:
 					data = json.load(f)
-			self.ui.code_tab.load_project(data)
+				self.ui.code_tab.load_project(data)
 		else:
 			reply = QMessageBox.question(self.ui, "IDC warning", "Save current project before continuing?", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
 			if reply == QMessageBox.Yes:
@@ -131,7 +127,7 @@ class Backend:
 		for addon in self.ui.addons_manager.addons_names:
 			self.ui.addons_manager.addons[addon].on_save_project()
 		if not self.ui.opened_project_path:
-			self.open_project()
+			self.open_project(True)
 		print(self.ui.opened_project_path)
 		full_project_path = os.path.join(self.ui.opened_project_path, "Project.idcp")
 		with open(full_project_path, 'w', encoding='utf-8') as f:

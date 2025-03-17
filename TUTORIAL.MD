@@ -77,3 +77,21 @@ def run(ui):
 ```
 
 And that's it! Now you can create your own addons!
+
+### Creating compiler addons
+
+If you are making a compiler addon, you must follow these rules:
+
+    - babyproof everything
+    - don't let compilation fail if the issue wasn't displayed in problems tab
+    - don't generate unreadable code (no "all code in one line" etc.)
+    - don't specifically slow down the generated code or compilation process
+    - no leaving backdoors / integrating malware etc.
+
+Now, lets start. To get current blocks, use this: ```self.ui.code_tab.get_data(False)```
+
+When you need to get current project folder, use ```self.ui.opened_project_path```
+
+Also, you can get path to your addon folder with ```self.folder_name```
+
+The rest lies on YOU!
