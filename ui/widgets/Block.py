@@ -297,12 +297,12 @@ class Block(QGraphicsObject):
 							  lambda caller_idx=idx, caller_layer=layer: self.repopulate_block(caller_layer,
 																							   caller_idx))
 
-	def suicide(self):
+	def suicide(self, leave_children=False):
 		self.parent_view.scene().removeItem(self)
 
 		for line in self.snap_line_list:
 			line.disconnect()
-			if line.snapped_block:
+			if line.snapped_block and not leave_children:
 				line.snapped_block.suicide()
 				line.unsnap()
 
@@ -310,7 +310,7 @@ class Block(QGraphicsObject):
 			for item in layer:
 				if isinstance(item, EntryManager):
 					item.disconnect()
-					if item.snapped_block:
+					if item.snapped_block and not leave_children:
 						item.snapped_block.suicide()
 						item.unsnap()
 

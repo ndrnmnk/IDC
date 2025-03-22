@@ -47,9 +47,12 @@ class Backend:
 		self.ui = ui
 
 		# example sprite list content
-		self.ui.spritelist.add_item('Cat', '2D Sprite')
-		self.ui.spritelist.add_item('Dialog window', 'UI')
-		self.ui.spritelist.add_item('Cube', '3D Sprite')
+		self.ui.spritelist.add_item('Main', 'Generic class')
+		self.ui.spritelist.add_item('test class', 'Hello, World!')
+		self.ui.spritelist.currentItemChanged.connect(self.ui.code_tab.set_sprite)
+
+		for item in self.ui.spritelist.item_meta:
+			self.ui.code_tab.all_sprites_code[item[0]] = {"instance_of": item[1], "code": []}
 
 		# example sounds list content
 		self.ui.sounds_tab_layout.add_sound("error", "textures/images/error.png")
@@ -97,7 +100,6 @@ class Backend:
 	def verify_close(self):
 		reply = QMessageBox.warning(self.ui, "IDC: Exit", "Save the project before exit?", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
 		if reply == QMessageBox.Cancel:
-			print("cancel")
 			return False
 		if reply == QMessageBox.Yes:
 			self.save_project()
@@ -108,13 +110,20 @@ class Backend:
 	def open_project(self, no_load=False):
 		if not self.ui.opened_project_path:
 			file_path, _ = QFileDialog.getOpenFileName(None, "Select a File", "", "IDC Project (*.idcp)")
+			# file_path = "/home/andrey/IDC_COMPILE_TEST/Project.idcp"
+			# added this bc my system is broken and calling file dialog crashes everything
 			self.ui.opened_project_path = os.path.dirname(file_path)
 			for addon in self.ui.addons_manager.addons_names:
 				self.ui.addons_manager.addons[addon].on_open_project()
 			if not no_load:
 				with open(file_path) as f:
 					data = json.load(f)
-				self.ui.code_tab.load_project(data)
+				self.ui.code_tab.all_sprites_code = data
+				self.ui.code_tab.load_project(data["Main"]["code"])
+				self.ui.spritelist.remove_all()
+				for item in data:
+					print(item)
+					self.ui.spritelist.add_item(item, data[item]["instance_of"])
 		else:
 			reply = QMessageBox.question(self.ui, "IDC warning", "Save current project before continuing?", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
 			if reply == QMessageBox.Yes:
@@ -131,5 +140,5 @@ class Backend:
 		print(self.ui.opened_project_path)
 		full_project_path = os.path.join(self.ui.opened_project_path, "Project.idcp")
 		with open(full_project_path, 'w', encoding='utf-8') as f:
-			json.dump(self.ui.code_tab.get_data(True), f, ensure_ascii=False, indent=4)
+			json.dump(self.ui.code_tab.get_project_data(), f, ensure_ascii=False, indent=4)
 

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTabWidget, QAction, QPushButton, QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QMainWindow, QSplitter, QWidget, QTabWidget, QAction, QPushButton, QHBoxLayout
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt
 import sys
@@ -45,16 +45,8 @@ class MainWindow(QMainWindow):
 		self.addons_menu.triggered.connect(self.open_addons_window)
 
 		# create a central widget for the main window
-		self.central_widget = QWidget(self)
+		self.central_widget = QSplitter(self)
 		self.setCentralWidget(self.central_widget)
-
-		# create a layout
-		self.grid = QGridLayout(self.central_widget)
-		self.grid.setColumnStretch(0, 1)
-		self.grid.setColumnStretch(1, 4)
-		self.grid.setRowStretch(0, 0)
-		self.grid.setRowStretch(1, 1)
-		self.grid.setRowStretch(2, 1)
 
 		# CREATE MAIN TABS
 		# create tab selector widget
@@ -90,7 +82,7 @@ class MainWindow(QMainWindow):
 		self.ai_tab.setLayout(self.ai_tab_layout)
 
 		# create sprite list
-		self.spritelist = SpriteList()
+		self.spritelist = SpriteList(self)
 
 		# Create Layout for buttons
 		buttons_layout = QHBoxLayout()
@@ -116,16 +108,23 @@ class MainWindow(QMainWindow):
 		buttons_widget.setLayout(buttons_layout)
 
 		# place everything
-		self.grid.addWidget(buttons_widget, 0, 0, 1, 2)
-		self.grid.addWidget(tabs_misc, 1, 0)
-		self.grid.addWidget(self.spritelist, 2, 0)
-		self.grid.addWidget(tabs_main, 1, 1, 2, 1)
+		splitter0 = QSplitter(Qt.Vertical)
+		splitter0.addWidget(tabs_misc)
+		splitter0.addWidget(self.spritelist)
+		splitter0.setSizes([1000, 1000])
+
+		splitter1 = QSplitter(Qt.Vertical)
+		splitter1.addWidget(buttons_widget)
+		splitter1.addWidget(tabs_main)
+		splitter1.setChildrenCollapsible(False)
+
+		self.central_widget.addWidget(splitter0)
+		self.central_widget.addWidget(splitter1)
 
 		tabs_misc.setCurrentIndex(1)  # logs tab
 
 		self.opened_project_path = None
 
-		# project path will be inserted into {}
 		self.compilers = {}
 		self.current_compiler = None
 
@@ -172,12 +171,12 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
-	config = ConfigManager()
-	config.load_config("options.json")
-	config.load_blocks("block_info/categories.json")
+	cfg = ConfigManager()
+	cfg.load_config("options.json")
+	cfg.load_blocks("block_info/categories.json")
 	app = QApplication(sys.argv)
 	app.setStyle("Fusion")
-	app.setStyleSheet(f"QWidget {{ color: {config.get_config()['styles']['text_color']}; }}")
-	window = MainWindow(config)
+	app.setStyleSheet(f"QWidget {{ color: {cfg.get_config()['styles']['text_color']}; }}")
+	window = MainWindow(cfg)
 
 	sys.exit(app.exec_())

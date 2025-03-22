@@ -21,12 +21,27 @@
         [{"text": "On launch"}]
       ]
     },
-    "if": {
+    "if_$c0$": {
       "shape": 0,
       "data": [
         [{"text": "If"}, {"bool_entry": ""}, {"text": "do"}],
         [{"text": ""}]
       ]
     }
-  }
+  },
+  "Variables": {
+    "define_variable_$c1$": {
+      "shape": 0,
+      "data": [
+        [{"text": "Define"}, {"dropdown": ["string", "int", "double", "char", "bool"]}, {"text": "variable"}, {"text_entry": "var"}]
+      ]
+    },
+    "set_variable_$c0$": {
+      "shape": 0,
+      "data": [
+        [{"text": "Set"}, {"text_entry": "var"}, {"text": "to"}, {"text_entry": "str value"}]
+      ]
+    }
+  },
+  " ": {}
 }

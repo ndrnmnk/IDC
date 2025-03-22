@@ -54,6 +54,8 @@ class WorkspaceView(QGraphicsView):
 		scene = CodingGraphicsScene(self)
 		self.setScene(scene)
 		self.centerOn(0, 0)
+		self.current_sprite = ["Main", "Generic class"]
+		self.all_sprites_code = {}
 		self.block_list = []
 		self.menu_block_list = []
 		self.scene().menu.view_height = self.viewport().height()
@@ -152,7 +154,7 @@ class WorkspaceView(QGraphicsView):
 
 		self.updateMenuPos()
 
-	def get_data(self, return_all=False):
+	def get_sprite_data(self, return_all=False):
 		"""Returns block data for saving(return_all=1) or compiling(return_all=0)"""
 		res = []
 		if not return_all:
@@ -165,7 +167,14 @@ class WorkspaceView(QGraphicsView):
 					res.append(block.get_content())
 		return res
 
+	def get_project_data(self):
+		res = self.all_sprites_code
+		res[self.current_sprite[0]]["code"] = self.get_sprite_data(True)
+		return res
+
+	# TODO: rename function below
 	def load_project(self, project_json, parent_block=None):
+		print(project_json)
 		for idx, json_item in enumerate(project_json):
 			if isinstance(json_item, dict):
 				# create a new json for a block
@@ -185,3 +194,16 @@ class WorkspaceView(QGraphicsView):
 					entry_list[i].set_text(var[0][0])
 				self.load_project([x[1] for x in json_item["content"]], block)
 				self.load_project(json_item["snaps"], block)
+
+	def set_sprite(self, sl_item):
+		sprite_name = [sl_item.text(0), sl_item.text(1)]
+		# save current code to self.all_sprites_code
+		self.all_sprites_code[self.current_sprite[0]]["code"] = self.get_sprite_data(True)
+		# update current sprite
+		self.current_sprite = sprite_name
+		# delete all previous block widgets
+		for block in self.block_list[:]:
+			block.suicide(True)
+		# load new code into blocks
+		print(self.all_sprites_code)
+		self.load_project(self.all_sprites_code[sprite_name[0]]["code"])

@@ -5,7 +5,7 @@ from PyQt5.QtCore import pyqtSignal
 class EntryManager(QGraphicsProxyWidget):
 	sizeChanged = pyqtSignal()
 
-	def __init__(self, parent, entry_type, placeholder_text):
+	def __init__(self, parent, entry_type, placeholder_text=" "):
 		super().__init__(parent)
 		self.snapped_block = None
 		self.entry_type = entry_type

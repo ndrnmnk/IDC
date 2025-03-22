@@ -27,6 +27,9 @@ class BlockSelectionMenu(QGraphicsProxyWidget):
 		self.table_widget.setStyleSheet(f"background-color: {ConfigManager().get_config()['styles']['category_selector_bg']}; ")
 		self.setWidget(self.table_widget)
 
+		if len(categories) % 2 != 0:
+			categories.append((' ', '#000000'))
+
 		self.table_widget.setItemDelegate(RichTextDelegate())
 		self.table_widget.setFixedWidth(300)
 		self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
