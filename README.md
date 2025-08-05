@@ -2,20 +2,17 @@
 
 #### Also check TUTORIAL.MD to get install instaructions
 #### And TODO.txt to see future features
-IDC will be a block-based coding app for C++ when done. Currently, there's less than 50% coded, but it already features:
+IDC will be a block-based coding app with addons support. Currently, it's far from done, but it already features:
 
-- Low memory usage - initially consuming 150 MB, 
-spamming blocks makes it increase very slowly (5 blocks = max. 1 additional MB consumed)
+- Blocks - everything works except converting to code (addons do this) and layer deletion from dynamic ones
 
-- Blocks - everything except converting to code
-
-- Addons - everything except dependencies on other addons done
+- UI - need to restructure textures and sounds as files
 
 - Options - overall done, but will add new options
 
-- Backend - after a few adjustments, you can make it compile a C++ project
+- Block selection menu - done
 
-- Block selection menu - completely done
+- Addons - done
 
 ### Footage
 <p>

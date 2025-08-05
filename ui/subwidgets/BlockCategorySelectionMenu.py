@@ -18,7 +18,7 @@ class Category(QTableWidgetItem):
 		return self.raw_text
 
 
-class BlockSelectionMenu(QGraphicsProxyWidget):
+class BlockCategorySelectionMenu(QGraphicsProxyWidget):
 	def __init__(self, parent_view, categories):
 		super().__init__()
 		self.setZValue(6)

@@ -1,7 +1,7 @@
 import os
 
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QSettings, QThread, pyqtSignal
 import subprocess
 import json
 
@@ -52,7 +52,7 @@ class Backend:
 		self.ui.spritelist.currentItemChanged.connect(self.ui.code_tab.set_sprite)
 
 		for item in self.ui.spritelist.item_meta:
-			self.ui.code_tab.all_sprites_code[item[0]] = {"instance_of": item[1], "code": []}
+			self.ui.code_tab.all_sprites_code[item[0]] = {"instance_of": item[1], "code": {}, "roots": [], "vars": {}}
 
 		# example sounds list content
 		self.ui.sounds_tab_layout.add_sound("error", "textures/images/error.png")
@@ -109,9 +109,13 @@ class Backend:
 
 	def open_project(self, no_load=False):
 		if not self.ui.opened_project_path:
-			file_path, _ = QFileDialog.getOpenFileName(None, "Select a File", "", "IDC Project (*.idcp)")
-			# file_path = "/home/andrey/IDC_COMPILE_TEST/Project.idcp"
-			# added this bc my system is broken and calling file dialog crashes everything
+			settings = QSettings()
+			last_path = settings.value("lastFilePath", defaultValue=".")
+			file_path, _ = QFileDialog.getOpenFileName(None, "Select a File", last_path, "IDC Project (*.idcp)")
+			if not file_path:
+				return
+			settings.setValue("lastFilePath", QFileDialog().directory().absolutePath())
+
 			self.ui.opened_project_path = os.path.dirname(file_path)
 			for addon in self.ui.addons_manager.addons_names:
 				self.ui.addons_manager.addons[addon].on_open_project()
@@ -119,10 +123,11 @@ class Backend:
 				with open(file_path) as f:
 					data = json.load(f)
 				self.ui.code_tab.all_sprites_code = data
-				self.ui.code_tab.load_project(data["Main"]["code"])
+				self.ui.code_tab.load_sprite(data["Main"])
 				self.ui.spritelist.remove_all()
 				for item in data:
-					print(item)
+					if item == "vars":
+						continue
 					self.ui.spritelist.add_item(item, data[item]["instance_of"])
 		else:
 			reply = QMessageBox.question(self.ui, "IDC warning", "Save current project before continuing?", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)

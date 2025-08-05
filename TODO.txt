@@ -1,7 +1,15 @@
-Blocks - partially done(95%):
-    add enable/disable block ability for addons
-    add block entry (for shapes 0-2)
+Blocks - partially done(98%):
+    add optional block parts
+    add layer deletion
+    add function definition blocks
 
-Add multiple sprites support
+  add comments support
+
 Add more options
 AI tab
+
+Make ui more friendly:
+    Restructure textures and sounds as files
+    Add Ctrl-Z, Ctrl-Y
+    Dynamic block recoloring
+    Fix "save project" popup after user just saved it manually

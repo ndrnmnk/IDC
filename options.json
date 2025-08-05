@@ -12,8 +12,9 @@
     },
     "block_colors": {
         "Basic": "#c061cb",
-        "Events": "#ff8800",
-        "Variables": "#888800"
+        "Events": "#ffaa00",
+        "Variables": "#ff8800",
+        "Dynamic": "#00ffff"
     },
     "addon_category_colors": {
         "Installed": "#00ff00",

@@ -1,6 +1,9 @@
-from PyQt5.QtWidgets import QGraphicsObject, QGraphicsTextItem
+from copy import deepcopy
+from uuid import uuid4
+
+from PyQt5.QtWidgets import QGraphicsObject, QGraphicsTextItem, QMenu, QAction
 from PyQt5.QtGui import QPainter, QColor, QPolygonF, QPen, QPainterPath, QFont
-from PyQt5.QtCore import QRectF, pyqtSignal
+from PyQt5.QtCore import QRectF, pyqtSignal, Qt
 
 from backend.shapes import generate_points
 from ui.subwidgets.EntryManager import EntryManager
@@ -41,17 +44,37 @@ class Block(QGraphicsObject):
 	Shapes 3 and 4 with multiple layers look weird and function like single-layer ones.
 	
 	Spawner blocks spawn their copy and become regular ones after user clicks/drags them.
+	
+	'meta' describes the block:
+	0 - regular block
+	1 - variable block
+	2 - dynamic block
+	3 - custom function block
+	4 - custom OOP related block
 	"""
 
 	def __init__(self, parent, input_json, spawner=False):
 		super().__init__()
 
-		self.parent_view = parent  # crashes when parent is passed to super().__init__(), so using this
+		self.parent_view = parent
+
+		if input_json.get("tooltip"):
+			self.setToolTip(input_json.get("tooltip"))
 
 		# save data
-		self.input_json = input_json
 		self.spawner = spawner
+		self.meta = input_json["meta"]
 		self.shape_index = input_json["shape"]
+
+		# handle dynamic blocks
+		self.dynamic_triggered = 0
+		if self.meta == 2:
+			self.input_json = deepcopy(input_json)
+		else:
+			self.input_json = input_json
+		# variable blocks
+		if self.meta == 1 and not self.spawner:
+			self.parent_view.var_manager.register_usage(self)
 
 		# set flags
 		self.setFlag(QGraphicsObject.ItemIsMovable)
@@ -62,6 +85,7 @@ class Block(QGraphicsObject):
 		self.height_list = []
 		self.between_layers_height_list = []
 		# snapping variables
+		self.snap_lock = False
 		self.content_list = []
 		self.snappable_points = []
 		self.snap_line_list = []
@@ -81,9 +105,12 @@ class Block(QGraphicsObject):
 		self.show()
 
 	def mousePressEvent(self, event):
-		super().mousePressEvent(event)
-		self.setZValue(2)
-		self.unsnap()
+		if event.button() == Qt.RightButton and (not self.spawner or (self.spawner and self.meta == 1)):
+			self.showContextMenu(event.screenPos())
+		else:
+			super().mousePressEvent(event)
+			self.setZValue(2)
+			self.unsnap()
 
 	def mouseMoveEvent(self, event):
 		super().mouseMoveEvent(event)
@@ -98,39 +125,39 @@ class Block(QGraphicsObject):
 
 	def populate_block(self):
 		ty = self.top_margin
+		blh = 18 if self.shape_index in (0, 1, 2) else 0
 		for layer in range(len(self.input_json["data"])):
 			self.content_list.append([])
 			self.width_list.append([])
 			self.height_list.append([])
 			tx = 2
 			for idx, json_member in enumerate(self.input_json["data"][layer]):
-				if "text" in json_member:
-					content = QGraphicsTextItem(json_member["text"], parent=self)
-					content.setFont(QFont("Arial", 12))
-					self.add_content_item(layer, idx, content, tx, ty)
-				elif "text_entry" in json_member:
-					self.handle_entry_item(layer, idx, 0, json_member["text_entry"], tx, ty)
-				elif "int_entry" in json_member:
-					self.handle_entry_item(layer, idx, 1, json_member["int_entry"], tx, ty)
-				elif "bool_entry" in json_member:
-					self.handle_entry_item(layer, idx, 2, json_member["bool_entry"], tx, ty)
-				elif "dropdown" in json_member:
-					self.handle_entry_item(layer, idx, 3, json_member["dropdown"], tx, ty)
-				else:
-					self.content_list[layer].append("what is this")
-					self.width_list[layer].append(0)
-					self.height_list[layer].append(0)
-					print("what is this")
+				self.process_content_json_item(json_member, layer, idx, tx, ty)
 				tx += self.width_list[layer][idx]
-			self.between_layers_height_list.append(18)
-			ty += self.between_layers_height_list[layer] + max(
-				self.height_list[layer])  # height of top layer + actual height between layers
+			self.between_layers_height_list.append(blh)
+			ty += self.between_layers_height_list[layer] + max(self.height_list[layer])  # height of top layer + actual height between layers
 		self.between_layers_height_list.pop()
+
+	def process_content_json_item(self, json_member, layer, idx, tx, ty):
+		if "text" in json_member:
+			content = QGraphicsTextItem(json_member["text"], parent=self)
+			content.setFont(QFont("Arial", 12))
+			self.add_content_item(layer, idx, content, tx, ty)
+		elif "text_entry" in json_member:
+			self.handle_entry_item(layer, idx, 0, json_member["text_entry"], tx, ty)
+		elif "int_entry" in json_member:
+			self.handle_entry_item(layer, idx, 1, json_member["int_entry"], tx, ty)
+		elif "bool_entry" in json_member:
+			self.handle_entry_item(layer, idx, 2, json_member["bool_entry"], tx, ty)
+		elif "dropdown" in json_member:
+			self.handle_entry_item(layer, idx, 3, json_member["dropdown"], tx, ty)
+		elif "block_entry" in json_member:
+			self.handle_entry_item(layer, idx, 4, json_member["block_entry"], tx, ty)
 
 	def create_lines_for_snappable_points(self):
 		for idx, point in enumerate(self.snappable_points):
 			self.snap_line_list.append(SnapLine(point, self.boundingRect().width(), self))
-			self.snap_line_list[idx].sizeChanged.connect(lambda layer=idx: self.between_layer_height_changed(layer))
+			self.snap_line_list[-1].sizeChanged.connect(lambda t=idx: self.between_layer_height_changed(t))
 
 	def repopulate_block(self, layer, idx):
 		self.prepareGeometryChange()
@@ -164,29 +191,31 @@ class Block(QGraphicsObject):
 			item.change_width(self.boundingRect().width() - 40)
 
 		for line in range(layer, len(self.snap_line_list)):
-			self.snap_line_list[line].setPos(self.snappable_points[line])
+			self.snap_line_list[line].setPos(self.snappable_points[line])  # If called from copy_dynamic_layer, crashes with "IndexError: list index out of range"
 
 		self.sizeChanged.emit()
 
 	def between_layer_height_changed(self, layer):
-		self.between_layers_height_list[layer] = self.snap_line_list[layer].get_height()
-		if len(self.between_layers_height_list) != 1:
+		if layer < len(self.between_layers_height_list):
+			self.between_layers_height_list[layer] = self.snap_line_list[layer].get_height()
+		if len(self.between_layers_height_list) > 0:
 			self.repopulate_block(layer, -1)
 		else:
 			self.sizeChanged.emit()
 
 	def unsnap(self):
+		self.snap_lock = False
 		if self.snap:
-			# get current scene pos
+			# unparent and restore pos
 			current_scene_pos = self.mapToScene(0, 0)
-			# unparent
 			self.setParentItem(None)
-			# restore pos
 			self.setPos(current_scene_pos)
 			# update variables
 			self.snap.unsnap()
 			self.snap = None
 		elif self.spawner:
+			if self.meta == 1:
+				self.parent_view.var_manager.register_usage(self)
 			# convert coordinates
 			scene_pos = self.mapToScene(0, 0)
 			# make snappable for other blocks
@@ -194,8 +223,10 @@ class Block(QGraphicsObject):
 			# update pos so new widget will be in its position
 			self.input_json["pos"] = [self.pos().x(), self.pos().y()]
 			# update scene variables and create a new spawner block
-			self.parent_view.add_block(self.input_json, True)
-			self.parent_view.menu_block_list.remove(self)
+			j = deepcopy(self.input_json)
+			j["identifier"] = str(uuid4())
+			self.parent_view.add_block(j, True)
+			self.parent_view.block_manager.block_list.remove(self)
 			self.parent_view.block_list.append(self)
 			self.spawner = False
 			# unparent
@@ -220,27 +251,42 @@ class Block(QGraphicsObject):
 			self.snap.sizeChanged.emit()
 			self.snap_candidate = None
 
+			if self.shape_index in (0, 1) and isinstance(self.snap, EntryManager):
+				self.snap_lock = True
+
 	def check_for_snap(self):
 		for item in self.scene().items():
-			# type check for snappable widgets
-			if (self.shape_index in [0, 1] and (not isinstance(item, SnapLine) or item in self.snap_line_list)) \
-					or (self.shape_index in [3, 4] and (not isinstance(item, EntryManager) or item in self.content_list
-														or item.snapped_block or item.parentItem().spawner or not
-														item.allowed_snaps[self.shape_index - 3])):
+			if not self.check_widget_for_snappable(item):
 				continue
 
-			if self.check_item_for_snap(item):
+			if self.check_item_for_snap_distance(item):
 				if self.snap_candidate:
 					self.snap_candidate.clear_line()
 				item.show_line()
 				self.snap_candidate = item
 
 		# if dragged far enough from snap candidate, forget about it
-		if self.snap_candidate is not None and not self.check_item_for_snap(self.snap_candidate):
+		if self.snap_candidate is not None and not self.check_item_for_snap_distance(self.snap_candidate):
 			self.snap_candidate.clear_line()
+			self.snap_lock = False
 			self.snap_candidate = None
 
-	def check_item_for_snap(self, item):
+	def check_widget_for_snappable(self, widget):
+		if self.shape_index in [0, 1]:
+			if isinstance(widget, SnapLine) and widget not in self.snap_line_list and not widget.parentItem().snap_lock:
+				return True
+			if (isinstance(widget, EntryManager) and widget.allowed_snaps[2] and not any(widget in sublist for sublist in self.content_list)
+				and len(self.snap_line_list) == 1 and not self.snap_line_list[0].snapped_block):
+					return True
+			return False
+		elif self.shape_index in [3, 4]:
+			if isinstance(widget, EntryManager) and widget.allowed_snaps[self.shape_index - 3] \
+				and widget not in self.content_list and not widget.snapped_block and not widget.parentItem().spawner:
+					return True
+			return False
+		return False
+
+	def check_item_for_snap_distance(self, item):
 		# if item is close enough, return True
 		self_rect = self.sceneBoundingRect()
 		other_rect = item.sceneBoundingRect()
@@ -255,8 +301,7 @@ class Block(QGraphicsObject):
 		for idx in range(len(self.width_list)):
 			width.append((sum(self.width_list[idx])) + 2 * len(self.width_list[idx]))
 			height.append(max(self.height_list[idx]))
-		points, self.snappable_points = generate_points(self.shape_index, max(width), height,
-														self.between_layers_height_list)
+		points, self.snappable_points = generate_points(self.shape_index, max(width), height, self.between_layers_height_list)
 		return QPolygonF(points)
 
 	@staticmethod
@@ -274,11 +319,10 @@ class Block(QGraphicsObject):
 		painter.setBrush(QColor(ConfigManager().get_config()["block_colors"][self.input_json["category"]]))
 		painter.setPen(QPen(QColor("#000000")))
 		painter.drawPath(self.path)
-
-	# draw bboxes, used for debugging
-	# for child in self.childItems():
-	# 	rect = child.mapToParent(child.boundingRect()).boundingRect()
-	# 	painter.drawRect(rect)
+		# draw bounding boxes, used for debugging
+		# for child in self.childItems():
+		# 	rect = child.mapToParent(child.boundingRect()).boundingRect()
+		# 	painter.drawRect(rect)
 
 	def shape(self) -> QPainterPath:
 		return self.path
@@ -294,33 +338,113 @@ class Block(QGraphicsObject):
 	def handle_entry_item(self, layer, idx, entry_type, entry_data, tx, ty):
 		content = EntryManager(self, entry_type, entry_data)
 		self.add_content_item(layer, idx, content, tx, ty,
-							  lambda caller_idx=idx, caller_layer=layer: self.repopulate_block(caller_layer,
-																							   caller_idx))
+							  lambda caller_idx=idx, caller_layer=layer: self.repopulate_block(caller_layer, caller_idx))
 
 	def suicide(self, leave_children=False):
-		self.parent_view.scene().removeItem(self)
+		if self.snap:
+			self.unsnap()
 
-		for line in self.snap_line_list:
-			line.disconnect()
-			if line.snapped_block and not leave_children:
-				line.snapped_block.suicide()
-				line.unsnap()
+		if leave_children:
+			for line in self.snap_line_list:
+				line.disconnect()
+				if line.snapped_block:
+						line.snapped_block.unsnap()
 
-		for layer in self.content_list:
-			for item in layer:
+			for item in self.get_entry_list():
 				if isinstance(item, EntryManager):
 					item.disconnect()
-					if item.snapped_block and not leave_children:
+					if item.snapped_block:
+						item.snapped_block.unsnap()
+
+		else:
+			for line in self.snap_line_list:
+				line.disconnect()
+				if line.snapped_block:
+						line.snapped_block.suicide()
+
+			for item in self.get_entry_list():
+				if isinstance(item, EntryManager):
+					item.disconnect()
+					if item.snapped_block:
 						item.snapped_block.suicide()
-						item.unsnap()
+
+		self.parent_view.scene().removeItem(self)
 
 		if self.spawner:
-			self.parent_view.menu_block_list.remove(self)
+			self.parent_view.block_manager.block_list.remove(self)
 		else:
 			self.parent_view.block_list.remove(self)
+
+		if self.meta == 1:
+			try:
+				vname = self.input_json["internal_name"][5:]
+				var_id = self.input_json["identifier"]
+				self.parent_view.var_manager.unreg_usage(vname, var_id, self.parent_view.current_sprite)
+			except (ValueError, KeyError):
+				pass
+
 		self.deleteLater()
 
-	def customBoundingRect(self) -> QRectF:
+	def showContextMenu(self, position):
+		menu = QMenu()
+		if self.spawner and self.meta == 1:
+			action_del_var = QAction("Delete variable")
+			internal_name = self.input_json["internal_name"]  # still correct
+			action_del_var.triggered.connect(lambda checked, n=internal_name: self.parent_view.var_manager.delete_var_by_name(n))
+			menu.addAction(action_del_var)
+			menu.exec_(position)
+			return
+		action_del1 = QAction("Delete", menu)
+		action_del2 = QAction("Unsnap + delete", menu)
+
+		if self.meta == 2:
+			action_add_layer = QAction("Add layer")
+			action_add_layer.triggered.connect(self.copy_dynamic_layer)
+			menu.addAction(action_add_layer)
+
+		action_del1.triggered.connect(lambda: self.suicide(False))
+		action_del2.triggered.connect(lambda: self.suicide(True))
+
+		menu.addAction(action_del1)
+		menu.addAction(action_del2)
+
+		menu.exec_(position)
+
+	def copy_dynamic_layer(self):
+		self.dynamic_triggered += 1
+		# add a layer in json
+		copy_from = self.input_json["dynamic_layer"]["copy_from"]
+		insert_at = self.input_json["dynamic_layer"]["insert_at"]
+		if insert_at < 0:
+			insert_at = len(self.height_list) + insert_at
+		layer = self.input_json["data"][copy_from]
+		self.input_json["data"].insert(insert_at, layer)
+
+		# add other variables
+		self.content_list.insert(insert_at, [])
+		blh = 18 if self.shape_index in (0, 1, 2) else 0
+		self.between_layers_height_list.insert(insert_at, blh)
+		self.width_list.insert(insert_at, [])
+		self.height_list.insert(insert_at, [])
+
+		ty = self.top_margin + sum_max_elements(insert_at, self.height_list) + sum(self.between_layers_height_list[:insert_at])
+		tx = 2
+		for idx, json_member in enumerate(layer):
+			self.process_content_json_item(json_member, insert_at, idx, tx, ty)
+			tx += self.width_list[insert_at][idx]
+
+		# add a snap line
+		if self.shape_index not in (3, 4):
+			self.path = self.create_path_from_points(self.generate_block_points())
+			self.snap_line_list.insert(insert_at, SnapLine(self.snappable_points[insert_at], self.boundingRect().width(), self))
+			self.snap_line_list[insert_at].sizeChanged.connect(lambda t=insert_at: self.between_layer_height_changed(t))
+
+		self.rewire_snapline_signals(insert_at+1)
+		self.rewire_entry_signals(insert_at)
+
+		self.repopulate_block(insert_at, -1)
+
+	def customBoundingRect(self):
 		"""Returns bounding rect of this widget and child blocks (if any)"""
 		combined_rect = self.boundingRect()  # start with own rect
 		for child in self.childItems():
@@ -333,24 +457,26 @@ class Block(QGraphicsObject):
 		return combined_rect
 
 	def get_content(self):
-		res = {"category": self.input_json["category"],
-			"internal_name": self.input_json["internal_name"], "pos": [self.pos().x(), self.pos().y()]}
+		res = {"category": self.input_json["category"], "internal_name": self.input_json["internal_name"],
+			   "pos": [self.pos().x(), self.pos().y()]}
 
 		content = []
 		for widget in self.get_entry_list():
 			if widget.snapped_block:
-				content.append([[widget.get_text(), widget.entry_type], widget.snapped_block.get_content()])
+				content.append([[widget.get_text(), widget.entry_type], widget.snapped_block.input_json["identifier"]])
 			else:
 				content.append([[widget.get_text(), widget.entry_type], None])
 		snaps = []
 		for line in self.snap_line_list:
 			if line.snapped_block:
-				snaps.append(line.snapped_block.get_content())
+				snaps.append(line.snapped_block.input_json["identifier"])
 			else:
 				snaps.append(None)
 		res["content"] = content
 		res["snaps"] = snaps
-		return res
+		if self.meta == 2:
+			res["dynamic"] = self.dynamic_triggered
+		return res, self.input_json["identifier"]
 
 	def get_entry_list(self):
 		res = []
@@ -359,3 +485,15 @@ class Block(QGraphicsObject):
 				if isinstance(widget, EntryManager):
 					res.append(widget)
 		return res
+
+	def rewire_entry_signals(self, start_at):
+		for layer_idx, _ in enumerate(self.height_list[start_at:], start_at):
+			for idx, widget in enumerate(self.content_list[layer_idx]):
+				if isinstance(widget, EntryManager):
+					widget.sizeChanged.disconnect()  # Disconnect any existing
+					widget.sizeChanged.connect(lambda layer=layer_idx, t=idx: self.repopulate_block(layer, t))
+
+	def rewire_snapline_signals(self, start_at):
+		for idx, snapline in enumerate(self.snap_line_list[start_at:], start_at):
+			snapline.sizeChanged.disconnect()
+			snapline.sizeChanged.connect(lambda t=idx: self.between_layer_height_changed(t))

@@ -1,6 +1,6 @@
 {
   "Basic": {
-    "print_$text$": {
+    "print": {
       "shape": 0,
       "data": [
         [
@@ -21,25 +21,59 @@
         [{"text": "On launch"}]
       ]
     },
-    "if_$c0$": {
+    "if": {
       "shape": 0,
       "data": [
         [{"text": "If"}, {"bool_entry": ""}, {"text": "do"}],
         [{"text": ""}]
       ]
+    },
+    "hex_test": {
+      "shape": 3,
+      "data": [
+        [{"text": "Test hexagon block"}],
+        [{"text": "Which has 2 layers"}]
+      ]
+    },
+    "round_test": {
+      "shape": 4,
+      "data": [
+        [{"text": "Test round block"}],
+        [{"text": "Which has 2 layers"}]
+      ]
     }
   },
   "Variables": {
-    "define_variable_$c1$": {
+    "define_variable": {
       "shape": 0,
       "data": [
         [{"text": "Define"}, {"dropdown": ["string", "int", "double", "char", "bool"]}, {"text": "variable"}, {"text_entry": "var"}]
       ]
     },
-    "set_variable_$c0$": {
+    "set_variable": {
       "shape": 0,
       "data": [
-        [{"text": "Set"}, {"text_entry": "var"}, {"text": "to"}, {"text_entry": "str value"}]
+        [{"text": "Set"}, {"text_entry": "var"}, {"text": "to"}, {"text_entry": "value"}]
+      ]
+    },
+    "test_block_entry": {
+      "shape": 0,
+      "data": [
+        [{"text": "Test"}, {"block_entry": []}, {"text": "block"}]
+      ]
+    }
+  },
+  "Dynamic": {
+    "switch_case": {
+      "shape": 0,
+      "dynamic_layer": {
+        "name": "case",
+        "copy_from": 1,
+        "insert_at": -1
+      },
+      "data": [
+        [{"text": "Switch"}, {"text_entry": ""}],
+        [{"text": "case"}, {"text_entry": ""}]
       ]
     }
   },

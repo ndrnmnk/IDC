@@ -35,6 +35,6 @@ class NewObjectWindow(QWidget):
 
 	def add(self):
 		self.parent().add_item(self.entry.text(), self.dropdown.currentText())
-		self.parent().ui.code_tab.all_sprites_code[self.entry.text()] = {"instance_of": self.dropdown.currentText(), "code": []}
+		self.parent().ui.code_tab.all_sprites_code[self.entry.text()] = {"instance_of": self.dropdown.currentText(), "code": {}, "vars": {}}
 		self.deleteLater()
 

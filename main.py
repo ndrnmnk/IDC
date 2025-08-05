@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QSplitter, QWidget, QTabW
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt
 import sys
-from ui.widgets.CodingGraphicsScene import WorkspaceView
+from ui.widgets.WorkspaceView import WorkspaceView
 from ui.tabs.Sounds import SoundsTabLayout
 from ui.tabs.Textures import TexturesTabLayout
 from ui.tabs.Logs import LogsTabLayout
@@ -35,7 +35,9 @@ class MainWindow(QMainWindow):
 		self.addons_menu = menu_bar.addAction('Addons')
 		# Create file tab of menu bar
 		open_action = QAction('Open', self)
+		open_action.setShortcut("Ctrl+O")
 		save_action = QAction('Save', self)
+		save_action.setShortcut("Ctrl+S")
 		exit_action = QAction('Exit', self)
 		file_menu.addAction(open_action)
 		file_menu.addAction(save_action)
@@ -51,7 +53,7 @@ class MainWindow(QMainWindow):
 		# CREATE MAIN TABS
 		# create tab selector widget
 		tabs_main = QTabWidget()
-		self.code_tab = WorkspaceView()
+		self.code_tab = WorkspaceView(self)
 		self.textures_tab = QWidget()
 		self.sounds_tab = QWidget()
 		tabs_main.addTab(self.code_tab, 'Code')

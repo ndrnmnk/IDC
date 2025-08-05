@@ -46,6 +46,10 @@ def generate_points(shape_id, width, height, between_layers_height):
 	Returns:
 		list: set of points for block
 	"""
+
+	min_width = [50, 50, 60, 28, 28]
+
+	width = max(width, min_width[shape_id])
 	if shape_id == 0:  # regular block, allows both top and bottom connections
 		start_x = 0
 		start_y = 0
@@ -74,6 +78,7 @@ def generate_points(shape_id, width, height, between_layers_height):
 			]
 			snappable_points.append(QPointF(start_x, start_y+h))
 			start_y += between_layers_height[idx] + height[idx]
+		between_layers_height.pop()
 		return res, snappable_points
 	elif shape_id == 1:  # no bottom connections block
 		start_x = 0
@@ -104,6 +109,7 @@ def generate_points(shape_id, width, height, between_layers_height):
 				start_x = 0
 				res.append(QPointF(start_x, start_y + h))
 			start_y += between_layers_height[idx] + height[idx]
+		between_layers_height.pop()
 		return res, snappable_points
 	elif shape_id == 2:  # start block, no top connections
 		points = get_circle_points(15)[90:271]
@@ -142,9 +148,11 @@ def generate_points(shape_id, width, height, between_layers_height):
 				QPointF(start_x, start_y+h)
 			]
 			start_y += between_layers_height[idx] + height[idx]
+		between_layers_height.pop()
 		return res, snappable_points
 	elif shape_id == 3:  # operator block, snaps inside other blocks
-		new_height = sum(height) + sum(between_layers_height)
+		between_layers_height.pop()
+		new_height = sum(height)
 		return [
 			QPointF(new_height/2, 0),
 			QPointF(width-new_height/2, 0),
@@ -154,7 +162,8 @@ def generate_points(shape_id, width, height, between_layers_height):
 			QPointF(0, new_height/2)
 		], []
 	elif shape_id == 4:  # variable block, snaps inside other blocks
-		new_height = sum(height) + sum(between_layers_height)
+		between_layers_height.pop()
+		new_height = sum(height)
 		points = get_circle_points(new_height/2)
 		right_half_circle = [QPointF(v1 + width-new_height/2, new_height/2-v2) for v1, v2 in points[180:]]
 		left_half_circle = [QPointF(v1+new_height/2, new_height/2-v2) for v1, v2 in points[:180]]
