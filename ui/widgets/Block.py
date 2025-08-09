@@ -33,7 +33,7 @@ def sum_max_elements(layer, matrix):
 class Block(QGraphicsObject):
 	sizeChanged = pyqtSignal()
 	"""Blocks can have different colors, shapes and layer counts.
-	Shapes:
+	Possible options:
 	0 - regular block, allows top and bottom snaps
 	1 - no bottom connections block
 	2 - starter block, bottom snaps only
@@ -50,7 +50,7 @@ class Block(QGraphicsObject):
 	1 - variable block
 	2 - dynamic block
 	3 - custom function block
-	4 - custom OOP related block
+	New meta options may be added later
 	"""
 
 	def __init__(self, parent, input_json, spawner=False):
@@ -379,7 +379,7 @@ class Block(QGraphicsObject):
 			try:
 				vname = self.input_json["internal_name"][5:]
 				var_id = self.input_json["identifier"]
-				self.parent_view.var_manager.unreg_usage(vname, var_id, self.parent_view.current_sprite)
+				self.parent_view.var_manager.unreg_usage(vname, var_id, self.parent_view.sprite_manager.current_sprite)
 			except (ValueError, KeyError):
 				pass
 

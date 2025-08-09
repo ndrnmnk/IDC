@@ -49,10 +49,10 @@ class Backend:
 		# example sprite list content
 		self.ui.spritelist.add_item('Main', 'Generic class')
 		self.ui.spritelist.add_item('test class', 'Hello, World!')
-		self.ui.spritelist.currentItemChanged.connect(self.ui.code_tab.set_sprite)
+		self.ui.spritelist.currentItemChanged.connect(self.ui.code_tab.sprite_manager.change_current_sprite)
 
 		for item in self.ui.spritelist.item_meta:
-			self.ui.code_tab.all_sprites_code[item[0]] = {"instance_of": item[1], "code": {}, "roots": [], "vars": {}}
+			self.ui.code_tab.sprite_manager.all_sprite_code[item[0]] = {"instance_of": item[1], "code": {}, "roots": [], "vars": {}}
 
 		# example sounds list content
 		self.ui.sounds_tab_layout.add_sound("error", "textures/images/error.png")
@@ -122,8 +122,9 @@ class Backend:
 			if not no_load:
 				with open(file_path) as f:
 					data = json.load(f)
-				self.ui.code_tab.all_sprites_code = data
-				self.ui.code_tab.load_sprite(data["Main"])
+				self.ui.code_tab.sprite_manager.all_sprite_code = data
+				self.ui.code_tab.var_manager.on_load_project()
+				self.ui.code_tab.sprite_manager.show_sprite("Main")
 				self.ui.spritelist.remove_all()
 				for item in data:
 					if item == "vars":

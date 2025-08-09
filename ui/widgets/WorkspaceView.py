@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QGraphicsView
 
+from backend.SpriteManager import SpriteManager
 from ui.widgets.Block import Block
 from backend.BlockMenuManager import BlockMenuManager
 from backend.VariableManager import VariableManager
@@ -14,13 +15,11 @@ class WorkspaceView(QGraphicsView):
 		self.setScene(CodingScene(self))
 		self.centerOn(0, 0)
 
-		self.current_sprite = "Main"
-		self.all_sprites_code = {"vars": {}}
+		self.block_list = []
 
 		self.block_manager = BlockMenuManager(self)
 		self.var_manager = VariableManager(self)
-
-		self.block_list = []
+		self.sprite_manager = SpriteManager(self)
 
 		self.scene().menu.view_height = self.viewport().height()
 		self.on_new_category(self.block_manager.current_category)
@@ -44,18 +43,16 @@ class WorkspaceView(QGraphicsView):
 		return {"shape": shape, "tooltip": vtype, "data": [[{"text": name}]]}
 
 	def add_block(self, block_json, spawner):
+		block = Block(self, block_json, spawner)
+		self.scene().addItem(block)
+		block.setPos(*block_json["pos"])
 		if spawner:
-			block = Block(self, block_json, True)
 			self.block_manager.block_list.append(block)
-			self.scene().addItem(block)
-			block.setPos(*block_json["pos"])
 			block.setParentItem(self.scene().menu)
 			return block.boundingRect().height()
 		else:
-			self.block_list.append(Block(self, block_json, False))
-			self.scene().addItem(self.block_list[-1])
-			self.block_list[-1].setPos(*block_json["pos"])
-			return self.block_list[-1]
+			self.block_list.append(block)
+			return block
 
 	def check_block_for_deletion(self, caller):
 		if caller.pos().x() + 20 < self.scene().menu.sceneBoundingRect().right():
@@ -76,83 +73,50 @@ class WorkspaceView(QGraphicsView):
 		super().resizeEvent(event)
 		self.scene().on_view_resize()
 
-	def get_sprite_data(self):
-		code = {}
-		roots = []
-		for block in self.block_list:
-			block_json, identifier = block.get_content()
-			code[identifier] = block_json
-			if not block.snap:
-				roots.append(block.input_json["identifier"])
-
-		return code, roots
-
 	def get_project_data(self):
-		res = self.all_sprites_code
-		res[self.current_sprite]["code"], res[self.current_sprite]["roots"] = self.get_sprite_data()
+		self.sprite_manager.save_sprite_data()
+		res = self.sprite_manager.all_sprite_code
+
 		return res
 
-	def load_sprite(self, sprite_json):
-		try:
-			for identifier in sprite_json["roots"]:
-				self.load_block(identifier, sprite_json)
-		except KeyError:
-			return
-		self.on_new_category(self.block_manager.current_category)
+	def load_sprite(self, sprite_name):
+		self.sprite_manager.show_sprite(sprite_name)
 
-	def load_block(self, identifier, sprite_json, parent_block=None, parent_idx=None):
-		json_item = sprite_json["code"][identifier]
-		# create a new json for a block
-		if json_item["internal_name"].startswith(" "):
-			vname = json_item["internal_name"][5:]
-			if json_item["internal_name"].startswith(" V"):  # " VAR_" for global variables, " var_" for local
-				vtype = self.all_sprites_code["vars"][vname]
-			else:
-				vtype = sprite_json["vars"][vname]
-			new_json = self.generate_variable_block_json(vname, vtype)
-			meta = 1
+	def load_block(self, identifier, sprite_json, parent_block=None, parent_idx=None, to=0):
+		block_json = sprite_json["code"][identifier]
+		meta = 1 if block_json["internal_name"].startswith(" ") else None
+		if meta == 1:
+			vname = block_json["internal_name"][5:]
+			vtype = self.sprite_manager.all_sprite_code["vars"][vname] if block_json["internal_name"].startswith(" V") else sprite_json["vars"][vname]
+			new_block_json = self.generate_variable_block_json(vname, vtype)
 		else:
-			new_json = ConfigManager().get_blocks()[json_item["category"]][json_item["internal_name"]]
-			meta = None
-		new_json = self.complete_block_json(new_json, json_item["category"], json_item["internal_name"], identifier, json_item["pos"], meta)
-		# create new block
-		block = self.add_block(new_json, False)
+			new_block_json = ConfigManager().get_blocks()[block_json["category"]][block_json["internal_name"]]
+
+		new_block_json = self.complete_block_json(new_block_json, block_json["category"], block_json["internal_name"], identifier, block_json["pos"], meta)
+		block = self.add_block(new_block_json, False)
 
 		# add dynamic layers
-		t = json_item.get("dynamic") or 0
-		for i in range(t):
+		dynamic_layer_count = block_json.get("dynamic") or 0
+		for i in range(dynamic_layer_count):
 			block.copy_dynamic_layer()
 
 		# load children
-		for idx, child_block_id in enumerate(json_item["snaps"]):
-			if child_block_id:
-				try:
-					self.load_block(child_block_id, sprite_json, block, idx)
-				except:
-					pass
-		for idx, item in enumerate(json_item["content"]):
-			if item[1]:
-				try:
-					self.load_block(item[1], sprite_json, block, idx)
-				except:
-					pass
+		for idx, child_block_id in enumerate(block_json["snaps"]):
+			self.try_loading_block(child_block_id, sprite_json, block, idx, 0)
+		for idx, item in enumerate(block_json["content"]):
+			self.try_loading_block(item[1], sprite_json, block, idx, 1)
 		if parent_block:
-			if new_json["shape"] in (0, 1):
-				block.snap_candidate = parent_block.snap_line_list[parent_idx]
-			if new_json["shape"] in (3, 4):
-				block.snap_candidate = parent_block.get_entry_list()[parent_idx]
+			block.snap_candidate = parent_block.snap_line_list[parent_idx] if to == 0 else parent_block.get_entry_list()[parent_idx]
 			block.try_to_snap()
+
+		# fill text fields
 		entry_list = block.get_entry_list()
-		for i, var in enumerate(json_item["content"]):
+		for i, var in enumerate(block_json["content"]):
 			entry_list[i].set_text(var[0][0])
 
-	def set_sprite(self, sl_item):
-		sprite_name = sl_item.text(0)
-		# save current code to self.all_sprites_code
-		self.all_sprites_code[self.current_sprite]["code"], self.all_sprites_code[self.current_sprite]["roots"] = self.get_sprite_data()
-		self.current_sprite = sprite_name
-		# delete all previous block widgets
-		for block in self.block_list[:]:
-			block.suicide(True)
-		# load new code into blocks
-		self.load_sprite(self.all_sprites_code[sprite_name])
+	def try_loading_block(self, child_block_id, sprite_json, block, idx, to):
+		# if to == 0, snap to a SnapLine, else - to EntryManager
+		if child_block_id:
+			try:
+				self.load_block(child_block_id, sprite_json, block, idx, to)
+			except Exception as e: print(f"Couldn't load block: {e}")

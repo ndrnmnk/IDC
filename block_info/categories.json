@@ -3,14 +3,7 @@
     "print": {
       "shape": 0,
       "data": [
-        [
-          {
-            "text": "print"
-          },
-          {
-            "text_entry": "text"
-          }
-        ]
+        [{"text": "print"}, {"text_entry": "text"}]
       ]
     }
   },

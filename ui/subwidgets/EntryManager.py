@@ -42,7 +42,7 @@ class EntryManager(QGraphicsProxyWidget):
 	def set_text(self, text):
 		if self.entry_type == 3:
 			self.entry.setCurrentText(text)
-		if self.entry_type == 4:
+		elif self.entry_type == 4:
 			return
 		else:
 			self.entry.setText(text)

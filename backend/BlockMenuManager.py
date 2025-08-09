@@ -23,8 +23,8 @@ class BlockMenuManager:
 			y_offset += self.wv.add_block(block_json, True) + 20
 
 		if category == "Variables":
-			y_offset = self._load_variables(self.wv.all_sprites_code["vars"], y_offset, True)
-			y_offset = self._load_variables(self.wv.all_sprites_code[self.wv.current_sprite]["vars"], y_offset)
+			y_offset = self._load_variables(self.wv.sprite_manager.all_sprite_code["vars"], y_offset, True)
+			y_offset = self._load_variables(self.wv.sprite_manager.all_sprite_code[self.wv.sprite_manager.current_sprite]["vars"], y_offset)
 			y_offset = self._add_new_variable_btn(y_offset)
 
 		return y_offset

@@ -39,7 +39,7 @@ class NewVariableWindow(QWidget):
 		self.show()
 
 	def add(self):
-		sprite = None if self.global_checkbox.isChecked() else self.parent.current_sprite
+		sprite = None if self.global_checkbox.isChecked() else self.parent.sprite_manager.current_sprite
 		self.parent.var_manager.add_var(self.entry.text(), self.dropdown.currentText(), sprite)
 		self.parent.on_new_category("Variables")
 		self.deleteLater()

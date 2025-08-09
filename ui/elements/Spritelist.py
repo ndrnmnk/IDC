@@ -27,7 +27,7 @@ class SpriteList(QTreeWidget):
 				item = root.child(i)
 				if item and item.text(0) == name:
 					# set current sprite to main
-					self.ui.code_tab.set_sprite(self.item_list[0])
+					self.ui.code_tab.sprite_manager.change_current_sprite(self.item_list[0])
 
 					root.removeChild(item)
 					self.item_list.remove(item)
@@ -40,6 +40,8 @@ class SpriteList(QTreeWidget):
 		self.item_meta.clear()
 
 	def remove_item_gui(self):
+		if self.selectedItems()[0].text(0) == "Main":
+			return
 		if self.selectedItems():
 			reply = QMessageBox.warning(self, "IDC warning", "Are you sure? This can't be undone", QMessageBox.Yes | QMessageBox.No)
 			if reply == QMessageBox.Yes:
