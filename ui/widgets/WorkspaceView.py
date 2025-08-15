@@ -28,7 +28,7 @@ class WorkspaceView(QGraphicsView):
 	@staticmethod
 	def complete_block_json(base, category, internal_name, identifier, pos, meta=None):
 		if not meta:
-			meta = 2 if "dynamic_layer" in base else 0
+			meta = 2 if any(item["type"] != 0 for item in base["data"]) else 0
 		res = base
 		res["category"] = category
 		res["internal_name"] = internal_name
@@ -40,7 +40,7 @@ class WorkspaceView(QGraphicsView):
 	@staticmethod
 	def generate_variable_block_json(name, vtype):
 		shape = 3 if vtype == "Boolean" else 4
-		return {"shape": shape, "tooltip": vtype, "data": [[{"text": name}]]}
+		return {"shape": shape, "tooltip": vtype, "data": [{"type": 0, "data": [{"text": name}]}]}
 
 	def add_block(self, block_json, spawner):
 		block = Block(self, block_json, spawner)
@@ -95,10 +95,13 @@ class WorkspaceView(QGraphicsView):
 		new_block_json = self.complete_block_json(new_block_json, block_json["category"], block_json["internal_name"], identifier, block_json["pos"], meta)
 		block = self.add_block(new_block_json, False)
 
-		# add dynamic layers
-		dynamic_layer_count = block_json.get("dynamic") or 0
-		for i in range(dynamic_layer_count):
-			block.copy_dynamic_layer()
+		# add nonstatic layers
+		nonstatic_json = block_json.get("nonstatic") or []
+		block.nonstatic_layers = nonstatic_json
+		for idx, layer in enumerate(nonstatic_json):
+			if not layer: continue
+			for i in range(layer["amount"]):
+				block.copy_layer(idx, True)
 
 		# load children
 		for idx, child_block_id in enumerate(block_json["snaps"]):

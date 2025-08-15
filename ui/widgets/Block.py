@@ -10,23 +10,17 @@ from ui.subwidgets.EntryManager import EntryManager
 from ui.subwidgets.SnapLine import SnapLine
 from backend.config_manager import ConfigManager
 
+LAYER_STATIC = 0
+LAYER_OPTIONAl = 1
+LAYER_DYNAMIC = 2
+
 
 def sum_max_elements(layer, matrix):
-	"""
-	Calculate the sum of the maximum elements of each row
-	with row index less than the given layer.
-
-	:param layer: int, the threshold for row indices
-	:param matrix: list of lists of int, the 2D list to process
-	:return: int, the sum of maximum elements
-	"""
+	""" Calculates the sum of the maximum elements of each row with row index less than the given layer. """
 	if layer <= 0 or not matrix:
 		return 0
 
-	# Limit rows to those with index less than layer
 	rows_to_consider = matrix[:layer]
-
-	# Compute the sum of maximum elements from the considered rows
 	return sum(max(row) for row in rows_to_consider if row)
 
 
@@ -48,18 +42,17 @@ class Block(QGraphicsObject):
 	'meta' describes the block:
 	0 - regular block
 	1 - variable block
-	2 - dynamic block
-	3 - custom function block
-	New meta options may be added later
+	2 - dynamic block (has optional or dynamic layers)
+	3 - custom function block (not implemented yet)
 	"""
 
 	def __init__(self, parent, input_json, spawner=False):
 		super().__init__()
+		# print(input_json)
 
 		self.parent_view = parent
 
-		if input_json.get("tooltip"):
-			self.setToolTip(input_json.get("tooltip"))
+		if input_json.get("tooltip"): self.setToolTip(input_json.get("tooltip"))
 
 		# save data
 		self.spawner = spawner
@@ -67,14 +60,10 @@ class Block(QGraphicsObject):
 		self.shape_index = input_json["shape"]
 
 		# handle dynamic blocks
-		self.dynamic_triggered = 0
-		if self.meta == 2:
-			self.input_json = deepcopy(input_json)
-		else:
-			self.input_json = input_json
+		self.nonstatic_layers = []
+		self.input_json = deepcopy(input_json) if self.meta == 2 else input_json
 		# variable blocks
-		if self.meta == 1 and not self.spawner:
-			self.parent_view.var_manager.register_usage(self)
+		if self.meta == 1 and not self.spawner: self.parent_view.var_manager.register_usage(self)
 
 		# set flags
 		self.setFlag(QGraphicsObject.ItemIsMovable)
@@ -106,7 +95,7 @@ class Block(QGraphicsObject):
 
 	def mousePressEvent(self, event):
 		if event.button() == Qt.RightButton and (not self.spawner or (self.spawner and self.meta == 1)):
-			self.showContextMenu(event.screenPos())
+			self.showContextMenu(event)
 		else:
 			super().mousePressEvent(event)
 			self.setZValue(2)
@@ -126,16 +115,24 @@ class Block(QGraphicsObject):
 	def populate_block(self):
 		ty = self.top_margin
 		blh = 18 if self.shape_index in (0, 1, 2) else 0
+		output_layer_id = 0
 		for layer in range(len(self.input_json["data"])):
+			ltype = self.input_json["data"][layer]["type"]
+			if ltype is not LAYER_STATIC:
+				self.nonstatic_layers.append({"copy_from": layer, "amount": 0, "type": ltype, "name": self.input_json["data"][layer]["name"]})
+				if ltype == LAYER_OPTIONAl: continue
+			else:
+				self.nonstatic_layers.append(None)
 			self.content_list.append([])
 			self.width_list.append([])
 			self.height_list.append([])
 			tx = 2
-			for idx, json_member in enumerate(self.input_json["data"][layer]):
-				self.process_content_json_item(json_member, layer, idx, tx, ty)
-				tx += self.width_list[layer][idx]
+			for idx, json_member in enumerate(self.input_json["data"][layer]["data"]):
+				self.process_content_json_item(json_member, output_layer_id, idx, tx, ty)
+				tx += self.width_list[output_layer_id][idx]
 			self.between_layers_height_list.append(blh)
-			ty += self.between_layers_height_list[layer] + max(self.height_list[layer])  # height of top layer + actual height between layers
+			ty += self.between_layers_height_list[output_layer_id] + max(self.height_list[output_layer_id])  # height of top layer + actual height between layers
+			output_layer_id += 1
 		self.between_layers_height_list.pop()
 
 	def process_content_json_item(self, json_member, layer, idx, tx, ty):
@@ -191,7 +188,7 @@ class Block(QGraphicsObject):
 			item.change_width(self.boundingRect().width() - 40)
 
 		for line in range(layer, len(self.snap_line_list)):
-			self.snap_line_list[line].setPos(self.snappable_points[line])  # If called from copy_dynamic_layer, crashes with "IndexError: list index out of range"
+			self.snap_line_list[line].setPos(self.snappable_points[line])
 
 		self.sizeChanged.emit()
 
@@ -319,10 +316,6 @@ class Block(QGraphicsObject):
 		painter.setBrush(QColor(ConfigManager().get_config()["block_colors"][self.input_json["category"]]))
 		painter.setPen(QPen(QColor("#000000")))
 		painter.drawPath(self.path)
-		# draw bounding boxes, used for debugging
-		# for child in self.childItems():
-		# 	rect = child.mapToParent(child.boundingRect()).boundingRect()
-		# 	painter.drawRect(rect)
 
 	def shape(self) -> QPainterPath:
 		return self.path
@@ -370,10 +363,8 @@ class Block(QGraphicsObject):
 
 		self.parent_view.scene().removeItem(self)
 
-		if self.spawner:
-			self.parent_view.block_manager.block_list.remove(self)
-		else:
-			self.parent_view.block_list.remove(self)
+		if self.spawner: self.parent_view.block_manager.block_list.remove(self)
+		else: self.parent_view.block_list.remove(self)
 
 		if self.meta == 1:
 			try:
@@ -385,40 +376,51 @@ class Block(QGraphicsObject):
 
 		self.deleteLater()
 
-	def showContextMenu(self, position):
+	def showContextMenu(self, event):
+		position = event.screenPos()
 		menu = QMenu()
+
 		if self.spawner and self.meta == 1:
 			action_del_var = QAction("Delete variable")
-			internal_name = self.input_json["internal_name"]  # still correct
+			internal_name = self.input_json["internal_name"]
 			action_del_var.triggered.connect(lambda checked, n=internal_name: self.parent_view.var_manager.delete_var_by_name(n))
 			menu.addAction(action_del_var)
 			menu.exec_(position)
 			return
-		action_del1 = QAction("Delete", menu)
-		action_del2 = QAction("Unsnap + delete", menu)
 
-		if self.meta == 2:
-			action_add_layer = QAction("Add layer")
-			action_add_layer.triggered.connect(self.copy_dynamic_layer)
+		clicked_layer = self.get_layer_by_mouse_pos(event.pos())
+		if self.input_json["data"][clicked_layer]["type"] is not LAYER_STATIC:
+			action_del3 = QAction(f"Delete layer №{clicked_layer+1}", menu)
+			action_del3.triggered.connect(lambda checked, i=clicked_layer: self.delete_layer(i))
+			menu.addAction(action_del3)
+
+		for idx, layer in enumerate(self.nonstatic_layers):
+			if not layer or (layer["type"] == LAYER_OPTIONAl and layer["amount"] > 0):
+				continue
+			action_add_layer = QAction(f"Add «{layer["name"]}» layer", menu)
+			action_add_layer.triggered.connect(lambda checked, i=idx: self.copy_layer(i))
 			menu.addAction(action_add_layer)
 
+		# Regular delete actions
+		action_del1 = QAction("Delete", menu)
+		action_del2 = QAction("Unsnap + delete", menu)
 		action_del1.triggered.connect(lambda: self.suicide(False))
 		action_del2.triggered.connect(lambda: self.suicide(True))
-
 		menu.addAction(action_del1)
 		menu.addAction(action_del2)
 
 		menu.exec_(position)
 
-	def copy_dynamic_layer(self):
-		self.dynamic_triggered += 1
+	def copy_layer(self, og_copy_from, on_block_creation=False):
+		copy_from = self.nonstatic_layers[og_copy_from]["copy_from"]
+		is_optional = self.nonstatic_layers[og_copy_from]["type"] == LAYER_OPTIONAl
+		if is_optional: insert_at = copy_from
+		elif on_block_creation: insert_at = copy_from + 1
+		else: insert_at = copy_from + 1 + self.nonstatic_layers[og_copy_from]["amount"]
+
 		# add a layer in json
-		copy_from = self.input_json["dynamic_layer"]["copy_from"]
-		insert_at = self.input_json["dynamic_layer"]["insert_at"]
-		if insert_at < 0:
-			insert_at = len(self.height_list) + insert_at
 		layer = self.input_json["data"][copy_from]
-		self.input_json["data"].insert(insert_at, layer)
+		if not is_optional: self.input_json["data"].insert(insert_at, layer)
 
 		# add other variables
 		self.content_list.insert(insert_at, [])
@@ -427,9 +429,10 @@ class Block(QGraphicsObject):
 		self.width_list.insert(insert_at, [])
 		self.height_list.insert(insert_at, [])
 
+		# add new widgets
 		ty = self.top_margin + sum_max_elements(insert_at, self.height_list) + sum(self.between_layers_height_list[:insert_at])
 		tx = 2
-		for idx, json_member in enumerate(layer):
+		for idx, json_member in enumerate(layer["data"]):
 			self.process_content_json_item(json_member, insert_at, idx, tx, ty)
 			tx += self.width_list[insert_at][idx]
 
@@ -441,8 +444,81 @@ class Block(QGraphicsObject):
 
 		self.rewire_snapline_signals(insert_at+1)
 		self.rewire_entry_signals(insert_at)
+		if not on_block_creation:
+			self.nonstatic_layers[og_copy_from]["amount"] += 1
+			self.rewire_nonstatic_ids(og_copy_from, 1)
 
 		self.repopulate_block(insert_at, -1)
+
+	def rewire_entry_signals(self, start_at):
+		for layer_idx, _ in enumerate(self.height_list[start_at:], start_at):
+			for idx, widget in enumerate(self.content_list[layer_idx]):
+				if isinstance(widget, EntryManager):
+					widget.sizeChanged.disconnect()
+					widget.sizeChanged.connect(lambda layer=layer_idx, t=idx: self.repopulate_block(layer, t))
+
+	def rewire_snapline_signals(self, start_at):
+		for idx, snapline in enumerate(self.snap_line_list[start_at:], start_at):
+			snapline.sizeChanged.disconnect()
+			snapline.sizeChanged.connect(lambda t=idx: self.between_layer_height_changed(t))
+
+	def rewire_nonstatic_ids(self, inserted_layer_id, change_by):
+		for item in self.nonstatic_layers[inserted_layer_id+1:]:
+			if item: item["copy_from"] += change_by
+
+	def get_layer_by_mouse_pos(self, pos):
+		y = pos.y()
+		ty = self.top_margin
+		res = None
+		for layer_idx in range(len(self.height_list)):
+			layer_height = max(self.height_list[layer_idx])
+			if y <= ty + layer_height:
+				res = layer_idx
+				break
+			ty += layer_height
+			if layer_idx < len(self.between_layers_height_list):
+				ty += self.between_layers_height_list[layer_idx]
+
+		# account for skipped layers
+		l = self.regular_to_nonstatic_id(res) + 1
+		for layer in self.nonstatic_layers[:l]:
+			if not layer: continue
+			if layer["amount"] == 0 and layer["type"] == 1: res += 1
+		return res
+
+	def delete_layer(self, layer_idx):
+		idx = self.regular_to_nonstatic_id(layer_idx)
+		if self.input_json["data"][layer_idx]["type"] == LAYER_DYNAMIC:
+			if self.nonstatic_layers[idx]["amount"] == 0: return
+			del self.input_json["data"][layer_idx]
+		self.nonstatic_layers[idx]["amount"] -= 1
+		for widget in self.content_list[layer_idx]: widget.deleteLater()
+		del self.content_list[layer_idx]
+		del self.width_list[layer_idx]
+		del self.height_list[layer_idx]
+		try: del self.between_layers_height_list[layer_idx]
+		except IndexError: pass
+
+		self.snap_line_list[layer_idx].deleteLater()
+		del self.snap_line_list[layer_idx]
+
+		if layer_idx != len(self.height_list):
+			self.rewire_entry_signals(layer_idx)
+			self.rewire_snapline_signals(layer_idx)
+		self.rewire_nonstatic_ids(layer_idx, -1)
+
+		self.repopulate_block(layer_idx-1, -1)
+
+	def regular_to_nonstatic_id(self, regular_layer_id):
+		current_regular_index = -1
+
+		for i, nonstatic in enumerate(self.nonstatic_layers):
+			if nonstatic is None: current_regular_index += 1
+			else:
+				current_regular_index += nonstatic["amount"] + 1
+				if current_regular_index >= regular_layer_id:
+					return i
+		return None
 
 	def customBoundingRect(self):
 		"""Returns bounding rect of this widget and child blocks (if any)"""
@@ -455,6 +531,14 @@ class Block(QGraphicsObject):
 		if self.shape_index == 1:  # without this, blocks with shape 1 go inside other blocks
 			return QRectF(combined_rect.x(), combined_rect.y(), combined_rect.width(), combined_rect.height() + 5)
 		return combined_rect
+
+	def get_entry_list(self):
+		res = []
+		for layer in self.content_list:
+			for widget in layer:
+				if isinstance(widget, EntryManager):
+					res.append(widget)
+		return res
 
 	def get_content(self):
 		res = {"category": self.input_json["category"], "internal_name": self.input_json["internal_name"],
@@ -474,26 +558,5 @@ class Block(QGraphicsObject):
 				snaps.append(None)
 		res["content"] = content
 		res["snaps"] = snaps
-		if self.meta == 2:
-			res["dynamic"] = self.dynamic_triggered
+		res["nonstatic"] = self.nonstatic_layers
 		return res, self.input_json["identifier"]
-
-	def get_entry_list(self):
-		res = []
-		for layer in self.content_list:
-			for widget in layer:
-				if isinstance(widget, EntryManager):
-					res.append(widget)
-		return res
-
-	def rewire_entry_signals(self, start_at):
-		for layer_idx, _ in enumerate(self.height_list[start_at:], start_at):
-			for idx, widget in enumerate(self.content_list[layer_idx]):
-				if isinstance(widget, EntryManager):
-					widget.sizeChanged.disconnect()  # Disconnect any existing
-					widget.sizeChanged.connect(lambda layer=layer_idx, t=idx: self.repopulate_block(layer, t))
-
-	def rewire_snapline_signals(self, start_at):
-		for idx, snapline in enumerate(self.snap_line_list[start_at:], start_at):
-			snapline.sizeChanged.disconnect()
-			snapline.sizeChanged.connect(lambda t=idx: self.between_layer_height_changed(t))
