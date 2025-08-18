@@ -505,7 +505,7 @@ class Block(QGraphicsObject):
 		if layer_idx != len(self.height_list):
 			self.rewire_entry_signals(layer_idx)
 			self.rewire_snapline_signals(layer_idx)
-		self.rewire_nonstatic_ids(layer_idx, -1)
+		self.rewire_nonstatic_ids(idx, -1)
 
 		self.repopulate_block(layer_idx-1, -1)
 

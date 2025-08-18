@@ -1,6 +1,4 @@
 Blocks - partially done(98%):
-    add optional block parts
-    add layer deletion
     add function definition blocks
 
   add comments support
