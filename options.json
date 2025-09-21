@@ -14,7 +14,8 @@
         "Basic": "#c061cb",
         "Events": "#ffaa00",
         "Variables": "#ff8800",
-        "Dynamic": "#00ffff"
+        "Dynamic": "#00ffff",
+        "Functions": "#8bca6f"
     },
     "addon_category_colors": {
         "Installed": "#00ff00",

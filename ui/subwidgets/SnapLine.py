@@ -31,9 +31,9 @@ class SnapLine(QGraphicsWidget):
 		if self.snapped_block:
 			old_widget = self.snapped_block
 			self.snapped_block.unsnap()
-			if widget.shape_index != 1 or widget.snap_line_list:
-				old_widget.snap_candidate = widget.snap_line_list[0]
-				old_widget.try_to_snap()
+			if widget.shape_id != 1 or widget.snap_line_list:
+				old_widget.snap_candidate = widget.layers_list[0].snap_line
+				old_widget.snap_to_candidate()
 		self.snapped_block = widget
 		self.snapped_block.sizeChanged.connect(self.sizeChanged.emit)
 
@@ -51,6 +51,11 @@ class SnapLine(QGraphicsWidget):
 	def change_width(self, width):
 		self.width = width
 		self.update()
+
+	def check_block(self, block):
+		if self.parentItem().snap_lock: return False
+		if block.shape_id in (2, 3, 4): return False
+		return True
 
 	def paint(self, painter, option, widget=None):
 		if not self.visible:

@@ -11,3 +11,4 @@ Make ui more friendly:
     Add Ctrl-Z, Ctrl-Y
     Dynamic block recoloring
     Fix "save project" popup after user just saved it manually
+    Add translations to other languages

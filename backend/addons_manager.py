@@ -46,7 +46,7 @@ class AddonsManager:
                 self.update_addon(addon_name)
 
         imported_module = importlib.import_module(f"addons.{addon_name}")
-        self.addons[addon_name] = imported_module.run(self.ui, addon_name)
+        self.addons[addon_name] = imported_module.run(self.ui, os.path.join("addons", addon_name))
 
         self.addons_names.append(addon_name)
 

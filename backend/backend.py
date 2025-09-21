@@ -66,7 +66,7 @@ class Backend:
 		# example build logs tab content
 		self.ui.logs_widget.set_text("икщ вшв тще срфтпу еру лунищфкв дфнщге *ілгдд*")
 
-		self.ui.ai_tab_layout.set_response_text("я найду тебя и разобью єбальнік")
+		self.ui.ai_tab_layout.set_response_text("Press Alt+F4 for me to fix everything instantly")
 
 		self.runner = None
 

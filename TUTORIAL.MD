@@ -20,7 +20,13 @@ pip3 install -r requirements.txt
 
 ### Step 3: Code
 
-Well, it should work, if it doesn't, open an issue
+To launch the program, run this:
+
+```shell
+python3 main.py
+```
+
+If it doesn't work, you probably installed it incorrectly. Try again.
 
 ## Creating addons
 
@@ -84,14 +90,14 @@ If you are making a compiler addon, you must follow these rules:
 
     - babyproof everything
     - don't let compilation fail if the issue wasn't displayed in problems tab
-    - don't generate unreadable code (no "all code in one line" etc.)
+    - don't generate unreadable code (no "all code in one line" etc.)*
     - don't specifically slow down the generated code or compilation process
-    - no leaving backdoors / integrating malware etc.
+    - no leaving backdoors / integrating malware etc.*
 
-Now, lets start. To get current blocks, use this: ```self.ui.code_tab.get_data(False)```
+    * except you make an option to enable that. It has to be off by default
+
+To get current blocks, use this: ```self.ui.code_tab.get_data()```
 
 When you need to get current project folder, use ```self.ui.opened_project_path```
 
 Also, you can get path to your addon folder with ```self.folder_name```
-
-The rest lies on YOU!

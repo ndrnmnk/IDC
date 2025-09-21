@@ -1,17 +1,12 @@
 # IDC
 
-#### Also check TUTORIAL.MD to get install instaructions
+#### Also check TUTORIAL.MD to get installation instructions
 #### And TODO.txt to see future features
-IDC will be a block-based coding app with addons support. Currently, it's far from done, but it already features:
-
-- Blocks - everything works except converting to code (addons do this) and layer deletion from dynamic ones
-
+IDC will be a block-based programming app with addons support. Currently, it's far from done, but it already features:
+- Blocks - missing custom functions support
 - UI - need to restructure textures and sounds as files
-
 - Options - overall done, but will add new options
-
 - Block selection menu - done
-
 - Addons - done
 
 ### Footage

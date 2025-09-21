@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QGraphicsView
 
 from backend.SpriteManager import SpriteManager
-from ui.widgets.Block import Block
+# from ui.widgets.Block import Block
+from ui.block import Block
 from backend.BlockMenuManager import BlockMenuManager
 from backend.VariableManager import VariableManager
 from ui.subwidgets.CodingScene import CodingScene
@@ -32,15 +33,16 @@ class WorkspaceView(QGraphicsView):
 		res = base
 		res["category"] = category
 		res["internal_name"] = internal_name
-		res["identifier"] = identifier
+		if identifier:
+			res["identifier"] = identifier
 		res["meta"] = meta
 		res["pos"] = pos
 		return res
 
 	@staticmethod
 	def generate_variable_block_json(name, vtype):
-		shape = 3 if vtype == "Boolean" else 4
-		return {"shape": shape, "tooltip": vtype, "data": [{"type": 0, "data": [{"text": name}]}]}
+		shape = 3 if vtype == "bool" else 4
+		return {"shape": shape, "returns": vtype, "data": [{"type": 0, "data": [{"text": name}]}]}
 
 	def add_block(self, block_json, spawner):
 		block = Block(self, block_json, spawner)
@@ -76,7 +78,6 @@ class WorkspaceView(QGraphicsView):
 	def get_project_data(self):
 		self.sprite_manager.save_sprite_data()
 		res = self.sprite_manager.all_sprite_code
-
 		return res
 
 	def load_sprite(self, sprite_name):
@@ -115,7 +116,7 @@ class WorkspaceView(QGraphicsView):
 		# fill text fields
 		entry_list = block.get_entry_list()
 		for i, var in enumerate(block_json["content"]):
-			entry_list[i].set_text(var[0][0])
+			entry_list[i].set_text(var[0])
 
 	def try_loading_block(self, child_block_id, sprite_json, block, idx, to):
 		# if to == 0, snap to a SnapLine, else - to EntryManager

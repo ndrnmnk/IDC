@@ -3,7 +3,7 @@
     "print": {
       "shape": 0,
       "data": [
-        {"type": 0, "data": [{"text": "print"}, {"text_entry": "text"}]}
+        {"type": -1, "data": [{"text": "print"}, {"entry": "text", "types": ["all"]}]}
       ]
     }
   },
@@ -11,15 +11,15 @@
     "on_launch": {
       "shape": 2,
       "data": [
-        {"type": 0, "data": [{"text": "On launch"}]}
+        {"type": -1, "data": [{"text": "On launch"}]}
       ]
     },
     "if": {
       "shape": 0,
       "data": [
-        {"type": 0, "data": [{"text": "If"}, {"bool_entry": ""}, {"text": "do"}]},
-        {"type": 1, "name": "else", "data": [{"text": "else"}]},
-        {"type": 0, "data": [{"text": ""}]}
+        {"type": -1, "data": [{"text": "If"}, {"entry": "", "types": ["bool", "int", "str"]}, {"text": "do"}]},
+        {"type": -2, "name": "else", "data": [{"text": "else"}]},
+        {"type": -1, "data": [{"text": ""}]}
       ]
     }
   },
@@ -27,19 +27,25 @@
     "define_variable": {
       "shape": 0,
       "data": [
-        {"type": 0, "data": [{"text": "Define"}, {"dropdown": ["string", "int", "double", "char", "bool"]}, {"text": "variable"}, {"text_entry": "var"}]}
+        {"type": -1, "data": [{"text": "Define variable"}, {"entry": "var", "types": ["all", " notype"]}]}
       ]
     },
     "set_variable": {
       "shape": 0,
       "data": [
-        {"type": 0, "data": [{"text": "Set"}, {"text_entry": "var"}, {"text": "to"}, {"text_entry": "value"}]}
+        {"type": -1, "data": [{"text": "Set"}, {"entry": "var", "types": ["all", " notype"]}, {"text": "to"}, {"entry": "value", "types": ["str"]}]}
       ]
     },
     "test_block_entry": {
       "shape": 0,
       "data": [
-        {"type": 0, "data": [{"text": "Test"}, {"block_entry": []}, {"text": "block"}]}
+        {"type": -1, "data": [{"text": "Test"}, {"entry": "", "types": [" block"]}, {"text": "block"}]}
+      ]
+    },
+    "print_function_test": {
+      "shape": 5,
+      "data": [
+        {"type": -1, "data": [{"text": "print"}, {"entry": "text", "types": ["all"]}]}
       ]
     }
   },
@@ -47,12 +53,13 @@
     "switch_case": {
       "shape": 0,
       "data": [
-        {"type": 0, "data": [{"text": "Switch"}, {"text_entry": ""}]},
-        {"type": 2, "data": [{"text": "case"}, {"text_entry": ""}], "name": "case"},
-        {"type": 1, "data": [{"text": "default"}, {"text_entry": ""}], "name": "default"},
-        {"type": 0, "data": [{"text": ""}]}
+        {"type": -3, "data": [{"text": "Switch"}, {"entry": "", "types": ["str"]}]},
+        {"type": 1, "data": [{"text": "case"}, {"entry": "", "types": ["str"]}], "name": "case"},
+        {"type": -2, "data": [{"text": "default"}, {"entry": "", "types": ["str"]}], "name": "default"},
+        {"type": -1, "data": [{"text": ""}]}
       ]
     }
   },
-  " ": {}
+  "Functions": {},
+  "": {}
 }

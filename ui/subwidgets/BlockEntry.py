@@ -26,7 +26,7 @@ class BlockEntry(QWidget):
 
 	def paintEvent(self, a0):
 		painter = QPainter(self)
-		painter.setRenderHint(QPainter.HighQualityAntialiasing)
+		painter.setRenderHint(QPainter.Antialiasing, True)
 
 		pen = QPen(QColor(self.border_color))
 		pen.setWidth(self.border_width)  # Outline thickness
@@ -34,7 +34,7 @@ class BlockEntry(QWidget):
 
 		bg = ConfigManager().get_config()["styles"]["text_field_bg"]
 		painter.setBrush(QColor(bg))
-		points = generate_points(0, self.width(), [16], [0])[0]
+		points = generate_points(0, self.width(), [16], [18])[0]
 		points = [QPointF(p.x()*0.95+1, p.y()*0.95+1) for p in points]
 		polygon = QPolygonF(points)
 		painter.drawPolygon(polygon)

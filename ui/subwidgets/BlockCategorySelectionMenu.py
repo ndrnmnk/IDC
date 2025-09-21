@@ -8,7 +8,8 @@ import math
 
 class Category(QTableWidgetItem):
 	def __init__(self, text, color):
-		colored_text = f"<span style='color: {color};'>⬛</span> " + text
+		if color is not None: colored_text = f"<span style='color: {color};'>⬛</span> " + text
+		else: colored_text = text
 		super().__init__(colored_text)
 		self.raw_text = text
 		self.setTextAlignment(Qt.AlignCenter)
@@ -28,7 +29,7 @@ class BlockCategorySelectionMenu(QGraphicsProxyWidget):
 		self.setWidget(self.table_widget)
 
 		if len(categories) % 2 != 0:
-			categories.append((' ', '#000000'))
+			categories.append(('', None))
 
 		self.table_widget.setItemDelegate(RichTextDelegate())
 		self.table_widget.setFixedWidth(300)

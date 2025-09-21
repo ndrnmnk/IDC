@@ -1,39 +1,27 @@
 from PyQt5.QtCore import QPointF
+import math
 
 
-def get_circle_points(radius, angles_to_do=360):
+def get_circle_points(radius, num_points=360):
 	"""
-	Approximates a circle (or part of it) of gives radius.
+	Generate points on a circle of given radius, starting from the bottom (0, -r) and going clockwise.
 
-	Args:
-		radius (float): Radius of circle go create.
-		angles_to_do (int): The part of circle to create, starts from bottom and goes clockwise.
-
-	Returns:
-		list: list of coordinates for circle points.
+	:param radius: Radius of the circle
+	:param num_points: Number of points to generate on the circle
+	:return: List of (x, y) tuples
 	"""
 	points = []
-	x, y = 0, -radius
-	angle = 0
-
-	for _ in range(angles_to_do):
-		# Append the current point
+	# Start at 270° (bottom) and go clockwise by decreasing the angle
+	for i in range(num_points):
+		angle_deg = 270 - (360 * i / num_points)
+		angle_rad = math.radians(angle_deg)
+		x = radius * math.cos(angle_rad)
+		y = radius * math.sin(angle_rad)
 		points.append((x, y))
-
-		# Calculate change in x and y based on step length and angle approximation
-		dx = y * 0.01745
-		dy = -x * 0.01745
-		x += dx
-		y += dy
-
-		# Rotate the vector by approximately 1 degree
-		angle += 1
-
 	return points
 
 
 def generate_points(shape_id, width, height, between_layers_height):
-	between_layers_height.append(0)
 	"""
 	Generates points for a block.
 
@@ -47,7 +35,10 @@ def generate_points(shape_id, width, height, between_layers_height):
 		list: set of points for block
 	"""
 
-	min_width = [50, 50, 60, 28, 28]
+	between_layers_height.append(0)  # no idea why, but it crashes without this
+	skip_next_half_block = False
+
+	min_width = [50, 50, 60, 28, 28, 50]
 
 	width = max(width, min_width[shape_id])
 	if shape_id == 0:  # regular block, allows both top and bottom connections
@@ -57,25 +48,35 @@ def generate_points(shape_id, width, height, between_layers_height):
 		res = []
 		snappable_points = []
 		for idx, h in enumerate(height):
-			res = res + [
-				QPointF(start_x, start_y),
-				QPointF(start_x+bulge_x, start_y),
-				QPointF(start_x+bulge_x, start_y+5),
-				QPointF(start_x+bulge_x+30, start_y+5),
-				QPointF(start_x+bulge_x+30, start_y),
-				QPointF(width, start_y),
-				QPointF(width, start_y+h)]
-			if not idx == len(height) - 1:
-				start_x = 20
+			# top half block
+			if not skip_next_half_block:
+				res = res + [
+					QPointF(start_x, start_y),
+					QPointF(start_x+bulge_x, start_y),
+					QPointF(start_x+bulge_x, start_y+5),
+					QPointF(start_x+bulge_x+30, start_y+5),
+					QPointF(start_x+bulge_x+30, start_y),
+					QPointF(width, start_y)]
 			else:
-				start_x = 0
-			res = res + [
-				QPointF(start_x+bulge_x+30, start_y+h),
-				QPointF(start_x+bulge_x+30, start_y+h+5),
-				QPointF(start_x+bulge_x, start_y+h+5),
-				QPointF(start_x+bulge_x, start_y+h),
-				QPointF(start_x, start_y+h)
-			]
+				skip_next_half_block = False
+
+			res.append(QPointF(width, start_y+h))
+
+			# decide on where to put the bulge
+			start_x = 20 if idx != len(height) - 1 else 0
+
+			if between_layers_height[idx] == 0:
+				skip_next_half_block = 1
+
+			# bottom half of the block
+			if not skip_next_half_block:
+				res = res + [
+					QPointF(start_x+bulge_x+30, start_y+h),
+					QPointF(start_x+bulge_x+30, start_y+h+5),
+					QPointF(start_x+bulge_x, start_y+h+5),
+					QPointF(start_x+bulge_x, start_y+h),
+					QPointF(start_x, start_y+h)
+				]
 			snappable_points.append(QPointF(start_x, start_y+h))
 			start_y += between_layers_height[idx] + height[idx]
 		between_layers_height.pop()
@@ -87,24 +88,33 @@ def generate_points(shape_id, width, height, between_layers_height):
 		snappable_points = []
 		res = []
 		for idx, h in enumerate(height):
-			res = res + [
-				QPointF(start_x, start_y),
-				QPointF(start_x+bulge_x, start_y),
-				QPointF(start_x+bulge_x, start_y+5),
-				QPointF(start_x+bulge_x+30, start_y+5),
-				QPointF(start_x+bulge_x+30, start_y),
-				QPointF(width, start_y),
-				QPointF(width, start_y+h)]
-			if not idx == len(height) - 1:
+			if not skip_next_half_block:
+				res = res + [
+					QPointF(start_x, start_y),
+					QPointF(start_x+bulge_x, start_y),
+					QPointF(start_x+bulge_x, start_y+5),
+					QPointF(start_x+bulge_x+30, start_y+5),
+					QPointF(start_x+bulge_x+30, start_y),
+					QPointF(width, start_y)]
+			else:
+				skip_next_half_block = False
+
+			res.append(QPointF(width, start_y+h))
+
+			if between_layers_height[idx] == 0:
+				skip_next_half_block = 1
+
+			if idx != len(height) - 1:
 				start_x = 20
 				snappable_points.append(QPointF(start_x, start_y+h))
-				res = res + [
-					QPointF(start_x + bulge_x + 30, start_y + h),
-					QPointF(start_x + bulge_x + 30, start_y + h + 5),
-					QPointF(start_x + bulge_x, start_y + h + 5),
-					QPointF(start_x + bulge_x, start_y + h),
-					QPointF(start_x, start_y + h)
-				]
+				if not skip_next_half_block:
+					res = res + [
+						QPointF(start_x + bulge_x + 30, start_y + h),
+						QPointF(start_x + bulge_x + 30, start_y + h + 5),
+						QPointF(start_x + bulge_x, start_y + h + 5),
+						QPointF(start_x + bulge_x, start_y + h),
+						QPointF(start_x, start_y + h)
+					]
 			else:
 				start_x = 0
 				res.append(QPointF(start_x, start_y + h))
@@ -120,33 +130,36 @@ def generate_points(shape_id, width, height, between_layers_height):
 		start_y = 15
 		bulge_x = 10
 		for idx, h in enumerate(height):
-			if idx != 0:
-				res = res + [
-					QPointF(start_x, start_y),
-					QPointF(start_x+bulge_x, start_y),
-					QPointF(start_x+bulge_x, start_y+5),
-					QPointF(start_x+bulge_x+30, start_y+5),
-					QPointF(start_x+bulge_x+30, start_y),
-					QPointF(width, start_y),
-					QPointF(width, start_y+h)]
+			if not skip_next_half_block:
+				if idx != 0:
+					res = res + [
+						QPointF(start_x, start_y),
+						QPointF(start_x+bulge_x, start_y),
+						QPointF(start_x+bulge_x, start_y+5),
+						QPointF(start_x+bulge_x+30, start_y+5),
+						QPointF(start_x+bulge_x+30, start_y)]
+				else:
+					res.append(QPointF(60, start_y))
 			else:
-				res = res + [
-					QPointF(60, start_y),
-					QPointF(width, start_y),
-					QPointF(width, start_y+h)
-				]
+				skip_next_half_block = False
+			res.extend([QPointF(width, start_y), QPointF(width, start_y+h)])
+
+			if between_layers_height[idx] == 0:
+				skip_next_half_block = True
+
 			if not idx == len(height) - 1:
 				start_x = 20
 			else:
 				start_x = 0
 			snappable_points.append(QPointF(start_x, start_y+h))
-			res = res + [
-				QPointF(start_x+bulge_x+30, start_y+h),
-				QPointF(start_x+bulge_x+30, start_y+h+5),
-				QPointF(start_x+bulge_x, start_y+h+5),
-				QPointF(start_x+bulge_x, start_y+h),
-				QPointF(start_x, start_y+h)
-			]
+			if not skip_next_half_block:
+				res = res + [
+					QPointF(start_x+bulge_x+30, start_y+h),
+					QPointF(start_x+bulge_x+30, start_y+h+5),
+					QPointF(start_x+bulge_x, start_y+h+5),
+					QPointF(start_x+bulge_x, start_y+h),
+					QPointF(start_x, start_y+h)
+				]
 			start_y += between_layers_height[idx] + height[idx]
 		between_layers_height.pop()
 		return res, snappable_points
@@ -167,6 +180,19 @@ def generate_points(shape_id, width, height, between_layers_height):
 		points = get_circle_points(new_height/2)
 		right_half_circle = [QPointF(v1 + width-new_height/2, new_height/2-v2) for v1, v2 in points[180:]]
 		left_half_circle = [QPointF(v1+new_height/2, new_height/2-v2) for v1, v2 in points[:180]]
-		res = [QPointF(new_height / 2, 0), QPointF(width-new_height/2, 0)] + right_half_circle + [QPointF(width-new_height/2, new_height), QPointF(new_height/2, new_height)] + left_half_circle
+		res = ([QPointF(new_height / 2, 0), QPointF(width-new_height/2, 0)] + right_half_circle +
+			   [QPointF(width-new_height/2, new_height), QPointF(new_height/2, new_height)] + left_half_circle)
 
 		return res, []
+	elif shape_id == 5:
+		between_layers_height.pop()
+		new_height = sum(height)
+		points = get_circle_points(new_height / 2)
+		right_half_circle = [QPointF(v1 + width - new_height / 2, new_height / 2 - v2) for v1, v2 in points[180:]]
+		snappable_points = [QPointF(0, new_height)]
+
+		res = [QPointF(0, 0), QPointF(10, 0), QPointF(10, 5), QPointF(40, 5), QPointF(40, 0), QPointF(width - new_height / 2, 0)]
+		res.extend(right_half_circle)
+		res.extend([QPointF(width - new_height / 2, new_height), QPointF(40, new_height), QPointF(40, new_height + 5),
+					QPointF(10, new_height+5), QPointF(10, new_height), QPointF(0, new_height)])
+		return res, snappable_points

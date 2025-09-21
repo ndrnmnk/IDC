@@ -1,5 +1,3 @@
-
-
 class BaseAddon:
 	def __init__(self, ui, fn):
 		self.ui = ui

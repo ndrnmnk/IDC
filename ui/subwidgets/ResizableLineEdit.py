@@ -7,7 +7,7 @@ from backend.config_manager import ConfigManager
 class ResizableLineEdit(QLineEdit):
     size_changed = pyqtSignal()
 
-    def __init__(self, placeholder="", int_entry=False, *args, **kwargs):
+    def __init__(self, placeholder="", input_type="int", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setFixedHeight(22)
         self.setPlaceholderText(placeholder)
@@ -16,16 +16,17 @@ class ResizableLineEdit(QLineEdit):
         self.setAttribute(Qt.WA_TranslucentBackground)
         bg = ConfigManager().get_config()["styles"]["text_field_bg"]
         # bg = "#ffffff"
-        if int_entry:
-            self.setToolTip("Number entry")
+        if input_type == "int":
             border_radius = 10
             pattern = r'^[0-9.-]*$'  # Only digits, hyphen, and dot
             regex = QRegularExpression(pattern)
             validator = QRegularExpressionValidator(regex, self)
             self.setValidator(validator)
+        elif input_type == "str":
+            border_radius = 5
         else:
             border_radius = 0
-            self.setToolTip("String entry")
+            self.setToolTip(f"{input_type} entry")
 
         self.setStyleSheet(f"""
              QToolTip {{ border-radius: 0px; }}

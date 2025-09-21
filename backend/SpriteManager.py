@@ -38,6 +38,7 @@ class SpriteManager:
 		code = {}
 		roots = []
 		for block in self.wv.block_list:
+			print(block)
 			block_json, identifier = block.get_content()
 			code[identifier] = block_json
 			if not block.snap:

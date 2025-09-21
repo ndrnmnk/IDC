@@ -1,5 +1,6 @@
 from copy import deepcopy
 from uuid import uuid4
+from math import trunc
 
 from PyQt5.QtWidgets import QGraphicsObject, QGraphicsTextItem, QMenu, QAction
 from PyQt5.QtGui import QPainter, QColor, QPolygonF, QPen, QPainterPath, QFont
@@ -33,6 +34,7 @@ class Block(QGraphicsObject):
 	2 - starter block, bottom snaps only
 	3 - operator block, can be snapped in EntryManager
 	4 - variable block, can be snapped in EntryManager
+	5 - function block; functions as shape 0 + shape 4. 
 	
 	For shapes 0, 1 and 2 other blocks can be snapped between the layers. 
 	Shapes 3 and 4 with multiple layers look weird and function like single-layer ones.
@@ -53,6 +55,7 @@ class Block(QGraphicsObject):
 		self.parent_view = parent
 
 		if input_json.get("tooltip"): self.setToolTip(input_json.get("tooltip"))
+		self.return_type = input_json.get("tooltip", "void")
 
 		# save data
 		self.spawner = spawner
@@ -103,8 +106,7 @@ class Block(QGraphicsObject):
 
 	def mouseMoveEvent(self, event):
 		super().mouseMoveEvent(event)
-		if self.shape_index != 2:
-			self.check_for_snap()
+		if self.shape_index != 2: self.check_for_snap()
 
 	def mouseReleaseEvent(self, event):
 		super().mouseReleaseEvent(event)
@@ -140,16 +142,8 @@ class Block(QGraphicsObject):
 			content = QGraphicsTextItem(json_member["text"], parent=self)
 			content.setFont(QFont("Arial", 12))
 			self.add_content_item(layer, idx, content, tx, ty)
-		elif "text_entry" in json_member:
-			self.handle_entry_item(layer, idx, 0, json_member["text_entry"], tx, ty)
-		elif "int_entry" in json_member:
-			self.handle_entry_item(layer, idx, 1, json_member["int_entry"], tx, ty)
-		elif "bool_entry" in json_member:
-			self.handle_entry_item(layer, idx, 2, json_member["bool_entry"], tx, ty)
-		elif "dropdown" in json_member:
-			self.handle_entry_item(layer, idx, 3, json_member["dropdown"], tx, ty)
-		elif "block_entry" in json_member:
-			self.handle_entry_item(layer, idx, 4, json_member["block_entry"], tx, ty)
+		elif "entry" in json_member:
+			self.handle_entry_item(layer, idx, json_member["types"], json_member["entry"], tx, ty)
 
 	def create_lines_for_snappable_points(self):
 		for idx, point in enumerate(self.snappable_points):
@@ -248,7 +242,7 @@ class Block(QGraphicsObject):
 			self.snap.sizeChanged.emit()
 			self.snap_candidate = None
 
-			if self.shape_index in (0, 1) and isinstance(self.snap, EntryManager):
+			if self.shape_index in (0, 1, 5) and isinstance(self.snap, EntryManager):
 				self.snap_lock = True
 
 	def check_for_snap(self):
@@ -269,19 +263,32 @@ class Block(QGraphicsObject):
 			self.snap_candidate = None
 
 	def check_widget_for_snappable(self, widget):
+		if widget in self.childItems():
+			return False
+
 		if self.shape_index in [0, 1]:
-			if isinstance(widget, SnapLine) and widget not in self.snap_line_list and not widget.parentItem().snap_lock:
+			if isinstance(widget, SnapLine) and not widget.parentItem().snap_lock:
 				return True
-			if (isinstance(widget, EntryManager) and widget.allowed_snaps[2] and not any(widget in sublist for sublist in self.content_list)
-				and len(self.snap_line_list) == 1 and not self.snap_line_list[0].snapped_block):
+			if isinstance(widget, EntryManager) and (" block" in widget.allowed_types) \
+					and (len(self.snap_line_list) == 1) and not self.snap_line_list[0].snapped_block:
+				return True
+			return False
+
+		if isinstance(widget, EntryManager):
+			type_allows = self.return_type in widget.allowed_types or "all" in widget.allowed_types
+		else: type_allows = False
+
+		if self.shape_index in [3, 4]:
+			if type_allows and not widget.snapped_block and not widget.parentItem().spawner:
 					return True
 			return False
-		elif self.shape_index in [3, 4]:
-			if isinstance(widget, EntryManager) and widget.allowed_snaps[self.shape_index - 3] \
-				and widget not in self.content_list and not widget.snapped_block and not widget.parentItem().spawner:
-					return True
+
+		if self.shape_index == 5:
+			if isinstance(widget, SnapLine) and not widget.parentItem().snap_lock:
+				return True
+			if type_allows and not widget.snapped_block and not widget.parentItem().spawner and not self.snap_line_list[0].snapped_block:
+				return True
 			return False
-		return False
 
 	def check_item_for_snap_distance(self, item):
 		# if item is close enough, return True
@@ -316,6 +323,11 @@ class Block(QGraphicsObject):
 		painter.setBrush(QColor(ConfigManager().get_config()["block_colors"][self.input_json["category"]]))
 		painter.setPen(QPen(QColor("#000000")))
 		painter.drawPath(self.path)
+
+		# draw bounding boxes, used for debugging
+		for child in self.childItems():
+			rect = child.mapToParent(child.boundingRect()).boundingRect()
+			painter.drawRect(rect)
 
 	def shape(self) -> QPainterPath:
 		return self.path
@@ -371,8 +383,7 @@ class Block(QGraphicsObject):
 				vname = self.input_json["internal_name"][5:]
 				var_id = self.input_json["identifier"]
 				self.parent_view.var_manager.unreg_usage(vname, var_id, self.parent_view.sprite_manager.current_sprite)
-			except (ValueError, KeyError):
-				pass
+			except (ValueError, KeyError): pass
 
 		self.deleteLater()
 
@@ -518,7 +529,7 @@ class Block(QGraphicsObject):
 				current_regular_index += nonstatic["amount"] + 1
 				if current_regular_index >= regular_layer_id:
 					return i
-		return None
+		return 0
 
 	def customBoundingRect(self):
 		"""Returns bounding rect of this widget and child blocks (if any)"""
@@ -541,15 +552,17 @@ class Block(QGraphicsObject):
 		return res
 
 	def get_content(self):
+		pos_x = trunc(self.pos().x()*1000)/1000
+		pos_y = trunc(self.pos().y() * 1000) / 1000
+
 		res = {"category": self.input_json["category"], "internal_name": self.input_json["internal_name"],
-			   "pos": [self.pos().x(), self.pos().y()]}
+			   "pos": [pos_x, pos_y]}
 
 		content = []
 		for widget in self.get_entry_list():
 			if widget.snapped_block:
-				content.append([[widget.get_text(), widget.entry_type], widget.snapped_block.input_json["identifier"]])
-			else:
-				content.append([[widget.get_text(), widget.entry_type], None])
+				content.append([widget.get_text(), widget.snapped_block.input_json["identifier"]])
+			else: content.append([widget.get_text(), None])
 		snaps = []
 		for line in self.snap_line_list:
 			if line.snapped_block:

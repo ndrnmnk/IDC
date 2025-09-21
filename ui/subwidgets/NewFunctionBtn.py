@@ -1,13 +1,13 @@
 from PyQt5.QtWidgets import QPushButton, QGraphicsProxyWidget
 
-from ui.windows.NewVariableWindow import NewVariableWindow
+from ui.windows.NewFunctionWindow import NewFunctionWindow
 
 
-class NewVariableBtn(QGraphicsProxyWidget):
+class NewFunctionBtn(QGraphicsProxyWidget):
     def __init__(self, parent_view):
         super().__init__()
         self.wv = parent_view
-        self.btn = QPushButton("New variable")
+        self.btn = QPushButton("New function")
         self.btn.clicked.connect(self.on_click)
 
         self.setWidget(self.btn)
@@ -16,7 +16,7 @@ class NewVariableBtn(QGraphicsProxyWidget):
         self.setParentItem(parent_view.scene().menu)
 
     def on_click(self):
-        NewVariableWindow(self.wv)
+        NewFunctionWindow(self.wv)
 
     def suicide(self):
         try: self.deleteLater()

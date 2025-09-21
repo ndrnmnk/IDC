@@ -22,7 +22,7 @@ class NewVariableWindow(QWidget):
 		self.grid.addWidget(self.entry, 0, 1)
 
 		self.dropdown = QComboBox()
-		self.dropdown.addItems(["Integer", "String", "Boolean"])
+		self.dropdown.addItems(["int", "str", "bool", "char", "float"])
 		self.grid.addWidget(self.dropdown, 1, 1)
 
 		self.global_checkbox = QCheckBox()
