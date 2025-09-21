@@ -11,7 +11,7 @@ IDC will be a block-based programming app with addons support. Currently, it's f
 
 ### Footage
 <p>
-  <img src="https://raw.githubusercontent.com/ndrnmnk/ndrnmnk/main/IDC-screen0.png" height="600"/>
-  <img src="https://raw.githubusercontent.com/ndrnmnk/ndrnmnk/main/IDC-screen1.png" height="600"/>
-  <img src="https://raw.githubusercontent.com/ndrnmnk/ndrnmnk/main/IDC-customization.png" height="600"/>
+  <img src="https://raw.githubusercontent.com/ndrnmnk/ndrnmnk/main/IDC/screen_blocks.png" height="600"/>
+  <img src="https://raw.githubusercontent.com/ndrnmnk/ndrnmnk/main/IDC/screen_addons.png" height="600"/>
+  <img src="https://raw.githubusercontent.com/ndrnmnk/ndrnmnk/main/IDC/customization.png" height="600"/>
 </p>
