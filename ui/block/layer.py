@@ -7,8 +7,7 @@ from ui.subwidgets.EntryManager import EntryManager
 LTYPE_STATIC = -1    # regular layer
 LTYPE_OPTIONAL = -2  # hidden by default, can be shown using right-click
 LTYPE_STICKY = -3    # sticks to the layer below it; doesn't have a SnapLine
-# every non-negative number means a layer is dynamic
-# that number points to from which layer to copy input json
+# every non-negative number means a layer is dynamic, that number is a json index to use as copy_from
 
 class BlockLayer:
 	def __init__(self, pb, idx, ltype):
@@ -24,12 +23,17 @@ class BlockLayer:
 
 		self.copy_from = self.layer_id if self.layer_type < 0 else self.layer_type
 
+		if ltype not in (LTYPE_STATIC, LTYPE_STICKY):
+			self.parent_block.nonstatic_layers[self.copy_from] = self.parent_block.nonstatic_layers.get(self.copy_from, 0)
 		self.hidden = ltype == LTYPE_OPTIONAL
 		self.y_to_appear_at = 0
 
 	def populate(self, ty=None):
 		if ty is not None: self.y_to_appear_at = ty + 1
 		if self.hidden: return
+
+		if self.layer_type not in (LTYPE_STATIC, LTYPE_STICKY):
+			self.parent_block.nonstatic_layers[self.copy_from] += 1
 
 		input_json = self.parent_block.input_json["data"][self.copy_from]["data"]
 		tx = 2
@@ -44,8 +48,11 @@ class BlockLayer:
 			tx += self.width_list[idx]
 
 	def depopulate(self):
-		# is used ONLY when the user deletes an optional layer
+		# is used when the user deletes a layer
 		self.hidden = True
+
+		if self.layer_type not in (LTYPE_STATIC, LTYPE_STICKY):
+			self.parent_block.nonstatic_layers[self.copy_from] -= 1
 
 		self.width_list = []
 		self.height_list = []
@@ -53,6 +60,7 @@ class BlockLayer:
 		for widget in self.content_list: widget.deleteLater()
 		if self.snap_line:
 			if self.snap_line.snapped_block: self.snap_line.snapped_block.unsnap()
+			self.parent_block.snap_line_list.remove(self.snap_line)
 			self.snap_line.deleteLater()
 			self.snap_line = None
 		self.content_list = []
@@ -72,11 +80,11 @@ class BlockLayer:
 		self.snapped_block_h = self.snap_line.get_height()
 		self.parent_block.repopulate(self.layer_id)
 
-	def add_snap_line(self, pos, width):
+	def add_snap_line(self, pos, width, insert_at):
 		if self.layer_type is LTYPE_STICKY or self.hidden: return
 		self.snap_line = SnapLine(pos, width, self.parent_block)
 		self.snap_line.sizeChanged.connect(self.on_snapline_size_changed)
-		self.parent_block.snap_line_list.append(self.snap_line)
+		self.parent_block.snap_line_list.insert(insert_at, self.snap_line)
 
 	def move_by(self, ty, only_snapline=False):
 		if not only_snapline: self.y_to_appear_at += ty

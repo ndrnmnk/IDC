@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QGraphicsView
 
 from backend.SpriteManager import SpriteManager
 # from ui.widgets.Block import Block
+from ui.block import load_nonstatic_json
 from ui.block import Block
 from backend.BlockMenuManager import BlockMenuManager
 from backend.VariableManager import VariableManager
@@ -97,12 +98,8 @@ class WorkspaceView(QGraphicsView):
 		block = self.add_block(new_block_json, False)
 
 		# add nonstatic layers
-		nonstatic_json = block_json.get("nonstatic") or []
-		block.nonstatic_layers = nonstatic_json
-		for idx, layer in enumerate(nonstatic_json):
-			if not layer: continue
-			for i in range(layer["amount"]):
-				block.copy_layer(idx, True)
+		nonstatic_json = block_json.get("nonstatic") or {}
+		load_nonstatic_json(block, nonstatic_json)
 
 		# load children
 		for idx, child_block_id in enumerate(block_json["snaps"]):
@@ -111,7 +108,7 @@ class WorkspaceView(QGraphicsView):
 			self.try_loading_block(item[1], sprite_json, block, idx, 1)
 		if parent_block:
 			block.snap_candidate = parent_block.snap_line_list[parent_idx] if to == 0 else parent_block.get_entry_list()[parent_idx]
-			block.try_to_snap()
+			block.snap_to_candidate()
 
 		# fill text fields
 		entry_list = block.get_entry_list()

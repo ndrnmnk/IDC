@@ -1,70 +1,50 @@
 from PyQt5.QtWidgets import QMenu, QAction
+from .layer_manager import *
 
 class BlockContextMenu(QMenu):
-	def __init__(self, parent, pos):
+	def __init__(self, parent, event):
 		super().__init__()
 		self.parent_block = parent
 
-		for idx, layer in enumerate(parent.layers_list):
-			# TODO: implement a list of QActions
-			if layer.layer_type == -2:
-				if layer.hidden:
-					temp_action = QAction(f"Show layer {layer.layer_id}")
-					temp_action.triggered.connect(lambda _, i=layer.layer_id: self.on_show_optional(i))
-				else:
-					temp_action = QAction(f"Hide layer {layer.layer_id}")
-					temp_action.triggered.connect(lambda _, i=layer.layer_id: self.on_hide_optional(i))
-				self.addAction(temp_action)
-			elif layer.layer_type >= 0:
-				templ_action = QAction(f"Add 1 more {layer.layer_id} layer")
-				templ_action.triggered.connect(lambda _, i=layer.layer_id: self.on_new_dynamic(i))
-				self.addAction(templ_action)
-				templl_action = QAction(f"Delete {layer.layer_id} layer")
-				templl_action.triggered.connect(lambda _, i=layer.layer_id: self.on_delete_dynamic(i))
-				self.addAction(templl_action)
+		layer_id = self.get_layer_by_pos(event.pos())
 
-		self.exec_(pos)
+		self.actions_list = []
+		self.generate_actions(layer_id)
 
-	def on_show_optional(self, layer_id):
-		target_layer = self.parent_block.layers_list[layer_id]
-		target_layer.hidden = False
-		target_layer.populate()
-		self.parent_block.repopulate(layer_id)
+		self.actions_list.append(QAction("Delete block"))
+		self.addAction(self.actions_list[-1])
+		self.actions_list[-1].triggered.connect(self.parent_block.suicide)
 
-		target_layer.add_snap_line(self.parent_block.snappable_points[layer_id], max(self.parent_block.width_list)-20)
+		self.actions_list.append(QAction("Unsnap + Delete block"))
+		self.addAction(self.actions_list[-1])
+		self.actions_list[-1].triggered.connect(lambda: self.parent_block.suicide(True))
 
-	def on_hide_optional(self, layer_id):
-		self.parent_block.layers_list[layer_id].depopulate()
-		self.parent_block.repopulate(layer_id)
+		self.exec_(event.screenPos())
 
-	def on_new_dynamic(self, layer_id):
-		# get y pos
-		y_new = self.parent_block.layers_list[layer_id+1].y_to_appear_at
-		# make a new layer
-		temp_layer = self.parent_block.layers_list[layer_id].generate_copy()
-		self.parent_block.layers_list.insert(layer_id + 1, temp_layer)
-		temp_layer.populate(y_new)
-		# edit block variables
-		self.parent_block.width_list.insert(layer_id+1, 0)
-		self.parent_block.height_list.insert(layer_id+1, 0)
-		self.parent_block.between_layers_height_list.insert(layer_id+1, 0)
-		# change ids of other layers
-		for layer in self.parent_block.layers_list[layer_id+2:]:
-			layer.layer_id += 1
-		# adjust layout
-		self.parent_block.repopulate(layer_id+1)
+	def get_layer_by_pos(self, event_pos):
+		clicked_y = event_pos.y()
+		for idx, layer in enumerate(self.parent_block.layers_list):
+			if layer.y_to_appear_at > clicked_y: return idx-1
+		return idx
 
-		temp_layer.add_snap_line(self.parent_block.snappable_points[layer_id+1], max(self.parent_block.width_list)-20)
+	def generate_actions(self, clicked_layer_id):
+		clicked_layer = self.parent_block.layers_list[clicked_layer_id]
+		if clicked_layer.layer_type == -2:
+			self.actions_list.append(QAction("Hide this layer"))
+			self.actions_list[-1].triggered.connect(lambda _, i=clicked_layer.layer_id: hide_optional_layer(self.parent_block, i))
+			self.addAction(self.actions_list[-1])
 
-	def on_delete_dynamic(self, layer_id):
-		self.parent_block.layers_list[layer_id].depopulate()
-		# adjust block size
-		self.parent_block.repopulate(layer_id)
-		# delete variables
-		self.parent_block.width_list.pop(layer_id)
-		self.parent_block.height_list.pop(layer_id)
-		self.parent_block.between_layers_height_list.pop(layer_id)
-		self.parent_block.layers_list.pop(layer_id)
-		# change ids of other layers
-		for layer in self.parent_block.layers_list[layer_id:]:
-			layer.layer_id -= 1
+		if clicked_layer.layer_type > 0:
+			if self.parent_block.nonstatic_layers[clicked_layer.copy_from] > 1:
+				self.actions_list.append(QAction("Delete this layer"))
+				self.actions_list[-1].triggered.connect(lambda _, i=clicked_layer.layer_id: delete_dynamic_layer(self.parent_block, i))
+				self.addAction(self.actions_list[-1])
+			self.actions_list.append(QAction("Copy this layer"))
+			self.actions_list[-1].triggered.connect(lambda _, i=clicked_layer.layer_id: make_new_dynamic_layer(self.parent_block, i))
+			self.addAction(self.actions_list[-1])
+
+		for temp_layer in self.parent_block.layers_list:
+			if temp_layer.layer_type == -2 and temp_layer.hidden:
+				self.actions_list.append(QAction(f"Show layer {temp_layer.layer_id}"))
+				self.actions_list[-1].triggered.connect(lambda _, i=temp_layer.layer_id: show_optional_layer(self.parent_block, i))
+				self.addAction(self.actions_list[-1])

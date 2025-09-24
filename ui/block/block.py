@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from PyQt5.QtWidgets import QGraphicsObject
 from PyQt5.QtGui import QPainterPath, QPolygonF, QPen, QColor, QPainter
-from PyQt5.QtCore import pyqtSignal, QRectF
+from PyQt5.QtCore import pyqtSignal, QRectF, Qt
 
 from backend import ConfigManager, generate_points
 from .layer import BlockLayer
@@ -34,6 +34,8 @@ class Block(QGraphicsObject):
 		self.layers_list = []
 		self.layer_info = []
 		self.snap_line_list = []  # populated by BlockLayer class
+		self.nonstatic_layers = {}
+
 		self.width_list = []
 		self.height_list = []
 		self.between_layers_height_list = []
@@ -56,14 +58,15 @@ class Block(QGraphicsObject):
 			self.snap_lock = True
 
 	def mousePressEvent(self, event):
-		super().mousePressEvent(event)
-		if self.spawner:
-			self.despawnerize()
-		self.setZValue(10)
-		self.unsnap()
+		if event.button() == Qt.LeftButton:
+			super().mousePressEvent(event)
+			if self.spawner:
+				self.despawnerize()
+			self.setZValue(10)
+			self.unsnap()
 
 	def contextMenuEvent(self, event):
-		BlockContextMenu(self, event.screenPos())
+		BlockContextMenu(self, event)
 
 	def mouseMoveEvent(self, event):
 		super().mouseMoveEvent(event)
@@ -161,13 +164,42 @@ class Block(QGraphicsObject):
 		self.update()
 		self.sizeChanged.emit()
 
-	def suicide(self):
+	def suicide(self, leave_children=False):
+		if self.snapped_to: self.unsnap()
+
+		if leave_children:
+			for line in self.snap_line_list:
+				line.disconnect()
+				if line.snapped_block: line.snapped_block.unsnap()
+			for item in self.get_entry_list():
+				item.disconnect()
+				if item.snapped_block: item.snapped_block.unsnap()
+		else:
+			for line in self.snap_line_list:
+				line.disconnect()
+				if line.snapped_block: line.snapped_block.suicide()
+			for item in self.get_entry_list():
+				item.disconnect()
+				if item.snapped_block: item.snapped_block.suicide()
+
+		self.workspace_view.scene().removeItem(self)
+		if self.spawner: self.workspace_view.block_manager.block_list.remove(self)
+		else: self.workspace_view.block_list.remove(self)
+
+		if self.input_json["meta"] == 1:
+			try:
+				vname = self.input_json["internal_name"][5:]
+				var_id = self.input_json["identifier"]
+				self.workspace_view.var_manager.unreg_usage(vname, var_id, self.workspace_view.sprite_manager.current_sprite)
+			except (ValueError, KeyError): pass
+
 		try: self.deleteLater()
-		except RuntimeError: pass
+		except RuntimeError:
+			print("CAUGHT RUNTIME ERROR")
 
 	def create_snap_lines(self):
 		for idx, point in enumerate(self.snappable_points):
-			self.layers_list[idx].add_snap_line(point, max(self.width_list)-20)
+			self.layers_list[idx].add_snap_line(point, max(self.width_list)-20, -1)
 
 	def snap_distance_check(self, item):
 		self_rect = self.sceneBoundingRect()
@@ -180,7 +212,29 @@ class Block(QGraphicsObject):
 		return False
 
 	def get_content(self):
-		return {}, self.input_json["identifier"]
+		pos_x = round(self.pos().x(), 3)
+		pos_y = round(self.pos().y(), 3)
+
+		res = {"category": self.input_json["category"], "internal_name": self.input_json["internal_name"],
+			   "pos": [pos_x, pos_y]}
+
+		content = []
+		for widget in self.get_entry_list():
+			print(widget.get_text())
+			if widget.snapped_block:
+				content.append([widget.get_text(), widget.snapped_block.input_json["identifier"]])
+			else: content.append([widget.get_text(), None])
+		snaps = []
+		for line in self.snap_line_list:
+			if line.snapped_block:
+				snaps.append(line.snapped_block.input_json["identifier"])
+			else:
+				snaps.append(None)
+
+		res["content"] = content
+		res["snaps"] = snaps
+		res["nonstatic"] = self.nonstatic_layers
+		return res, self.input_json["identifier"]
 
 	def despawnerize(self):
 		self.create_snap_lines()
@@ -198,6 +252,12 @@ class Block(QGraphicsObject):
 		self.workspace_view.block_list.append(self)
 		self.spawner = False
 		self.snap_lock = False
+
+	def get_entry_list(self):
+		res = []
+		for layer in self.layers_list:
+			res.extend(layer.get_entry_list())
+		return res
 
 	def customBoundingRect(self):
 		"""Returns bounding rect of this widget and child blocks (if any)"""
