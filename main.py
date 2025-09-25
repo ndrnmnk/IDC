@@ -12,9 +12,7 @@ from ui.elements.Spritelist import SpriteList
 from ui.windows.OptionsWindow import OptionsWindow
 from ui.windows.AddonsWindow import AddonsWindow
 from ui.subwidgets.ResizableDropdown import ResizableDropdown
-from backend.backend import Backend
-from backend.config_manager import ConfigManager
-from backend.addons_manager import AddonsManager
+from backend import Backend, ConfigManager, AddonsManager
 
 
 class MainWindow(QMainWindow):

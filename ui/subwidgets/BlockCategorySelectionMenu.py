@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QGraphicsProxyWidget
 from PyQt5.QtGui import QWheelEvent
 from PyQt5.QtCore import Qt
 from ui.subwidgets.RichTextDelegate import RichTextDelegate
-from backend.config_manager import ConfigManager
+from backend import ConfigManager
 import math
 
 

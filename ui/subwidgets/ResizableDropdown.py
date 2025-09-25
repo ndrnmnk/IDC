@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QComboBox
 from PyQt5.QtGui import QFontMetrics
 from PyQt5.QtCore import pyqtSignal
-from backend.config_manager import ConfigManager
+from backend import ConfigManager
 
 
 class ResizableDropdown(QComboBox):

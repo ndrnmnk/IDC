@@ -1,8 +1,7 @@
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QPainter, QColor, QPen, QPolygonF
 from PyQt5.QtCore import pyqtSignal, QPointF, Qt
-from backend.shapes import generate_points
-from backend.config_manager import ConfigManager
+from backend import ConfigManager, generate_points
 
 
 class BlockEntry(QWidget):

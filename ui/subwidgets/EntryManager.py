@@ -77,6 +77,10 @@ class EntryManager(QGraphicsProxyWidget):
 		self.sizeChanged.emit()
 		self.setWidget(self.entry)
 
+	def try_to_disconnect(self):
+		try: self.disconnect()
+		except TypeError: print("EntryManager got TypeError, ignoring")
+
 	def check_block(self, block):
 		shape_id = block.shape_id
 		if self.snapped_block: return False

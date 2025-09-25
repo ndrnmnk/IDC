@@ -1,3 +1,4 @@
+import json
 
 
 class SpriteManager:
@@ -38,11 +39,13 @@ class SpriteManager:
 		code = {}
 		roots = []
 		for block in self.wv.block_list:
-			print(block)
 			block_json, identifier = block.get_content()
+			print(identifier)
 			code[identifier] = block_json
-			if not block.snap:
+			if not block.snapped_to:
 				roots.append(block.input_json["identifier"])
 
 		self.all_sprite_code[self.current_sprite]["code"] = code
 		self.all_sprite_code[self.current_sprite]["roots"] = roots
+
+		print(json.dumps(self.all_sprite_code[self.current_sprite]))

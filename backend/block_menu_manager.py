@@ -1,4 +1,4 @@
-from backend.config_manager import ConfigManager
+from .config_manager import ConfigManager
 from ui.subwidgets.NewVariableBtn import NewVariableBtn
 from ui.subwidgets.NewFunctionBtn import NewFunctionBtn
 

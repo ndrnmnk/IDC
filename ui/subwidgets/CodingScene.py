@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QGraphicsScene, QScrollBar, QGraphicsProxyWidget
 from PyQt5.QtCore import Qt
 
-from backend.config_manager import ConfigManager
+from backend import ConfigManager
 from ui.subwidgets.BlockCategorySelectionMenu import BlockCategorySelectionMenu
 from ui.subwidgets.BlockMenu import BlockMenu
 

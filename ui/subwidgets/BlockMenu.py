@@ -1,7 +1,7 @@
 from PyQt5.QtGui import QBrush, QColor, QWheelEvent
 from PyQt5.QtWidgets import QGraphicsRectItem
 
-from backend.config_manager import ConfigManager
+from backend import ConfigManager
 
 
 class BlockMenu(QGraphicsRectItem):

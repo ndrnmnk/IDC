@@ -1,10 +1,7 @@
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QGridLayout, QHBoxLayout, QScrollArea,
-    QCheckBox, QLabel, QLineEdit
-)
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QHBoxLayout, QScrollArea, QCheckBox, QLineEdit
 from ui.subwidgets.ListItem2 import ListItem
 from PyQt5.QtCore import Qt
-from backend.config_manager import ConfigManager
+from backend import ConfigManager
 
 
 def merge_dicts(dict1, dict2):

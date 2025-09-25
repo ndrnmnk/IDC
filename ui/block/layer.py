@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGraphicsTextItem as QTextItem
+from ui.subwidgets.SimpleTextItem import SimpleTextItem
 from PyQt5.QtGui import QFont
 
 from ui.subwidgets.SnapLine import SnapLine
@@ -39,9 +39,9 @@ class BlockLayer:
 		tx = 2
 		for idx, json_member in enumerate(input_json):
 			if "text" in json_member:
-				temp = QTextItem(json_member["text"], parent=self.parent_block)
+				temp = SimpleTextItem(json_member["text"], parent=self.parent_block)
 				temp.setFont(QFont("Arial", 12))
-				self.add_content_item(temp, tx, self.y_to_appear_at)
+				self.add_content_item(temp, tx+4, self.y_to_appear_at+4, add8=True)
 			elif "entry" in json_member:
 				self.handle_entry_item(idx, json_member["types"], json_member["entry"], tx, self.y_to_appear_at+2)
 
@@ -98,11 +98,18 @@ class BlockLayer:
 	def generate_copy(self):
 		return BlockLayer(self.parent_block, self.layer_id+1, self.layer_type)
 
-	def add_content_item(self, content, tx, ty, update_signal=None):
+	def add_content_item(self, content, tx, ty, update_signal=None, add8=False):
 		self.content_list.append(content)
 		content.setPos(tx, ty)
-		self.width_list.append(content.boundingRect().width())
-		self.height_list.append(content.boundingRect().height())
+		w = content.boundingRect().width()
+		h = content.boundingRect().height()
+
+		if add8:  # process text items
+			w += 8
+			h += 8
+
+		self.width_list.append(w)
+		self.height_list.append(h)
 		if update_signal:
 			content.sizeChanged.connect(update_signal)
 

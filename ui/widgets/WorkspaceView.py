@@ -1,13 +1,8 @@
 from PyQt5.QtWidgets import QGraphicsView
 
-from backend.SpriteManager import SpriteManager
-# from ui.widgets.Block import Block
-from ui.block import load_nonstatic_json
-from ui.block import Block
-from backend.BlockMenuManager import BlockMenuManager
-from backend.VariableManager import VariableManager
+from ui.block import Block, load_nonstatic_json
+from backend import BlockMenuManager, VariableManager, ConfigManager, SpriteManager
 from ui.subwidgets.CodingScene import CodingScene
-from backend.config_manager import ConfigManager
 
 
 class WorkspaceView(QGraphicsView):
@@ -29,8 +24,7 @@ class WorkspaceView(QGraphicsView):
 
 	@staticmethod
 	def complete_block_json(base, category, internal_name, identifier, pos, meta=None):
-		if not meta:
-			meta = 2 if any(item["type"] != 0 for item in base["data"]) else 0
+		if not meta: meta = 0
 		res = base
 		res["category"] = category
 		res["internal_name"] = internal_name
@@ -101,14 +95,18 @@ class WorkspaceView(QGraphicsView):
 		nonstatic_json = block_json.get("nonstatic") or {}
 		load_nonstatic_json(block, nonstatic_json)
 
+		# snap to parent
+		if parent_block:
+			if to == 0:
+				block.snap_candidate = parent_block.snap_line_list[parent_idx]
+			else:
+				block.snap_candidate = parent_block.get_entry_list()[parent_idx]
+			block.snap_to_candidate()
 		# load children
 		for idx, child_block_id in enumerate(block_json["snaps"]):
 			self.try_loading_block(child_block_id, sprite_json, block, idx, 0)
 		for idx, item in enumerate(block_json["content"]):
 			self.try_loading_block(item[1], sprite_json, block, idx, 1)
-		if parent_block:
-			block.snap_candidate = parent_block.snap_line_list[parent_idx] if to == 0 else parent_block.get_entry_list()[parent_idx]
-			block.snap_to_candidate()
 
 		# fill text fields
 		entry_list = block.get_entry_list()

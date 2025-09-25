@@ -26,7 +26,7 @@ class Block(QGraphicsObject):
 		self.shape_id = input_json["shape"]
 		self.return_type = input_json.get("returns", None)
 
-		self.input_json = input_json.copy() if input_json["meta"] == 2 else input_json
+		self.input_json = input_json
 
 		if not self.input_json.get("identifier", None):
 			self.input_json["identifier"] = str(uuid4())
@@ -52,7 +52,6 @@ class Block(QGraphicsObject):
 		if not self.spawner:
 			self.create_snap_lines()
 			self.snap_lock = False
-			self.workspace_view.block_list.append(self)
 			if self.input_json["meta"] == 1: self.workspace_view.var_manager.register_usage(self)
 		else:
 			self.snap_lock = True
@@ -66,6 +65,10 @@ class Block(QGraphicsObject):
 			self.unsnap()
 
 	def contextMenuEvent(self, event):
+		if self.spawner and self.input_json["meta"] != 1:
+			# exiting because there won't be any actions in the menu
+			event.accept()
+			return
 		BlockContextMenu(self, event)
 
 	def mouseMoveEvent(self, event):
@@ -74,9 +77,10 @@ class Block(QGraphicsObject):
 
 	def mouseReleaseEvent(self, event):
 		super().mouseReleaseEvent(event)
-		self.workspace_view.check_block_for_deletion(self)
-		self.setZValue(0)
-		self.snap_to_candidate()
+		if event.button() == Qt.LeftButton:
+			self.workspace_view.check_block_for_deletion(self)
+			self.setZValue(0)
+			self.snap_to_candidate()
 
 	def check_for_snap(self):
 		for item in self.scene().items():
@@ -165,21 +169,15 @@ class Block(QGraphicsObject):
 		self.sizeChanged.emit()
 
 	def suicide(self, leave_children=False):
-		if self.snapped_to: self.unsnap()
+		self.unsnap()
 
 		if leave_children:
-			for line in self.snap_line_list:
-				line.disconnect()
-				if line.snapped_block: line.snapped_block.unsnap()
-			for item in self.get_entry_list():
-				item.disconnect()
+			for item in self.get_entry_list() + self.snap_line_list:
+				item.try_to_disconnect()
 				if item.snapped_block: item.snapped_block.unsnap()
 		else:
-			for line in self.snap_line_list:
-				line.disconnect()
-				if line.snapped_block: line.snapped_block.suicide()
-			for item in self.get_entry_list():
-				item.disconnect()
+			for item in self.get_entry_list() + self.snap_line_list:
+				item.try_to_disconnect()
 				if item.snapped_block: item.snapped_block.suicide()
 
 		self.workspace_view.scene().removeItem(self)
@@ -193,9 +191,7 @@ class Block(QGraphicsObject):
 				self.workspace_view.var_manager.unreg_usage(vname, var_id, self.workspace_view.sprite_manager.current_sprite)
 			except (ValueError, KeyError): pass
 
-		try: self.deleteLater()
-		except RuntimeError:
-			print("CAUGHT RUNTIME ERROR")
+		self.deleteLater()
 
 	def create_snap_lines(self):
 		for idx, point in enumerate(self.snappable_points):
@@ -220,7 +216,6 @@ class Block(QGraphicsObject):
 
 		content = []
 		for widget in self.get_entry_list():
-			print(widget.get_text())
 			if widget.snapped_block:
 				content.append([widget.get_text(), widget.snapped_block.input_json["identifier"]])
 			else: content.append([widget.get_text(), None])

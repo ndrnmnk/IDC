@@ -9,15 +9,21 @@ class BlockContextMenu(QMenu):
 		layer_id = self.get_layer_by_pos(event.pos())
 
 		self.actions_list = []
-		self.generate_actions(layer_id)
 
-		self.actions_list.append(QAction("Delete block"))
-		self.addAction(self.actions_list[-1])
-		self.actions_list[-1].triggered.connect(self.parent_block.suicide)
-
-		self.actions_list.append(QAction("Unsnap + Delete block"))
-		self.addAction(self.actions_list[-1])
-		self.actions_list[-1].triggered.connect(lambda: self.parent_block.suicide(True))
+		if not self.parent_block.spawner:
+			self.generate_actions(layer_id)
+			self.actions_list.append(QAction("Delete block"))
+			self.addAction(self.actions_list[-1])
+			self.actions_list[-1].triggered.connect(self.parent_block.suicide)
+			self.actions_list.append(QAction("Unsnap + Delete block"))
+			self.addAction(self.actions_list[-1])
+			self.actions_list[-1].triggered.connect(lambda: self.parent_block.suicide(True))
+		elif self.parent_block.input_json["meta"] == 1:
+			self.actions_list.append(QAction("Delete variable"))
+			self.addAction(self.actions_list[-1])
+			var_name = self.parent_block.input_json["internal_name"]
+			var_manager = self.parent_block.workspace_view.var_manager
+			self.actions_list[-1].triggered.connect(lambda: var_manager.delete_var_by_name(var_name))
 
 		self.exec_(event.screenPos())
 

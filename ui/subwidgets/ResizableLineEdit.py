@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtGui import QRegularExpressionValidator
 from PyQt5.QtCore import QRegularExpression, Qt, pyqtSignal
-from backend.config_manager import ConfigManager
+from backend import ConfigManager
 
 
 class ResizableLineEdit(QLineEdit):

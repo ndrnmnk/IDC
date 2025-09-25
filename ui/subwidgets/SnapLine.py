@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QGraphicsWidget
 from PyQt5.QtGui import QPainter, QPen, QColor
 from PyQt5.QtCore import Qt, QPointF
 from PyQt5.QtCore import pyqtSignal
-from backend.config_manager import ConfigManager
+from backend import ConfigManager
 
 
 class SnapLine(QGraphicsWidget):
@@ -56,6 +56,10 @@ class SnapLine(QGraphicsWidget):
 		if self.parentItem().snap_lock: return False
 		if block.shape_id in (2, 3, 4): return False
 		return True
+
+	def try_to_disconnect(self):
+		try: self.disconnect()
+		except TypeError: print("SnapLine got TypeError, ignoring")
 
 	def paint(self, painter, option, widget=None):
 		if not self.visible:

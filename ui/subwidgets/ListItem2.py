@@ -1,11 +1,9 @@
-from PyQt5.QtWidgets import (
-    QWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QTextBrowser
-)
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QTextBrowser
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from io import BytesIO
 import requests
-from backend.config_manager import ConfigManager
+from backend import ConfigManager
 
 
 class ImageDownloader(QThread):

@@ -1,8 +1,8 @@
 from .addons_manager import AddonsManager
 from .backend import Backend, CommandRunner
 from .BaseAddon import BaseAddon
-from .BlockMenuManager import BlockMenuManager
+from .block_menu_manager import BlockMenuManager
 from .config_manager import ConfigManager
 from .shapes import generate_points, get_circle_points
-from .SpriteManager import SpriteManager
-from .VariableManager import VariableManager
+from .sprite_manager import SpriteManager
+from .variable_manager import VariableManager

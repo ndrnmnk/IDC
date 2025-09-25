@@ -1,6 +1,6 @@
 from PyQt5.QtGui import QTextDocument, QPen, QColor
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyle
-from backend.config_manager import ConfigManager
+from backend import ConfigManager
 
 
 class RichTextDelegate(QStyledItemDelegate):

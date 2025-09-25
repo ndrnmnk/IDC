@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 import importlib, shutil, json, git, os
-from backend.config_manager import ConfigManager
+from .config_manager import ConfigManager
 
 
 class GitClone(QThread):

@@ -17,9 +17,9 @@
     "if": {
       "shape": 0,
       "data": [
-        {"type": -1, "data": [{"text": "If"}, {"entry": "", "types": ["bool", "int", "str"]}, {"text": "do"}]},
+        {"type": -1, "data": [{"text": "If"}, {"entry": "", "types": ["bool"]}, {"text": "do"}]},
         {"type": -2, "name": "else", "data": [{"text": "else"}]},
-        {"type": -1, "data": [{"text": ""}]}
+        {"type": -1, "data": [{"text": " "}]}
       ]
     }
   },
@@ -56,7 +56,7 @@
         {"type": -3, "data": [{"text": "Switch"}, {"entry": "", "types": ["str"]}]},
         {"type": 1, "data": [{"text": "case"}, {"entry": "", "types": ["str"]}], "name": "case"},
         {"type": -2, "data": [{"text": "default"}, {"entry": "", "types": ["str"]}], "name": "default"},
-        {"type": -1, "data": [{"text": ""}]}
+        {"type": -1, "data": [{"text": " "}]}
       ]
     }
   },

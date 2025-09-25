@@ -59,7 +59,7 @@ And `__init__.py` must contain `run(ui)` function, which will return an addon cl
 BaseAddon (check `backend/BaseAddon.py` to see which functions can be overridden). Here is an example:
 
 ```python
-from backend.BaseAddon import BaseAddon
+from backend import BaseAddon
 from PyQt5.QtWidgets import QLabel
 
 

@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QCheckBox
 from PyQt5.QtCore import Qt
-from backend.config_manager import ConfigManager
+from backend import ConfigManager
 
 
 class GeneralOptions(QWidget):
