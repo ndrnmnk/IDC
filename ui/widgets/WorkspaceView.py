@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QGraphicsView
 from ui.block import Block, load_nonstatic_json
 from backend import BlockMenuManager, VariableManager, ConfigManager, SpriteManager
 from ui.subwidgets.CodingScene import CodingScene
+from ui.widgets.minimap import Minimap
 
 
 class WorkspaceView(QGraphicsView):
@@ -11,6 +12,8 @@ class WorkspaceView(QGraphicsView):
 		self.parent = parent
 		self.setScene(CodingScene(self))
 		self.centerOn(0, 0)
+
+		self.minimap = Minimap(self, self.scene())
 
 		self.block_list = []
 
@@ -64,10 +67,12 @@ class WorkspaceView(QGraphicsView):
 	def scrollContentsBy(self, dx, dy):
 		# Default scroll behaviour + reposition menu so it remains visible
 		super().scrollContentsBy(dx, dy)
+		self.minimap.update_pos()
 		self.scene().update_menu_pos()
 
 	def resizeEvent(self, event):
 		super().resizeEvent(event)
+		self.minimap.update_pos()
 		self.scene().on_view_resize()
 
 	def get_project_data(self):

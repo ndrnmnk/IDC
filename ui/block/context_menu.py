@@ -41,13 +41,13 @@ class BlockContextMenu(QMenu):
 			self.addAction(self.actions_list[-1])
 
 		if clicked_layer.layer_type > 0:
+			self.actions_list.append(QAction("Copy this layer"))
+			self.actions_list[-1].triggered.connect(lambda _, i=clicked_layer.layer_id: make_new_dynamic_layer(self.parent_block, i))
+			self.addAction(self.actions_list[-1])
 			if self.parent_block.nonstatic_layers[clicked_layer.copy_from] > 1:
 				self.actions_list.append(QAction("Delete this layer"))
 				self.actions_list[-1].triggered.connect(lambda _, i=clicked_layer.layer_id: delete_dynamic_layer(self.parent_block, i))
 				self.addAction(self.actions_list[-1])
-			self.actions_list.append(QAction("Copy this layer"))
-			self.actions_list[-1].triggered.connect(lambda _, i=clicked_layer.layer_id: make_new_dynamic_layer(self.parent_block, i))
-			self.addAction(self.actions_list[-1])
 
 		for temp_layer in self.parent_block.layers_list:
 			if temp_layer.layer_type == -2 and temp_layer.hidden:

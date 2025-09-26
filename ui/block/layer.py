@@ -80,11 +80,14 @@ class BlockLayer:
 		self.snapped_block_h = self.snap_line.get_height()
 		self.parent_block.repopulate(self.layer_id)
 
-	def add_snap_line(self, pos, width, insert_at):
+	def add_snap_line(self, pos, width, insert_at=None):
 		if self.layer_type is LTYPE_STICKY or self.hidden: return
 		self.snap_line = SnapLine(pos, width, self.parent_block)
 		self.snap_line.sizeChanged.connect(self.on_snapline_size_changed)
-		self.parent_block.snap_line_list.insert(insert_at, self.snap_line)
+		if insert_at is None:
+			self.parent_block.snap_line_list.append(self.snap_line)
+		else:
+			self.parent_block.snap_line_list.insert(insert_at, self.snap_line)
 
 	def move_by(self, ty, only_snapline=False):
 		if not only_snapline: self.y_to_appear_at += ty

@@ -195,7 +195,7 @@ class Block(QGraphicsObject):
 
 	def create_snap_lines(self):
 		for idx, point in enumerate(self.snappable_points):
-			self.layers_list[idx].add_snap_line(point, max(self.width_list)-20, -1)
+			self.layers_list[idx].add_snap_line(point, max(self.width_list)-20)
 
 	def snap_distance_check(self, item):
 		self_rect = self.sceneBoundingRect()

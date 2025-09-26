@@ -58,6 +58,33 @@
         {"type": -2, "data": [{"text": "default"}, {"entry": "", "types": ["str"]}], "name": "default"},
         {"type": -1, "data": [{"text": " "}]}
       ]
+    },
+    "switch_case0": {
+      "shape": 0,
+      "data": [
+        {"type": -3, "data": [{"text": "Switch"}, {"entry": "", "types": ["str"]}]},
+        {"type": 1, "data": [{"text": "case"}, {"entry": "", "types": ["str"]}], "name": "case"},
+        {"type": -2, "data": [{"text": "default"}, {"entry": "", "types": ["str"]}], "name": "default"},
+        {"type": -1, "data": [{"text": " "}]}
+      ]
+    },
+    "switch_case1": {
+      "shape": 0,
+      "data": [
+        {"type": -3, "data": [{"text": "Switch"}, {"entry": "", "types": ["str"]}]},
+        {"type": 1, "data": [{"text": "case"}, {"entry": "", "types": ["str"]}], "name": "case"},
+        {"type": -2, "data": [{"text": "default"}, {"entry": "", "types": ["str"]}], "name": "default"},
+        {"type": -1, "data": [{"text": " "}]}
+      ]
+    },
+    "switch_case2": {
+      "shape": 0,
+      "data": [
+        {"type": -3, "data": [{"text": "Switch"}, {"entry": "", "types": ["str"]}]},
+        {"type": 1, "data": [{"text": "case"}, {"entry": "", "types": ["str"]}], "name": "case"},
+        {"type": -2, "data": [{"text": "default"}, {"entry": "", "types": ["str"]}], "name": "default"},
+        {"type": -1, "data": [{"text": " "}]}
+      ]
     }
   },
   "Functions": {},
